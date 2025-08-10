@@ -117,7 +117,7 @@ export default function Navbar() {
           <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-4 group logo-hover">
            {/* Modern Brand Name */}
            <div className="flex flex-col">
-              <span className="oi-regular text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-300">
+              <span className="oi-regular text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-300 dark:text-blue-400 dark:group-hover:text-blue-300 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.5)] dark:group-hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.7)]">
                 المنصة الدولية
               </span>
               
@@ -127,7 +127,7 @@ export default function Navbar() {
               <img 
                 src={logo} 
                 alt="المنصة الدولية" 
-                className="w-14 h-14 object-contain group-hover:scale-110 transition-transform duration-300"
+                className="w-14 h-14 object-contain group-hover:scale-110 transition-transform duration-300 dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] dark:group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
               />
             </div>
           
