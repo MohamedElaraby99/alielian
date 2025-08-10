@@ -6,6 +6,11 @@
  * Get the base API URL from environment variables
  */
 const getBaseApiUrl = () => {
+  // Check if we're in production
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://lms.alielian.online/api/v1';
+  }
+  // Development fallback
   return import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:4001/api/v1';
 };
 

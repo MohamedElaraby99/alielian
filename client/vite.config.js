@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [react()],
   define: {
     'import.meta.env.VITE_REACT_APP_API_URL': JSON.stringify(
-      process.env.VITE_REACT_APP_API_URL || 'http://localhost:4001/api/v1'
+      process.env.NODE_ENV === 'production' 
+        ? 'https://lms.alielian.online/api/v1'
+        : (process.env.VITE_REACT_APP_API_URL || 'http://localhost:4001/api/v1')
     )
   }
 })
