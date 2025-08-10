@@ -43,9 +43,8 @@ app.use(cors({
     origin: [
         process.env.CLIENT_URL, 
         'http://localhost:5173', 
-        'http://localhost:4000',
-        'https://lms.fikra.solutions',
-        'https://www.lms.fikra.solutions'
+        'https://alielian.online',
+        'https://lms.alielian.online'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
