@@ -79,7 +79,7 @@ app.get('/api/v1/test-uploads', (req, res) => {
   
   try {
     const files = fs.readdirSync(uploadsDir);
-    const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 4000}`;
+    const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 4001}`;
     
     res.json({ 
       message: 'Uploads directory accessible',
