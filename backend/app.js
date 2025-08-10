@@ -42,7 +42,7 @@ app.use(morgan('dev'));
 app.use(cors({
     origin: [
         process.env.CLIENT_URL, 
-        'http://localhost:5173', 
+        'http://localhost:5175', 
         'https://alielian.online',
         'https://lms.alielian.online'
     ],

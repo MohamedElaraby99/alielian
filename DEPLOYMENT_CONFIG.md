@@ -6,13 +6,23 @@
 ### **Backend Domain**: `lms.alielian.online`
 ### **Database Collection**: `alielian`
 
+## 🔌 Port Configuration
+
+### **Development Ports**:
+- **Backend**: `4001` (changed from 4000)
+- **Frontend**: `5175` (changed from 5173)
+
+### **Production Domains**:
+- **Frontend**: `https://alielian.online`
+- **Backend**: `https://lms.alielian.online`
+
 ## 📁 Environment Files
 
 ### Backend (.env.production)
 ```bash
 # Production Environment Variables
 NODE_ENV=production
-PORT=4000
+PORT=4001
 
 # Database - Collection: alielian
 MONGODB_URI=mongodb://localhost:27017/alielian
@@ -40,31 +50,44 @@ VITE_REACT_APP_API_URL=https://lms.alielian.online/api/v1
 VITE_CLIENT_URL=https://alielian.online
 ```
 
+### Frontend (.env.development)
+```bash
+# Development Environment Variables
+VITE_REACT_APP_API_URL=http://localhost:4001/api/v1
+VITE_CLIENT_URL=http://localhost:5175
+```
+
 ## 🔧 Configuration Changes Made
 
 ### 1. Backend Server (server.js)
+- ✅ `PORT` default: `4001` (updated from 4000)
 - ✅ `CLIENT_URL` default: `https://alielian.online`
 - ✅ `BACKEND_URL` default: `https://lms.alielian.online`
 - ✅ `MONGODB_URI` default: `mongodb://localhost:27017/alielian`
 
 ### 2. Frontend Axios (axiosInstance.js)
-- ✅ `BASE_URL` default: `https://lms.alielian.online/api/v1`
+- ✅ `BASE_URL` default: `http://localhost:4001/api/v1` (development)
+- ✅ Production: `https://lms.alielian.online/api/v1`
 
 ### 3. Vite Config (vite.config.js)
-- ✅ `VITE_REACT_APP_API_URL` default: `https://lms.alielian.online/api/v1`
+- ✅ `VITE_REACT_APP_API_URL` default: `http://localhost:4001/api/v1` (development)
+- ✅ Production: `https://lms.alielian.online/api/v1`
 
 ### 4. Frontend File Utils (fileUtils.js)
-- ✅ `getBaseApiUrl()` default: `https://lms.alielian.online/api/v1`
+- ✅ `getBaseApiUrl()` default: `http://localhost:4001/api/v1` (development)
+- ✅ Production: `https://lms.alielian.online/api/v1`
 
 ### 5. Backend File Utils (fileUtils.js)
 - ✅ `PRODUCTION_URL` default: `https://lms.alielian.online`
+- ✅ Development port: `4001`
 
 ### 6. CORS Configuration (app.js)
+- ✅ Added `http://localhost:5175` (new frontend port)
 - ✅ Added `https://alielian.online` and `https://lms.alielian.online`
 - ✅ Removed old `fikra.solutions` domains
 
 ### 7. PDF Converter (pdfConverter.controller.js)
-- ✅ Updated domain check to include `lms.alielian.online`
+- ✅ Updated domain check to include `localhost:4001` and `lms.alielian.online`
 
 ### 8. Database Configuration
 - ✅ **Collection Name**: `alielian` (consistent across all files)
@@ -101,27 +124,32 @@ VITE_CLIENT_URL=https://alielian.online
 3. **Deploy Backend**:
    ```bash
    cd backend
-   npm start
+   npm start  # Will run on port 4001
    ```
 
 4. **Verify URLs**:
-   - Frontend: `https://alielian.online`
-   - Backend API: `https://lms.alielian.online/api/v1`
+   - **Development**:
+     - Frontend: `http://localhost:5175`
+     - Backend API: `http://localhost:4001/api/v1`
+   - **Production**:
+     - Frontend: `https://alielian.online`
+     - Backend API: `https://lms.alielian.online/api/v1`
    - File uploads: `https://lms.alielian.online/api/v1/uploads/`
    - Database: `alielian` collection
 
 ## 🔍 Testing
 
-- ✅ API calls should go to `lms.alielian.online`
+- ✅ **Development**: API calls go to `localhost:4001`, frontend runs on `5175`
+- ✅ **Production**: API calls go to `lms.alielian.online`
 - ✅ File uploads/downloads should work with the new domain
-- ✅ CORS should allow requests from `alielian.online`
+- ✅ CORS should allow requests from both development and production URLs
 - ✅ All environment variables should resolve correctly
 - ✅ Database connection should use `alielian` collection
 
 ## 📝 Notes
 
-- Local development will still work with `localhost:4000` and `localhost:5173`
-- Production will use the new domains automatically
+- **Development Ports**: Backend `4001`, Frontend `5175`
+- **Production Domains**: `alielian.online` and `lms.alielian.online`
 - Environment variables can override defaults if needed
-- SSL certificates must be valid for both domains
+- SSL certificates must be valid for both production domains
 - **Database collection `alielian` is already correctly configured throughout the codebase**

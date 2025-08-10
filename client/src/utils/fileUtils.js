@@ -6,7 +6,7 @@
  * Get the base API URL from environment variables
  */
 const getBaseApiUrl = () => {
-  return import.meta.env.VITE_REACT_APP_API_URL || 'https://lms.alielian.online/api/v1';
+  return import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:4001/api/v1';
 };
 
 /**
