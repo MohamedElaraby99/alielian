@@ -162,7 +162,7 @@ const subjectSlice = createSlice({
 
     // Delete subject
     builder.addCase(deleteSubject.fulfilled, (state, action) => {
-      const deletedId = action?.payload?.subject?._id;
+      const deletedId = action.meta.arg; // remove using the id we sent
       state.subjects = state.subjects.filter(subject => subject._id !== deletedId);
       if (state.currentSubject && state.currentSubject._id === deletedId) {
         state.currentSubject = null;

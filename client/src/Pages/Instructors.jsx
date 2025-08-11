@@ -14,6 +14,7 @@ import {
   FaFilter,
   FaEye
 } from 'react-icons/fa';
+import { generateImageUrl } from "../utils/fileUtils";
 
 export default function Instructors() {
   const dispatch = useDispatch();
@@ -116,14 +117,10 @@ export default function Instructors() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         {instructor.profileImage?.secure_url ? (
-                          <img
-                            src={instructor.profileImage.secure_url}
-                            alt={instructor.name}
-                            className="w-12 h-12 rounded-full border-2 border-white object-cover"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
+                          <img 
+                            src={generateImageUrl(instructor.profileImage.secure_url)} 
+                            alt={instructor.name} 
+                            className="w-24 h-24 rounded-full object-cover border border-gray-200 dark:border-gray-700" 
                           />
                         ) : (
                           <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -258,10 +255,10 @@ export default function Instructors() {
                   {/* Profile Image */}
                   <div className="md:col-span-1">
                     {selectedInstructor.profileImage?.secure_url ? (
-                      <img
-                        src={selectedInstructor.profileImage.secure_url}
-                        alt={selectedInstructor.name}
-                        className="w-full h-64 object-cover rounded-lg"
+                      <img 
+                        src={generateImageUrl(selectedInstructor.profileImage.secure_url)} 
+                        alt={selectedInstructor.name} 
+                        className="w-24 h-24 rounded-full object-cover border border-gray-200 dark:border-gray-700" 
                       />
                     ) : (
                       <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">

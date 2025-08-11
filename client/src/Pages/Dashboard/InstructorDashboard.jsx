@@ -28,6 +28,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import Layout from '../../Layout/Layout';
+import { generateImageUrl } from "../../utils/fileUtils";
 
 const InstructorDashboard = () => {
   const dispatch = useDispatch();
@@ -258,13 +259,9 @@ const InstructorDashboard = () => {
                   <div className="flex items-center">
                     {instructor.profileImage?.secure_url ? (
                       <img
-                        src={instructor.profileImage.secure_url}
+                        src={generateImageUrl(instructor.profileImage.secure_url)}
                         alt={instructor.name}
-                        className="w-12 h-12 rounded-full border-2 border-white object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
+                        className="w-16 h-16 rounded-full object-cover"
                       />
                     ) : (
                       <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -446,13 +443,9 @@ const InstructorDashboard = () => {
                     {editingInstructor && editingInstructor.profileImage?.secure_url && !formData.photo && (
                       <div className="relative">
                         <img
-                          src={editingInstructor.profileImage.secure_url}
-                          alt="Current photo"
-                          className="w-16 h-16 rounded-full object-cover border-2 border-gray-300"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
-                          }}
+                          src={generateImageUrl(editingInstructor.profileImage.secure_url)}
+                          alt={editingInstructor.name}
+                          className="w-24 h-24 rounded-full object-cover"
                         />
                         <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center hidden">
                           <FaGraduationCap className="text-gray-400" />

@@ -6,13 +6,16 @@ import AppError from '../utils/error.utils.js';
 // Get all stages
 export const getAllStages = async (req, res, next) => {
     try {
-        const { page = 1, limit = 50, status, search } = req.query;
+        const { page = 1, limit = 50, status, search, includeInactive } = req.query;
         
         let query = {};
         
-        // Filter by status
+        // Filter by status - by default only show active stages unless explicitly requested
         if (status) {
             query.status = status;
+        } else if (!includeInactive) {
+            // Default behavior: only show active stages
+            query.status = 'active';
         }
         
         // Search functionality
@@ -246,6 +249,49 @@ export const getAllStagesWithStats = async (req, res, next) => {
         });
     } catch (e) {
         console.error('❌ Error in getAllStagesWithStats:', e);
+        return next(new AppError(e.message, 500));
+    }
+};
+
+// Get all stages including inactive ones (for admin purposes)
+export const getAllStagesAdmin = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 50, status, search } = req.query;
+        
+        let query = {};
+        
+        // Filter by status if specified
+        if (status) {
+            query.status = status;
+        }
+        
+        // Search functionality
+        if (search) {
+            query.$text = { $search: search };
+        }
+        
+        const stages = await stageModel.find(query)
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .exec();
+            
+        const total = await stageModel.countDocuments(query);
+        
+        res.status(200).json({
+            success: true,
+            message: 'All stages fetched successfully (including inactive)',
+            data: {
+                stages,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total,
+                    pages: Math.ceil(total / limit)
+                }
+            }
+        });
+    } catch (e) {
         return next(new AppError(e.message, 500));
     }
 };

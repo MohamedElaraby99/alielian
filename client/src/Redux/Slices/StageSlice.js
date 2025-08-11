@@ -93,6 +93,18 @@ export const getAllStagesWithStats = createAsyncThunk(
   }
 );
 
+export const getAllStagesAdmin = createAsyncThunk(
+  'stage/getAllStagesAdmin',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get('/stages/admin', { params });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch all stages');
+    }
+  }
+);
+
 export const toggleStageStatus = createAsyncThunk(
   'stage/toggleStageStatus',
   async (id, { rejectWithValue }) => {
@@ -107,11 +119,71 @@ export const toggleStageStatus = createAsyncThunk(
   }
 );
 
+// Stage Categories thunks
+export const fetchStageCategories = createAsyncThunk(
+  'stageCategories/fetch',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const { page = 1, limit = 50, search = '', status = '' } = params;
+      const res = await axiosInstance.get(`/stage-categories?page=${page}&limit=${limit}&search=${search}&status=${status}`);
+      return res?.data?.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch categories');
+    }
+  }
+);
+
+export const createStageCategory = createAsyncThunk(
+  'stageCategories/create',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post(`/stage-categories`, payload);
+      toast.success('تم إنشاء الفئة بنجاح');
+      return res?.data?.data?.category;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'فشل في إنشاء الفئة');
+      return rejectWithValue(error.response?.data?.message || 'Failed to create category');
+    }
+  }
+);
+
+export const updateStageCategory = createAsyncThunk(
+  'stageCategories/update',
+  async ({ id, update }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.put(`/stage-categories/${id}`, update);
+      toast.success('تم تحديث الفئة بنجاح');
+      return res?.data?.data?.category;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'فشل في تحديث الفئة');
+      return rejectWithValue(error.response?.data?.message || 'Failed to update category');
+    }
+  }
+);
+
+export const deleteStageCategory = createAsyncThunk(
+  'stageCategories/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`/stage-categories/${id}`);
+      toast.success('تم حذف الفئة بنجاح');
+      return id;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'فشل في حذف الفئة');
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete category');
+    }
+  }
+);
+
 const initialState = {
   stages: [],
+  adminStages: [],
   currentStage: null,
   stagesWithStats: [],
   loading: false,
+  adminLoading: false,
+  categories: [],
+  catLoading: false,
   error: null,
   pagination: {
     page: 1,
@@ -148,6 +220,20 @@ const stageSlice = createSlice({
     });
     builder.addCase(getAllStages.rejected, (state, action) => {
       state.loading = false;
+      state.error = action.payload;
+    });
+
+    // Get all stages admin (including inactive)
+    builder.addCase(getAllStagesAdmin.pending, (state) => {
+      state.adminLoading = true;
+      state.error = null;
+    });
+    builder.addCase(getAllStagesAdmin.fulfilled, (state, action) => {
+      state.adminLoading = false;
+      state.adminStages = action.payload.data.stages;
+    });
+    builder.addCase(getAllStagesAdmin.rejected, (state, action) => {
+      state.adminLoading = false;
       state.error = action.payload;
     });
 
@@ -218,6 +304,28 @@ const stageSlice = createSlice({
       if (state.currentStage && state.currentStage._id === updatedStage._id) {
         state.currentStage = updatedStage;
       }
+    });
+
+    // Categories reducers
+    builder.addCase(fetchStageCategories.pending, (state) => {
+      state.catLoading = true;
+    });
+    builder.addCase(fetchStageCategories.fulfilled, (state, action) => {
+      state.catLoading = false;
+      state.categories = action.payload?.categories || [];
+    });
+    builder.addCase(fetchStageCategories.rejected, (state) => {
+      state.catLoading = false;
+    });
+    builder.addCase(createStageCategory.fulfilled, (state, action) => {
+      state.categories.unshift(action.payload);
+    });
+    builder.addCase(updateStageCategory.fulfilled, (state, action) => {
+      const idx = state.categories.findIndex(c => c._id === action.payload._id);
+      if (idx !== -1) state.categories[idx] = action.payload;
+    });
+    builder.addCase(deleteStageCategory.fulfilled, (state, action) => {
+      state.categories = state.categories.filter(c => c._id !== action.payload);
     });
   }
 });

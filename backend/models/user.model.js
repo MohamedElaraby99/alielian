@@ -44,9 +44,7 @@ const userSchema = new Schema({
     },
     fatherPhoneNumber: {
         type: String,
-        required: function() {
-            return this.role !== 'ADMIN';
-        },
+        required: false,
         trim: true
     },
     governorate: {

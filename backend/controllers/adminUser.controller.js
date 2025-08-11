@@ -128,10 +128,10 @@ const createUser = async (req, res, next) => {
             return next(new AppError("Role must be either USER or ADMIN", 400));
         }
 
-        // For USER role, require additional fields
+        // For USER role, require additional fields (fatherPhoneNumber optional)
         if (role === 'USER') {
-            if (!phoneNumber || !fatherPhoneNumber || !governorate || !stage || !age) {
-                return next(new AppError("Phone number, father phone number, governorate, stage, and age are required for regular users", 400));
+            if (!phoneNumber || !governorate || !stage || !age) {
+                return next(new AppError("Phone number, governorate, stage, and age are required for regular users", 400));
             }
         }
 
@@ -166,7 +166,7 @@ const createUser = async (req, res, next) => {
         // Add optional fields for USER role
         if (role === 'USER') {
             userData.phoneNumber = phoneNumber;
-            userData.fatherPhoneNumber = fatherPhoneNumber;
+            if (fatherPhoneNumber) userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
             userData.stage = stage;
             userData.age = parseInt(age);

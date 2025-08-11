@@ -67,9 +67,7 @@ export default function SubjectDashboard() {
       newErrors.instructor = "المدرس مطلوب";
     }
 
-    if (!formData.stage) {
-      newErrors.stage = "المرحلة مطلوبة";
-    }
+    // stage is optional now
 
     // Only require image for new subjects, not for editing
     if (!showEditModal && !formData.image) {
@@ -163,7 +161,7 @@ export default function SubjectDashboard() {
       title: subject.title,
       description: subject.description,
       instructor: subject.instructor,
-      stage: subject.stage,
+      stage: subject.stage || "",
       featured: subject.featured,
       image: null
     });
@@ -355,7 +353,7 @@ export default function SubjectDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Instructor *
+                      المدرس *
                     </label>
                     <select
                       name="instructor"
@@ -365,35 +363,13 @@ export default function SubjectDashboard() {
                         errors.instructor ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
-                      <option value="">Select instructor</option>
+                      <option value="">اختر المدرس</option>
                       {instructors.map((instructor) => (
                         <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
                       ))}
                     </select>
                     {errors.instructor && (
                       <p className="text-red-500 text-sm mt-1">{errors.instructor}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Stage *
-                    </label>
-                    <select
-                      name="stage"
-                      value={formData.stage}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                        errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      <option value="">اختر المرحلة</option>
-                      {stages.map((stage) => (
-                        <option key={stage._id} value={stage._id}>{stage.name}</option>
-                      ))}
-                    </select>
-                    {errors.stage && (
-                      <p className="text-red-500 text-sm mt-1">{errors.stage}</p>
                     )}
                   </div>
                 </div>
@@ -430,7 +406,7 @@ export default function SubjectDashboard() {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Featured Course
+                    مميز
                   </label>
                 </div>
 
@@ -443,7 +419,7 @@ export default function SubjectDashboard() {
                     }}
                     className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
                   >
-                    Cancel
+                    الغاء
                   </button>
                   <button
                     type="submit"
@@ -521,7 +497,7 @@ export default function SubjectDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Instructor *
+                      المدرس *
                     </label>
                     <select
                       name="instructor"
@@ -531,7 +507,7 @@ export default function SubjectDashboard() {
                         errors.instructor ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
-                      <option value="">Select instructor</option>
+                      <option value="">اختر المدرس</option>
                       {instructors.map((instructor) => (
                         <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
                       ))}
@@ -543,24 +519,24 @@ export default function SubjectDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Stage *
-                    </label>
-                    <select
-                      name="stage"
-                      value={formData.stage}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                        errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      <option value="">اختر المرحلة</option>
-                      {stages.map((stage) => (
-                        <option key={stage._id} value={stage._id}>{stage.name}</option>
-                      ))}
-                    </select>
-                    {errors.stage && (
-                      <p className="text-red-500 text-sm mt-1">{errors.stage}</p>
-                    )}
+                        المرحلة (اختياري)
+                      </label>
+                      <select
+                        name="stage"
+                        value={formData.stage}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                          errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        <option value="">بدون مرحلة</option>
+                        {stages.map((stage) => (
+                          <option key={stage._id} value={stage._id}>{stage.name}</option>
+                        ))}
+                      </select>
+                      {errors.stage && (
+                        <p className="text-red-500 text-sm mt-1">{errors.stage}</p>
+                      )}
                   </div>
                 </div>
 

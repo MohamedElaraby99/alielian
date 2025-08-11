@@ -10,13 +10,6 @@ const AnimatedHero = ({ onGetStarted }) => {
     setIsVisible(true);
   }, []);
 
-  const stats = [
-    { icon: FaUsers, number: "10K+", label: "طلاب مسجلين", color: "text-blue-600" },
-    { icon: FaGraduationCap, number: "100+", label: "مواد متاحة", color: "text-green-600" },
-    { icon: FaStar, number: "4.9", label: "متوسط التقييم", color: "text-yellow-600" },
-    { icon: FaAward, number: "50+", label: "مدربين خبراء", color: "text-purple-600" }
-  ];
-
   const handleExploreCourses = () => {
     // Navigate to courses page
     window.location.href = '/courses';
@@ -61,14 +54,67 @@ const AnimatedHero = ({ onGetStarted }) => {
               <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
                 <span className="text-blue-600">المنصة الدولية</span>
                 <br />
-                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  للتعليم الذكي
-                </span>
-                <br />
                 <span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-gray-700 dark:text-gray-300">
                   اكتشف عالم المعرفة
                 </span>
               </h1>
+
+              {/* Teacher Credentials Section */}
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 dark:border-blue-700 shadow-lg">
+                <div className="space-y-4">
+                  <h1 className="text-center text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+                   مستر علي عليان 
+                  </h1>
+                  {/* Title */}
+                  <h2 className="text-xl md:text-2xl font-bold text-blue-600 dark:text.-blue-400 text-center">
+                    مدرس المناهج الدولية
+                  </h2>
+                  
+                  {/* Curricula */}
+                  <div className="text-center">
+                    <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 font-medium">
+                      ( الدبلومة الأمريكية - IGCSE - مناهج النيل - البكالوريا المصرية )
+                    </p>
+                  </div>
+
+                  {/* Experience */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white text-center">
+                      الخبرات
+                    </h3>
+                    <ul className="space-y-2 text-sm md:text-base text-gray-600 dark:text-gray-400">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>مشرف ورئيس قسم اللغة العربية بالعديد من المدارس National , InterNational</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>معلم اللغة العربية لغير الناطقين بها</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>عضو الاتحاد الدولي للغة العربية</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>حاصل على دبلومة تربوية من Cambridge بتقدير امتياز</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>حاصل على زمالة المعلم البريطاني من Cambridge</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>حاصل على زمالة المدرب البريطاني من Cambridge</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>حاصل على المعلم المبدع من Microsoft</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
               
               {/* Description */}
               <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-lg">
@@ -82,20 +128,11 @@ const AnimatedHero = ({ onGetStarted }) => {
                   className="group relative px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-full text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
                   <span className="flex items-center gap-2 justify-center">
-                    ابدأ التعلم
+                    سجل الآن
                     <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </button>
                 
-                <button 
-                  onClick={handleExploreCourses}
-                  className="group px-6 py-3 md:px-8 md:py-4 border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-semibold rounded-full text-base md:text-lg hover:bg-blue-600 hover:text-white transition-all duration-300"
-                >
-                  <span className="flex items-center gap-2 justify-center">
-                    <FaPlay className="group-hover:scale-110 transition-transform duration-300" />
-                    استكشف الدورات
-                  </span>
-                </button>
               </div>
             </div>
           </div>

@@ -83,8 +83,8 @@ export const createSubject = async (req, res, next) => {
             grade
         } = req.body;
         
-        if (!title || !description || !instructor || !stage) {
-            return next(new AppError('All required fields must be provided', 400));
+        if (!title || !description || !instructor) {
+            return next(new AppError('Title, description and instructor are required', 400));
         }
         
         if (!req.file) {
@@ -95,10 +95,10 @@ export const createSubject = async (req, res, next) => {
             title,
             description,
             instructor,
-            stage,
             featured: featured === 'true',
             grade: grade || null
         };
+        if (stage) subjectData.stage = stage; // optional
         
         // Handle image upload (required)
         try {
@@ -127,9 +127,9 @@ export const createSubject = async (req, res, next) => {
         
         const subject = await subjectModel.create(subjectData);
         
-        // Populate instructor and stage data
+        // Populate instructor and stage data (stage only if exists)
         await subject.populate('instructor', 'name specialization');
-        await subject.populate('stage', 'name description');
+        if (subject.stage) await subject.populate('stage', 'name description');
         
         res.status(201).json({
             success: true,
@@ -168,7 +168,8 @@ export const updateSubject = async (req, res, next) => {
         if (description) updateData.description = description;
         if (category) updateData.category = category;
         if (instructor) updateData.instructor = instructor;
-        if (stage) updateData.stage = stage;
+        // stage optional: only set when provided; allow clearing with empty string
+        if (stage !== undefined) updateData.stage = stage || null;
         if (featured !== undefined) updateData.featured = featured === 'true';
         if (status) updateData.status = status;
         if (grade !== undefined) updateData.grade = grade;

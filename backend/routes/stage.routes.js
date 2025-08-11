@@ -2,6 +2,7 @@ import express from 'express';
 import { isLoggedIn, authorisedRoles } from '../middleware/auth.middleware.js';
 import {
     getAllStages,
+    getAllStagesAdmin,
     getStageById,
     createStage,
     updateStage,
@@ -29,6 +30,9 @@ router.route('/:id/stats')
 // Admin only routes
 router.use(isLoggedIn);
 router.use(authorisedRoles('ADMIN'));
+
+router.route('/admin')
+    .get(getAllStagesAdmin);
 
 router.route('/')
     .post(createStage);

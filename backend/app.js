@@ -21,6 +21,7 @@ import videoProgressRoutes from './routes/videoProgress.routes.js';
 import deviceManagementRoutes from './routes/deviceManagement.routes.js';
 import liveMeetingRoutes from './routes/liveMeeting.routes.js';
 import captchaRoutes from './routes/captcha.routes.js';
+import stageCategoryRoutes from './routes/stageCategory.routes.js';
 
 
 
@@ -39,17 +40,48 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(cors({
-    origin: [
-        process.env.CLIENT_URL, 
-        'http://localhost:5175', 
-        'https://alielian.online',
-        'https://lms.alielian.online'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
-}));
+
+// Explicit CORS headers to guarantee preflight success and credentials support
+const allowedOrigins = new Set([
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5175',
+  'http://127.0.0.1:5175',
+  'https://alielian.online',
+  'https://lms.alielian.online'
+]);
+
+// Extend allowed origins with IPv6 localhost variants
+const moreLocalOrigins = [
+  'http://[::1]:5173',
+  'http://[::1]:5175',
+  'http://[::1]:3000'
+];
+moreLocalOrigins.forEach(o => allowedOrigins.add(o));
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (process.env.NODE_ENV !== 'production') {
+    // lightweight debug to help diagnose CORS during dev
+    if (origin && !allowedOrigins.has(origin)) {
+      console.log('CORS origin not in allowlist:', origin);
+    }
+  }
+  if (origin && allowedOrigins.has(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Vary', 'Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token');
+  res.header('Access-Control-Max-Age', '600');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 // Serve uploaded files - accessible via /api/v1/uploads/ for production
 app.use('/api/v1/uploads', express.static('uploads', {
@@ -126,6 +158,7 @@ app.use('/api/v1/video-progress', videoProgressRoutes);
 app.use('/api/v1/device-management', deviceManagementRoutes);
 app.use('/api/v1/live-meetings', liveMeetingRoutes);
 app.use('/api/v1/captcha', captchaRoutes);
+app.use('/api/v1/stage-categories', stageCategoryRoutes);
 
 
 

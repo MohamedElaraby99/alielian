@@ -20,7 +20,8 @@ const subjectSchema = new Schema({
     stage: {
         type: Schema.Types.ObjectId,
         ref: 'Stage',
-        required: [true, 'Stage is required']
+        required: false,
+        default: null
     },
     image: {
         public_id: {

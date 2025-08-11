@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getFeaturedInstructors } from '../Redux/Slices/InstructorSlice';
 import { FaGraduationCap, FaStar, FaUsers, FaBook, FaClock, FaLinkedin, FaTwitter, FaGlobe, FaTimes, FaAward, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { generateImageUrl } from "../utils/fileUtils";
+import { placeholderImages } from "../utils/placeholderImages";
 
 const InstructorSection = () => {
   const dispatch = useDispatch();
@@ -22,6 +24,11 @@ const InstructorSection = () => {
   const closeModal = () => {
     setShowModal(false);
     setSelectedInstructor(null);
+  };
+
+  const handleImgError = (e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = placeholderImages.avatar;
   };
 
   const renderStars = (rating) => {
@@ -92,13 +99,10 @@ const InstructorSection = () => {
                 <div className="relative w-full h-48 overflow-hidden">
                   {instructor.profileImage?.secure_url ? (
                     <img
-                      src={instructor.profileImage.secure_url}
+                      src={generateImageUrl(instructor.profileImage.secure_url)}
                       alt={instructor.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
+                      className="w-full h-full object-cover"
+                      onError={handleImgError}
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
@@ -169,13 +173,10 @@ const InstructorSection = () => {
               <div className="text-center mb-8">
                 {selectedInstructor.profileImage?.secure_url ? (
                   <img
-                    src={selectedInstructor.profileImage.secure_url}
+                    src={generateImageUrl(selectedInstructor.profileImage.secure_url)}
                     alt={selectedInstructor.name}
-                    className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200 dark:border-gray-600 shadow-lg"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
+                    className="w-24 h-24 rounded-full object-cover"
+                    onError={handleImgError}
                   />
                 ) : (
                   <div className="w-32 h-32 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-gray-200 dark:border-gray-600 shadow-lg">

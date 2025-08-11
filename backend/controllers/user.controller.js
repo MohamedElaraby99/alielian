@@ -34,10 +34,10 @@ const register = async (req, res, next) => {
             return next(new AppError("Name, username, email, and password are required", 400));
         }
 
-        // For regular users, check all required fields
+        // For regular users, check all required fields (fatherPhoneNumber is now optional)
         if (userRole === 'USER') {
-            if (!phoneNumber || !fatherPhoneNumber || !governorate || !stage || !age) {
-                return next(new AppError("All fields are required for regular users", 400));
+            if (!phoneNumber || !governorate || !stage || !age) {
+                return next(new AppError("Phone number, governorate, stage, and age are required for regular users", 400));
             }
         }
 
@@ -70,7 +70,7 @@ const register = async (req, res, next) => {
         // Add optional fields for regular users
         if (userRole === 'USER') {
             userData.phoneNumber = phoneNumber;
-            userData.fatherPhoneNumber = fatherPhoneNumber;
+            if (fatherPhoneNumber) userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
             userData.stage = stage;
             userData.age = parseInt(age);

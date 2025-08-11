@@ -114,7 +114,7 @@ export default function Signup() {
     
     // For regular users, check all required fields
     if (!isAdminRegistration) {
-      if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.stage || !signupData.age) {
+      if (!signupData.phoneNumber || !signupData.governorate || !signupData.stage || !signupData.age) {
         toast.error("يرجى ملء جميع الحقول المطلوبة");
         return;
       }
@@ -147,7 +147,8 @@ export default function Signup() {
         toast.error("يرجى إدخال رقم هاتف مصري صحيح");
         return;
       }
-      if (!signupData.fatherPhoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
+      // father phone optional - validate only if provided
+      if (signupData.fatherPhoneNumber && !signupData.fatherPhoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
         toast.error("يرجى إدخال رقم هاتف الأب الصحيح");
         return;
       }
@@ -170,7 +171,9 @@ export default function Signup() {
     // Only append additional fields for regular users
     if (!isAdminRegistration) {
       formData.append("phoneNumber", signupData.phoneNumber);
-      formData.append("fatherPhoneNumber", signupData.fatherPhoneNumber);
+      if (signupData.fatherPhoneNumber) {
+        formData.append("fatherPhoneNumber", signupData.fatherPhoneNumber);
+      }
       formData.append("governorate", signupData.governorate);
       formData.append("stage", signupData.stage);
       formData.append("age", signupData.age);
@@ -352,7 +355,7 @@ export default function Signup() {
               {!signupData.adminCode && (
                 <div>
                   <label htmlFor="fatherPhoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    رقم هاتف الأب
+                    رقم هاتف الأب <span className="text-gray-400 text-xs">(اختياري)</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -362,9 +365,9 @@ export default function Signup() {
                       id="fatherPhoneNumber"
                       name="fatherPhoneNumber"
                       type="tel"
-                      required={!signupData.adminCode}
+                      required={false}
                       className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                      placeholder="أدخل رقم هاتف الأب"
+                      placeholder="أدخل رقم هاتف الأب (اختياري)"
                       value={signupData.fatherPhoneNumber}
                       onChange={handleUserInput}
                     />
@@ -459,7 +462,7 @@ export default function Signup() {
               {/* Avatar Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  صورة الملف الشخصي <span className="text-gray-500 text-xs">(اختياري)</span>
+                  الصورة الشخصية <span className="text-gray-500 text-xs">(اختياري)</span>
                 </label>
                 <div className="flex items-center space-x-4">
                   <div className="relative">

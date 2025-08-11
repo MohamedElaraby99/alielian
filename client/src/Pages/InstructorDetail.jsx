@@ -15,6 +15,7 @@ import {
   FaCalendarAlt,
   FaBookOpen
 } from 'react-icons/fa';
+import { generateImageUrl } from "../utils/fileUtils";
 
 export default function InstructorDetail() {
   const { id } = useParams();
@@ -102,13 +103,9 @@ export default function InstructorDetail() {
               <div className="absolute -bottom-16 right-8">
                 {instructor.profileImage?.secure_url ? (
                   <img
-                    src={instructor.profileImage.secure_url}
+                    src={generateImageUrl(instructor.profileImage.secure_url)}
                     alt={instructor.name}
-                    className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
+                    className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg"
                   />
                 ) : (
                   <div className="w-32 h-32 bg-white/20 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
