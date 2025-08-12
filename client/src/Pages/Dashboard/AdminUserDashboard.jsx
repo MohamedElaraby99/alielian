@@ -77,6 +77,7 @@ export default function AdminUserDashboard() {
     const [showUserDetails, setShowUserDetails] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+    const [userToDeleteInfo, setUserToDeleteInfo] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [createUserForm, setCreateUserForm] = useState({
         fullName: '',
@@ -247,9 +248,10 @@ export default function AdminUserDashboard() {
         
         try {
             await dispatch(deleteUser(userToDelete)).unwrap();
-            toast.success("User deleted successfully!");
+            toast.success("تم حذف المستخدم بنجاح!");
             setShowDeleteConfirm(false);
             setUserToDelete(null);
+            setUserToDeleteInfo(null);
         } catch (error) {
             // Error is handled in useEffect
         }
@@ -547,6 +549,9 @@ export default function AdminUserDashboard() {
                                                             {user.stage && (
                                                                 <span className="ml-2">• المرحلة: {user.stage.name}</span>
                                                             )}
+                                                            {user.category && (
+                                                                <span className="ml-2">• الفئة: {user.category.name}</span>
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -572,18 +577,17 @@ export default function AdminUserDashboard() {
                                                     >
                                                         <FaUserCog />
                                                     </button>
-                                                    {user.role !== 'ADMIN' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setUserToDelete(user.id);
-                                                                setShowDeleteConfirm(true);
-                                                            }}
-                                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                                                            title="حذف المستخدم"
-                                                        >
-                                                            <FaTrash />
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => {
+                                                            setUserToDelete(user.id);
+                                                            setUserToDeleteInfo(user);
+                                                            setShowDeleteConfirm(true);
+                                                        }}
+                                                        className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                        title="حذف المستخدم"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
@@ -862,6 +866,9 @@ export default function AdminUserDashboard() {
                                                             {user.stage && (
                                                                 <span className="ml-2">• المرحلة: {user.stage.name}</span>
                                                             )}
+                                                            {user.category && (
+                                                                <span className="ml-2">• الفئة: {user.category.name}</span>
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -887,18 +894,17 @@ export default function AdminUserDashboard() {
                                                     >
                                                         <FaUserCog />
                                                     </button>
-                                                    {user.role !== 'ADMIN' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setUserToDelete(user.id);
-                                                                setShowDeleteConfirm(true);
-                                                            }}
-                                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                                                            title="حذف المستخدم"
-                                                        >
-                                                            <FaTrash />
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => {
+                                                            setUserToDelete(user.id);
+                                                            setUserToDeleteInfo(user);
+                                                            setShowDeleteConfirm(true);
+                                                        }}
+                                                        className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                        title="حذف المستخدم"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
@@ -1172,24 +1178,50 @@ export default function AdminUserDashboard() {
                             <div className="flex items-center space-x-3 mb-4">
                                 <FaExclamationTriangle className="h-8 w-8 text-red-500" />
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Delete User
+                                    حذف المستخدم
                                 </h3>
                             </div>
-                            <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                Are you sure you want to delete this user? This action cannot be undone.
-                            </p>
+                            <div className="mb-6">
+                                {userToDeleteInfo && (
+                                    <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <p className="font-medium text-gray-900 dark:text-white">
+                                            {userToDeleteInfo.fullName}
+                                        </p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            {userToDeleteInfo.email}
+                                        </p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            الدور: {userToDeleteInfo.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                        </p>
+                                    </div>
+                                )}
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    {userToDeleteInfo?.role === 'ADMIN' 
+                                        ? 'هل أنت متأكد من حذف هذا المدير؟ هذا الإجراء لا يمكن التراجع عنه.'
+                                        : 'هل أنت متأكد من حذف هذا المستخدم؟ هذا الإجراء لا يمكن التراجع عنه.'
+                                    }
+                                </p>
+                                {userToDeleteInfo?.role === 'ADMIN' && (
+                                    <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                                        ⚠️ تحذير: حذف مدير قد يؤثر على إدارة النظام
+                                    </p>
+                                )}
+                            </div>
                             <div className="flex space-x-3">
                                 <button
-                                    onClick={() => setShowDeleteConfirm(false)}
+                                    onClick={() => {
+                                        setShowDeleteConfirm(false);
+                                        setUserToDeleteInfo(null);
+                                    }}
                                     className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
                                 >
-                                    Cancel
+                                    إلغاء
                                 </button>
                                 <button
                                     onClick={handleDeleteUser}
                                     className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                                 >
-                                    Delete
+                                    حذف
                                 </button>
                             </div>
                         </div>

@@ -8,6 +8,7 @@ import { FaChevronDown, FaChevronRight, FaEdit, FaBookOpen, FaSearch, FaBook, Fa
 import { axiosInstance } from '../../Helpers/axiosInstance';
 import { toast } from 'react-hot-toast';
 import { getCourseById } from '../../Redux/Slices/CourseSlice';
+import { generateImageUrl } from '../../utils/fileUtils';
 
 function formatDateTime(dateString) {
   if (!dateString) return '';
@@ -743,7 +744,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
                     {uploading && <span className="text-blue-600 text-xs">جاري رفع الصورة...</span>}
                     {newQuestion.image && (
                       <div className="flex items-center gap-2">
-                        <img src={newQuestion.image} alt="Question" className="w-16 h-16 object-cover rounded" />
+                        <img src={generateImageUrl(newQuestion.image)} alt="Question" className="w-16 h-16 object-cover rounded" />
                         <button type="button" className="text-red-500 text-sm" onClick={() => setNewQuestion(q => ({ ...q, image: '' }))}>حذف الصورة</button>
                       </div>
                     )}
@@ -786,7 +787,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className="font-medium text-gray-900 dark:text-white">{question.question}</p>
-                              {question.image && <img src={question.image} alt="Question" className="w-20 h-20 object-cover rounded mt-2" />}
+                              {question.image && <img src={generateImageUrl(question.image)} alt="Question" className="w-20 h-20 object-cover rounded mt-2" />}
                               <div className="mt-2 space-y-1">
                                 {question.options.map((option, optIdx) => (
                                   <div key={optIdx} className={`text-sm ${optIdx === question.correctAnswer ? 'text-green-600 font-bold' : 'text-gray-600 dark:text-gray-300'}`}>
@@ -899,7 +900,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
                     {uploading && <span className="text-blue-600 text-xs">جاري رفع الصورة...</span>}
                     {newTrainingQuestion.image && (
                       <div className="flex items-center gap-2">
-                        <img src={newTrainingQuestion.image} alt="Question" className="w-16 h-16 object-cover rounded" />
+                        <img src={generateImageUrl(newTrainingQuestion.image)} alt="Question" className="w-16 h-16 object-cover rounded" />
                         <button type="button" className="text-red-500 text-sm" onClick={() => setNewTrainingQuestion(q => ({ ...q, image: '' }))}>حذف الصورة</button>
                       </div>
                     )}
@@ -942,7 +943,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className="font-medium text-gray-900 dark:text-white">{question.question}</p>
-                              {question.image && <img src={question.image} alt="Question" className="w-20 h-20 object-cover rounded mt-2" />}
+                              {question.image && <img src={generateImageUrl(question.image)} alt="Question" className="w-20 h-20 object-cover rounded mt-2" />}
                               <div className="mt-2 space-y-1">
                                 {question.options.map((option, optIdx) => (
                                   <div key={optIdx} className={`text-sm ${optIdx === question.correctAnswer ? 'text-green-600 font-bold' : 'text-gray-600 dark:text-gray-300'}`}>

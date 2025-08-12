@@ -123,7 +123,7 @@ export default function Sidebar({ hideBar = false }) {
             <li>
               <Link to="/courses" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right py-2" onClick={closeSidebar}>
               <FaList size={16} className="text-gray-500 dark:text-slate-100" />
-                {role === "ADMIN" ? "جميع الكورسات" : "كورساتي"}
+                {role === "ADMIN" ? "جميع الكورسات " : "كورساتي"}
                 
               </Link>
             </li>
@@ -199,6 +199,15 @@ export default function Sidebar({ hideBar = false }) {
                 <Link to="/admin/stages" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2" onClick={closeSidebar}>
                   <FaGraduationCap size={16} className="text-gray-500 dark:text-slate-100" />
                   إدارة المراحل
+                </Link>
+              </li>
+            )}
+
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/stage-categories" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2" onClick={closeSidebar}>
+                  <FaList size={16} className="text-gray-500 dark:text-slate-100" />
+                  فئات المراحل
                 </Link>
               </li>
             )}

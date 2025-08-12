@@ -21,12 +21,6 @@ router.route('/')
 router.route('/stats')
     .get(getAllStagesWithStats);
 
-router.route('/:id')
-    .get(getStageById);
-
-router.route('/:id/stats')
-    .get(getStageStats);
-
 // Admin only routes
 router.use(isLoggedIn);
 router.use(authorisedRoles('ADMIN'));
@@ -38,8 +32,12 @@ router.route('/')
     .post(createStage);
 
 router.route('/:id')
+    .get(getStageById)
     .put(updateStage)
     .delete(deleteStage);
+
+router.route('/:id/stats')
+    .get(getStageStats);
 
 router.route('/:id/toggle-status')
     .put(toggleStageStatus);

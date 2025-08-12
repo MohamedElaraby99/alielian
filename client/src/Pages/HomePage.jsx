@@ -104,14 +104,14 @@ export default function HomePage() {
   const handleAPKDownload = () => {
     // Create a download link for the APK file
     const link = document.createElement('a');
-    link.href = '/downloads/fikra-app.apk'; // Update this path to your APK file location
-    link.download = 'fikra-app.apk';
+    link.href = '/downloads/Mr-AliElain.apk'; // Update this path to your APK file location
+    link.download = 'Mr-AliElain.apk';
     link.target = '_blank';
     
     // Fallback for mobile browsers
     if (navigator.userAgent.toLowerCase().indexOf('android') > -1) {
       // For Android devices, open the download directly
-      window.open('/downloads/fikra-app.apk', '_blank');
+      window.open('/downloads/Mr-AliElain.apk', '_blank');
     } else {
       // For other devices, trigger download
       document.body.appendChild(link);
@@ -244,10 +244,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              الدورات المتاحة
+              الكورسات المتاحة
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              اكتشف مجموعة واسعة من الدورات التعليمية المميزة بقيادة خبراء الصناعة
+              اكتشف مجموعة واسعة من الكورسات التعليمية المميزة بقيادة خبراء الصناعة
             </p>
           </div>
 
@@ -412,7 +412,7 @@ export default function HomePage() {
               to="/courses"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
-              <span>عرض جميع الدورات</span>
+              <span>عرض جميع الكورسات  </span>
               <FaArrowRight />
             </Link>
           </div>

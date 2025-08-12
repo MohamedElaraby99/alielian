@@ -37,7 +37,14 @@ const getAllUsers = async (req, res, next) => {
 
         const users = await userModel.find(query)
             .select('-password -forgotPasswordToken -forgotPasswordExpiry')
-            .populate('stage', 'name')
+            .populate({
+                path: 'stage',
+                select: 'name',
+                populate: {
+                    path: 'category',
+                    select: 'name'
+                }
+            })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
@@ -75,6 +82,7 @@ const getAllUsers = async (req, res, next) => {
                     governorate: user.governorate,
                     grade: user.grade,
                     stage: user.stage,
+                    category: user.stage?.category,
                     age: user.age,
                     walletBalance: user.wallet?.balance || 0,
                     totalTransactions: user.wallet?.transactions?.length || 0,
@@ -305,10 +313,8 @@ const deleteUser = async (req, res, next) => {
             return next(new AppError("You cannot delete your own account", 400));
         }
 
-        // Prevent deleting other admins
-        if (user.role === 'ADMIN') {
-            return next(new AppError("Cannot delete admin accounts", 400));
-        }
+        // Allow deleting admin accounts (but not self)
+        // Note: Admin can delete other admins, but cannot delete themselves
 
         await userModel.findByIdAndDelete(userId);
 

@@ -20,6 +20,8 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [stages, setStages] = useState([]);
+  const [stageCategories, setStageCategories] = useState([]);
+  const [filteredStages, setFilteredStages] = useState([]);
   const [captchaSessionId, setCaptchaSessionId] = useState("");
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [signupData, setSignupData] = useState({
@@ -30,34 +32,67 @@ export default function Signup() {
     phoneNumber: "",
     fatherPhoneNumber: "",
     governorate: "",
+    stageCategory: "",
     stage: "",
     age: "",
     avatar: "",
     adminCode: "",
   });
 
-  // Fetch stages on component mount
+  // Fetch stages and stage categories on component mount
   useEffect(() => {
-    const fetchStages = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axiosInstance.get('/stages');
-        if (response.data.success) {
-          setStages(response.data.data.stages);
+        // Fetch stages
+        const stagesResponse = await axiosInstance.get('/stages');
+        if (stagesResponse.data.success) {
+          setStages(stagesResponse.data.data.stages);
+        }
+
+        // Fetch stage categories
+        const categoriesResponse = await axiosInstance.get('/stage-categories');
+        if (categoriesResponse.data.success) {
+          setStageCategories(categoriesResponse.data.data.categories);
         }
       } catch (error) {
-        console.error('Error fetching stages:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchStages();
+    fetchData();
   }, []);
 
   function handleUserInput(e) {
     const { name, value } = e.target;
-    setSignupData({
-      ...signupData,
-      [name]: value,
-    });
+    
+    if (name === 'stageCategory') {
+      // When stage category changes, reset stage selection and filter stages
+      setSignupData({
+        ...signupData,
+        stageCategory: value,
+        stage: "", // Reset stage when category changes
+      });
+      
+      // Filter stages based on selected category
+      if (value) {
+        const selectedCategory = stageCategories.find(cat => cat._id === value);
+        if (selectedCategory && selectedCategory.stages) {
+          const categoryStages = stages.filter(stage => 
+            selectedCategory.stages.some(catStage => catStage._id === stage._id)
+          );
+          setFilteredStages(categoryStages);
+        } else {
+          setFilteredStages([]);
+        }
+      } else {
+        setFilteredStages([]);
+      }
+    } else {
+      setSignupData({
+        ...signupData,
+        [name]: value,
+      });
+    }
   }
 
   function getImage(event) {
@@ -114,7 +149,7 @@ export default function Signup() {
     
     // For regular users, check all required fields
     if (!isAdminRegistration) {
-      if (!signupData.phoneNumber || !signupData.governorate || !signupData.stage || !signupData.age) {
+      if (!signupData.phoneNumber || !signupData.governorate || !signupData.stageCategory || !signupData.stage || !signupData.age) {
         toast.error("يرجى ملء جميع الحقول المطلوبة");
         return;
       }
@@ -149,7 +184,7 @@ export default function Signup() {
       }
       // father phone optional - validate only if provided
       if (signupData.fatherPhoneNumber && !signupData.fatherPhoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
-        toast.error("يرجى إدخال رقم هاتف الأب الصحيح");
+        toast.error("يرجى إدخال رقم هاتف ولي الامرالصحيح");
         return;
       }
       // checking valid age
@@ -157,6 +192,20 @@ export default function Signup() {
       if (isNaN(age) || age < 5 || age > 100) {
         toast.error("يرجى إدخال عمر صحيح بين 5 و 100");
         return;
+      }
+      
+      // Validate that selected stage belongs to selected category
+      if (signupData.stageCategory && signupData.stage) {
+        const selectedCategory = stageCategories.find(cat => cat._id === signupData.stageCategory);
+        const selectedStage = stages.find(stage => stage._id === signupData.stage);
+        
+        if (selectedCategory && selectedStage) {
+          const stageBelongsToCategory = selectedCategory.stages.some(catStage => catStage._id === selectedStage._id);
+          if (!stageBelongsToCategory) {
+            toast.error("المرحلة المختارة لا تنتمي إلى الفئة المختارة");
+            return;
+          }
+        }
       }
     }
 
@@ -175,6 +224,7 @@ export default function Signup() {
         formData.append("fatherPhoneNumber", signupData.fatherPhoneNumber);
       }
       formData.append("governorate", signupData.governorate);
+      formData.append("stageCategory", signupData.stageCategory);
       formData.append("stage", signupData.stage);
       formData.append("age", signupData.age);
     }
@@ -192,11 +242,13 @@ export default function Signup() {
         phoneNumber: "",
         fatherPhoneNumber: "",
         governorate: "",
+        stageCategory: "",
         stage: "",
         age: "",
         avatar: "",
         adminCode: "",
       });
+      setFilteredStages([]);
       setPreviewImage("");
       setIsCaptchaVerified(false);
       setCaptchaSessionId("");
@@ -355,7 +407,7 @@ export default function Signup() {
               {!signupData.adminCode && (
                 <div>
                   <label htmlFor="fatherPhoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    رقم هاتف الأب <span className="text-gray-400 text-xs">(اختياري)</span>
+                    رقم هاتف ولي الامر<span className="text-gray-400 text-xs">(اختياري)</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -367,7 +419,7 @@ export default function Signup() {
                       type="tel"
                       required={false}
                       className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                      placeholder="أدخل رقم هاتف الأب (اختياري)"
+                      placeholder="أدخل رقم هاتف ولي الامر(اختياري)"
                       value={signupData.fatherPhoneNumber}
                       onChange={handleUserInput}
                     />
@@ -404,8 +456,37 @@ export default function Signup() {
                 </div>
               )}
 
-              {/* Stage Field - Only for regular users */}
+              {/* Stage Category Field - Only for regular users */}
               {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="stageCategory" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    منهج المرحلة الدراسية
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaBook className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="stageCategory"
+                      name="stageCategory"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      value={signupData.stageCategory}
+                      onChange={handleUserInput}
+                    >
+                      <option value="">اختر فئة المرحلة الدراسية</option>
+                      {stageCategories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Stage Field - Only for regular users */}
+              {!signupData.adminCode && signupData.stageCategory && (
                 <div>
                   <label htmlFor="stage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     المرحلة الدراسية
@@ -423,7 +504,7 @@ export default function Signup() {
                       onChange={handleUserInput}
                     >
                       <option value="">اختر المرحلة الدراسية</option>
-                      {stages.map((stage) => (
+                      {filteredStages.map((stage) => (
                         <option key={stage._id} value={stage._id}>
                           {stage.name}
                         </option>

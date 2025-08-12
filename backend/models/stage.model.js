@@ -20,6 +20,11 @@ const stageSchema = new Schema({
     studentsCount: {
         type: Number,
         default: 0
+    },
+    category: {
+        type: Schema.Types.ObjectId,
+        ref: 'StageCategory',
+        default: null
     }
 }, {
     timestamps: true

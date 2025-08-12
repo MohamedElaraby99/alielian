@@ -8,9 +8,9 @@ import jwt from 'jsonwebtoken';
 // Create a new course
 export const createCourse = async (req, res, next) => {
   try {
-    const { title, description, instructor, stage, subject } = req.body;
-    if (!title || !instructor || !stage || !subject) {
-      return res.status(400).json({ success: false, message: 'Title, instructor, stage, and subject are required' });
+    const { title, description, instructor, stage, subject, category } = req.body;
+    if (!title || !instructor || !stage || !subject || !category) {
+      return res.status(400).json({ success: false, message: 'Title, instructor, stage, subject, and category are required' });
     }
 
     // Prepare course data
@@ -20,6 +20,7 @@ export const createCourse = async (req, res, next) => {
       instructor,
             stage,
       subject,
+      category,
       units: [],
       directLessons: []
     };
@@ -69,7 +70,8 @@ export const getAdminCourses = async (req, res, next) => {
     const courses = await Course.find()
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'title');
+      .populate('subject', 'title')
+      .populate('category', 'name');
 
     return res.status(200).json({ success: true, data: { courses } });
   } catch (error) {
@@ -93,6 +95,18 @@ export const getAllCourses = async (req, res, next) => {
     if (req.user && req.user.stage) {
       query.stage = req.user.stage;
       console.log('🎯 Filtering courses by user stage:', req.user.stage, '(' + req.user.stageName + ')');
+      
+      // Also filter by the stage's category
+      try {
+        const Stage = (await import('../models/stage.model.js')).default;
+        const userStage = await Stage.findById(req.user.stage).populate('category');
+        if (userStage && userStage.category) {
+          query.category = userStage.category._id;
+          console.log('🎯 Also filtering courses by user stage category:', userStage.category.name);
+        }
+      } catch (error) {
+        console.log('⚠️ Could not fetch user stage category for filtering:', error.message);
+      }
     } else {
       console.log('⚠️ No stage filtering applied - showing all courses');
       if (req.user && !req.user.stage) {
@@ -104,19 +118,20 @@ export const getAllCourses = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
+      .populate('category', 'name')
       .select('-units.lessons.exams.questions.correctAnswer -units.lessons.trainings.questions.correctAnswer -directLessons.exams.questions.correctAnswer -directLessons.trainings.questions.correctAnswer -units.lessons.exams.userAttempts -units.lessons.trainings.userAttempts -directLessons.exams.userAttempts -directLessons.trainings.userAttempts');
 
     console.log('📊 Raw courses before processing:', courses.map(c => ({
       id: c._id,
       title: c.title,
-      stage: c.stage,
-      stageType: typeof c.stage,
-      hasStage: !!c.stage,
-      stageName: c.stage?.name,
+      stage: c.stage?.name,
+      category: c.category?.name,
       stageId: c.stage?._id,
-      fullStageObject: c.stage,
-      isStagePopulated: c.stage && c.stage.name !== undefined
+      categoryId: c.category?._id
     })));
+    
+    console.log('🎯 Final query used for filtering:', JSON.stringify(query, null, 2));
+    console.log(`📚 Found ${courses.length} courses matching user's stage + category criteria`);
 
     // Check if any courses have invalid stage references
     const coursesWithMissingStages = courses.filter(c => !c.stage || !c.stage.name);
@@ -198,6 +213,18 @@ export const getFeaturedCourses = async (req, res, next) => {
         if (user && user.stage) {
           query.stage = user.stage._id;
           console.log('🎯 Filtering featured courses by user stage:', user.stage.name);
+          
+          // Also filter by the stage's category
+          try {
+            const Stage = (await import('../models/stage.model.js')).default;
+            const userStage = await Stage.findById(user.stage._id).populate('category');
+            if (userStage && userStage.category) {
+              query.category = userStage.category._id;
+              console.log('🎯 Also filtering featured courses by user stage category:', userStage.category.name);
+            }
+          } catch (error) {
+            console.log('⚠️ Could not fetch user stage category for filtering:', error.message);
+          }
         }
       } catch (error) {
         console.log('Optional auth failed for featured courses, showing all');
@@ -208,7 +235,16 @@ export const getFeaturedCourses = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
+      .populate('category', 'name')
       .limit(6);
+      
+    console.log('🎯 Featured courses query used for filtering:', JSON.stringify(query, null, 2));
+    console.log('📚 Featured courses found:', courses.map(c => ({
+      id: c._id,
+      title: c.title,
+      stage: c.stage?.name,
+      category: c.category?.name
+    })));
 
     // Create secure versions without sensitive data
     const secureCourses = courses.map(course => {
@@ -260,7 +296,8 @@ export const getCourseById = async (req, res, next) => {
     const course = await Course.findById(id)
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'title');
+      .populate('subject', 'title')
+      .populate('category', 'name');
         
     if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
@@ -439,9 +476,9 @@ export const getLessonById = async (req, res, next) => {
 export const updateCourse = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, description, instructor, stage, subject } = req.body;
+    const { title, description, instructor, stage, subject, category } = req.body;
 
-    console.log('🔄 Updating course:', { id, title, description, instructor, stage, subject });
+    console.log('🔄 Updating course:', { id, title, description, instructor, stage, subject, category });
     console.log('📁 File uploaded:', req.file ? 'Yes' : 'No');
 
     // Find the existing course
@@ -457,7 +494,7 @@ export const updateCourse = async (req, res, next) => {
     });
 
     // Prepare update data
-    const updateData = { title, description, instructor, stage, subject };
+    const updateData = { title, description, instructor, stage, subject, category };
 
     // Handle image upload if provided
     if (req.file) {
@@ -528,6 +565,7 @@ export const updateCourse = async (req, res, next) => {
     if (updateData.instructor) existingCourse.instructor = updateData.instructor;
     if (updateData.stage) existingCourse.stage = updateData.stage;
     if (updateData.subject) existingCourse.subject = updateData.subject;
+    if (updateData.category) existingCourse.category = updateData.category;
     
     // Save the updated course
     await existingCourse.save();
@@ -537,7 +575,8 @@ export const updateCourse = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
-      .select('title description instructor stage subject image createdAt updatedAt');
+      .populate('category', 'name')
+      .select('title description instructor stage subject category image createdAt updatedAt');
     
     console.log('✅ Course updated successfully');
     console.log('📊 Final course data:', JSON.stringify(course, null, 2));

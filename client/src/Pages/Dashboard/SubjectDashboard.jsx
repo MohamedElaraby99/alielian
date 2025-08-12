@@ -123,6 +123,14 @@ export default function SubjectDashboard() {
           subjectData.append(key, formData[key]);
         } else if (key === 'featured') {
           subjectData.append(key, formData[key].toString());
+        } else if (key === 'instructor' || key === 'stage') {
+          const value = formData[key];
+          // Ensure we send an ObjectId string, not an object
+          if (value && typeof value === 'object') {
+            subjectData.append(key, value._id || '');
+          } else {
+            subjectData.append(key, value || '');
+          }
         } else {
           subjectData.append(key, formData[key]);
         }
@@ -160,8 +168,8 @@ export default function SubjectDashboard() {
     setFormData({
       title: subject.title,
       description: subject.description,
-      instructor: subject.instructor,
-      stage: subject.stage || "",
+      instructor: subject.instructor?._id || subject.instructor || "",
+      stage: subject.stage?._id || subject.stage || "",
       featured: subject.featured,
       image: null
     });
@@ -215,7 +223,7 @@ export default function SubjectDashboard() {
                 إدارة المواد الدراسية
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                إدارة الكورسات والمواد الدراسية لمنصتك
+                إدارة الكورسات  والمواد الدراسية لمنصتك
               </p>
             </div>
             <button

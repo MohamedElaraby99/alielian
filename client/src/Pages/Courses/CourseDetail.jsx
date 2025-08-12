@@ -327,7 +327,7 @@ export default function CourseDetail() {
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
               <FaArrowLeft />
-              <span>العودة للدورات</span>
+              <span>العودة للكورسات </span>
             </Link>
           </div>
         </div>
@@ -345,7 +345,7 @@ export default function CourseDetail() {
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
           >
             <FaArrowLeft />
-            <span>العودة للدورات</span>
+            <span>العودة للكورسات </span>
           </Link>
         </div>
 

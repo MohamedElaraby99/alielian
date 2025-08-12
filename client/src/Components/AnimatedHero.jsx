@@ -54,6 +54,10 @@ const AnimatedHero = ({ onGetStarted }) => {
               <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
                 <span className="text-blue-600">المنصة الدولية</span>
                 <br />
+                <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
+                  للتعليم الذكي
+                </span>
+                <br />
                 <span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-gray-700 dark:text-gray-300">
                   اكتشف عالم المعرفة
                 </span>
@@ -141,25 +145,24 @@ const AnimatedHero = ({ onGetStarted }) => {
           <div className={`order-1 lg:order-2 relative transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
             {/* Blue Shape Container */}
             <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] flex items-center justify-center">
-              {/* Large Blue Circle Background */}
-              <div className="absolute w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 rounded-full shadow-2xl animate-pulse"></div>
-              
-              {/* Secondary Blue Ring */}
-              <div className="absolute w-[270px] h-[270px] md:w-[360px] md:h-[360px] lg:w-[450px] lg:h-[450px] bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full opacity-30 animate-spin-slow"></div>
-              
-              {/* Image Container - Appears to come out from the blue shape */}
-              <div className="relative z-10 w-[250px] h-[300px] md:w-[320px] md:h-[400px] lg:w-[400px] lg:h-[500px] flex items-center justify-center">
-                <img 
-                  src={ALIELAIN} 
-                  alt="المنصة الدولية" 
-                  className="w-full h-full object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500"
-                />
+              {/* Large Blue Circle Frame - Ring shape with transparent center */}
+              <div className="absolute w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] border-8 border-blue-600 rounded-full shadow-2xl animate-pulse z-20 bg-transparent"></div>
+
+              {/* Image Container - Positioned in the center */}
+              <div className="absolute inset-0 flex items-center justify-center z-0">
+                                 <div className="w-[280px] h-[280px] md:w-[360px] md:h-[360px] lg:w-[460px] lg:h-[460px] rounded-full border-4 border-blue-600 shadow-2xl overflow-hidden">
+                   <img
+                     src={ALIELAIN} 
+                     alt="المنصة الدولية" 
+                     className="w-full h-full object-cover drop-shadow-2xl transform hover:scale-105 transition-transform duration-500 "
+                   />
+                 </div>
                 
                 {/* Floating Elements Around Image */}
-                <div className="absolute -top-2 -left-2 md:-top-4 md:-left-4 w-4 h-4 md:w-6 md:h-6 bg-yellow-400 rounded-full animate-bounce"></div>
-                <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 w-3 h-3 md:w-4 md:h-4 bg-pink-400 rounded-full animate-pulse"></div>
-                <div className="absolute top-1/2 -left-4 md:-left-8 w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full animate-float"></div>
-                <div className="absolute top-1/2 -right-4 md:-right-8 w-2 h-2 md:w-3 md:h-3 bg-purple-400 rounded-full animate-float animation-delay-2000"></div>
+                <div className="absolute -top-2 -left-2 md:-top-4 md:-left-4 w-4 h-4 md:w-6 md:h-6 bg-yellow-400 rounded-full animate-bounce z-30"></div>
+                <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 w-3 h-3 md:w-4 md:h-4 bg-pink-400 rounded-full animate-pulse z-30"></div>
+                <div className="absolute top-1/2 -left-4 md:-left-8 w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full animate-float z-30"></div>
+                <div className="absolute top-1/2 -right-4 md:-right-8 w-2 h-2 md:w-3 md:h-3 bg-purple-400 rounded-full animate-float animation-delay-2000 z-30"></div>
               </div>
             </div>
           </div>

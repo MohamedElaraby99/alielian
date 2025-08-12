@@ -269,6 +269,7 @@ export default function StageDashboard() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       اسم المرحلة
                     </th>
+
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       الإحصائيات
                     </th>
@@ -283,7 +284,7 @@ export default function StageDashboard() {
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {adminLoading ? (
                     <tr>
-                      <td colSpan="4" className="px-6 py-8 text-center">
+                      <td colSpan="3" className="px-6 py-8 text-center">
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                           <span className="mr-3 text-gray-500 dark:text-gray-400">جاري التحميل...</span>
@@ -292,7 +293,7 @@ export default function StageDashboard() {
                     </tr>
                   ) : filteredStages.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan="3" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                         لا توجد مراحل
                       </td>
                     </tr>
@@ -304,6 +305,7 @@ export default function StageDashboard() {
                             {stage.name}
                           </div>
                         </td>
+
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-4 space-x-reverse">
                             <div className="flex items-center text-sm text-gray-900 dark:text-white">

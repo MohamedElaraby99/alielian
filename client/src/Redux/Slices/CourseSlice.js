@@ -79,6 +79,7 @@ export const createCourse = createAsyncThunk(
       formData.append('instructor', courseData.instructor);
       formData.append('stage', courseData.stage);
       formData.append('subject', courseData.subject);
+      formData.append('category', courseData.category);
       
       if (courseData.thumbnail) {
         formData.append('thumbnail', courseData.thumbnail);
@@ -108,6 +109,7 @@ export const updateCourse = createAsyncThunk(
       formData.append('instructor', courseData.instructor);
       formData.append('stage', courseData.stage);
       formData.append('subject', courseData.subject);
+      formData.append('category', courseData.category);
       
       if (courseData.thumbnail) {
         formData.append('thumbnail', courseData.thumbnail);

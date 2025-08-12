@@ -126,7 +126,8 @@ export const fetchStageCategories = createAsyncThunk(
     try {
       const { page = 1, limit = 50, search = '', status = '' } = params;
       const res = await axiosInstance.get(`/stage-categories?page=${page}&limit=${limit}&search=${search}&status=${status}`);
-      return res?.data?.data;
+      console.log('fetchStageCategories API response:', res?.data);
+      return res?.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch categories');
     }
@@ -312,7 +313,11 @@ const stageSlice = createSlice({
     });
     builder.addCase(fetchStageCategories.fulfilled, (state, action) => {
       state.catLoading = false;
-      state.categories = action.payload?.categories || [];
+      console.log('fetchStageCategories.fulfilled - action.payload:', action.payload);
+      console.log('fetchStageCategories.fulfilled - action.payload.data:', action.payload?.data);
+      console.log('fetchStageCategories.fulfilled - action.payload.data.categories:', action.payload?.data?.categories);
+      state.categories = action.payload?.data?.categories || [];
+      console.log('fetchStageCategories.fulfilled - state.categories after update:', state.categories);
     });
     builder.addCase(fetchStageCategories.rejected, (state) => {
       state.catLoading = false;

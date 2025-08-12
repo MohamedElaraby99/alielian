@@ -66,7 +66,7 @@ export default function CourseDashboard() {
               إدارة الدورات
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              إدارة الدورات التعليمية وإضافة محتوى جديد
+              إدارة الكورسات التعليمية وإضافة محتوى جديد
             </p>
           </div>
 

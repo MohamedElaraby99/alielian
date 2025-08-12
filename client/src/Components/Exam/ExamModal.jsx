@@ -4,7 +4,6 @@ import {
   FaTimes, 
   FaClock, 
   FaCheck, 
-  FaTimes as FaX, 
   FaChevronLeft, 
   FaChevronRight,
   FaPlay,
@@ -12,10 +11,16 @@ import {
   FaRedo,
   FaChartBar,
   FaTrophy,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaArrowLeft,
+  FaArrowRight,
+  FaEye,
+  FaEyeSlash
 } from 'react-icons/fa';
 import { takeTrainingExam, takeFinalExam, clearExamError, clearLastExamResult } from '../../Redux/Slices/ExamSlice';
 import { axiosInstance } from '../../Helpers/axiosInstance';
+import { generateImageUrl } from '../../utils/fileUtils';
+import { toast } from 'react-hot-toast';
 
 const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType = 'training' }) => {
   const dispatch = useDispatch();
@@ -33,6 +38,8 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   const [examCompleted, setExamCompleted] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [timeTaken, setTimeTaken] = useState(0);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [currentImage, setCurrentImage] = useState(null);
   
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
@@ -192,25 +199,33 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
             </div>
           </div>
           
+          {/* Question Image - Positioned above the question */}
+          {question.image && (
+            <div className="mb-4 flex justify-center">
+              <div 
+                className="w-32 h-32 md:w-40 md:h-40 rounded-lg shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+                onClick={() => {
+                  setCurrentImage(generateImageUrl(question.image));
+                  setImageModalOpen(true);
+                }}
+              >
+                <img 
+                  src={generateImageUrl(question.image)}
+                  alt="صورة السؤال" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error('Failed to load image:', question.image);
+                    console.error('Attempted URL:', e.target.src);
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 leading-relaxed">
             {question.question}
           </h3>
-
-          {/* Question Image */}
-          {question.image && (
-            <div className="mb-4">
-              <img 
-                src={question.image.startsWith('http') ? question.image : `${axiosInstance.defaults.baseURL}${question.image}`}
-                alt="صورة السؤال" 
-                className="max-w-full h-auto rounded-lg shadow-md"
-                onError={(e) => {
-                  console.error('Failed to load image:', question.image);
-                  console.error('Attempted URL:', e.target.src);
-                  e.target.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
         </div>
 
         <div className="space-y-3">
@@ -442,47 +457,76 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
             renderResults()
           ) : (
             // Exam Interface
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-3">
-                {renderQuestion()}
-                
-                <div className="flex items-center justify-between mt-6">
-                  <button
-                    onClick={handlePreviousQuestion}
-                    disabled={currentQuestionIndex === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    <FaChevronLeft />
-                    السابق
-                  </button>
-                  
-                  <button
-                    onClick={handleSubmitExam}
-                    disabled={loading || Object.keys(answers).length === 0}
-                    className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-                  >
-                    {loading ? 'جاري الإرسال...' : 'إنهاء الامتحان'}
-                    <FaCheck />
-                  </button>
-                  
-                  <button
-                    onClick={handleNextQuestion}
-                    disabled={currentQuestionIndex === totalQuestions - 1}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    التالي
-                    <FaChevronRight />
-                  </button>
-                </div>
+            <div className="space-y-6">
+              {/* Question Navigation - Shown at top on mobile, right side on desktop */}
+              <div className="block lg:hidden">
+                {renderQuestionNavigation()}
               </div>
               
-              <div className="lg:col-span-1">
-                {renderQuestionNavigation()}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3">
+                  {renderQuestion()}
+                  
+                  <div className="flex items-center justify-between mt-6">
+                    <button
+                      onClick={handlePreviousQuestion}
+                      disabled={currentQuestionIndex === 0}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <FaChevronLeft />
+                      السابق
+                    </button>
+                    
+                    <button
+                      onClick={handleSubmitExam}
+                      disabled={loading || Object.keys(answers).length === 0}
+                      className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                    >
+                      {loading ? 'جاري الإرسال...' : 'إنهاء الامتحان'}
+                      <FaCheck />
+                    </button>
+                    
+                    <button
+                      onClick={handleNextQuestion}
+                      disabled={currentQuestionIndex === totalQuestions - 1}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      التالي
+                      <FaChevronRight />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="hidden lg:block lg:col-span-1">
+                  {renderQuestionNavigation()}
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Image Modal */}
+      {imageModalOpen && currentImage && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm">
+          <div className="relative max-w-4xl max-h-[90vh] p-4">
+            <button
+              onClick={() => {
+                setImageModalOpen(false);
+                setCurrentImage(null);
+              }}
+              className="absolute top-2 right-2 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <FaTimes className="text-gray-600 dark:text-gray-300 text-xl" />
+            </button>
+            <img
+              src={currentImage}
+              alt="صورة السؤال"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

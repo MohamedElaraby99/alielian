@@ -173,7 +173,7 @@ export default function TermsOfService() {
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    جميع المحتوى على هذه المنصة، بما في ذلك الدورات والمواد والبرامج، 
+                    جميع المحتوى على هذه المنصة، بما في ذلك الكورسات والمواد والبرامج، 
                     مملوك لشركة المنصة الدولية أو المرخصين لها ومحمي بقوانين حقوق النشر.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
