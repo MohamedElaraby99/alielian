@@ -159,7 +159,7 @@ export const deleteStage = async (req, res, next) => {
         }
         
         // Check if stage has associated subjects
-        const subjectsCount = await subjectModel.countDocuments({ stage: stage.name });
+        const subjectsCount = await subjectModel.countDocuments({ stage: stage._id });
         if (subjectsCount > 0) {
             return next(new AppError(`Cannot delete stage. It has ${subjectsCount} associated subjects`, 400));
         }
