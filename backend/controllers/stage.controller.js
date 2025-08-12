@@ -187,10 +187,10 @@ export const getStageStats = async (req, res, next) => {
         }
         
         // Get subjects count for this stage
-        const subjectsCount = await subjectModel.countDocuments({ stage: stage.name });
+        const subjectsCount = await subjectModel.countDocuments({ stage: stage._id });
         
         // Get total students enrolled in subjects of this stage
-        const subjects = await subjectModel.find({ stage: stage.name });
+        const subjects = await subjectModel.find({ stage: stage._id });
         const totalStudents = subjects.reduce((sum, subject) => sum + (subject.studentsEnrolled || 0), 0);
         
         // Update stage with current counts
