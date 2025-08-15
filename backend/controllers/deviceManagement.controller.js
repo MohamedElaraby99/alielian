@@ -39,7 +39,7 @@ export const updateDeviceLimit = asyncHandler(async (req, res, next) => {
 /**
  * Get current device limit
  */
-export const getDeviceLimit = asyncHandler(async (req, res, next) => {
+export const getDeviceLimitController = asyncHandler(async (req, res, next) => {
     try {
         res.status(200).json(
             new ApiResponse(200, {
@@ -47,7 +47,7 @@ export const getDeviceLimit = asyncHandler(async (req, res, next) => {
             }, "Device limit retrieved successfully")
         );
     } catch (error) {
-        console.error("Error in getDeviceLimit:", error);
+        console.error("Error in getDeviceLimitController:", error);
         return next(new ApiError(500, "Failed to retrieve device limit"));
     }
 });
