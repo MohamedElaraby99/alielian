@@ -45,13 +45,21 @@ app.use(morgan('dev'));
 // Explicit CORS headers to guarantee preflight success and credentials support
 const allowedOrigins = new Set([
   process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5175',
   'http://127.0.0.1:5175',
   'https://alielian.online',
+  'https://www.alielian.online',
   'https://lms.alielian.online'
 ]);
+
+// Add any additional origins from environment variables
+if (process.env.ADDITIONAL_CORS_ORIGINS) {
+  const additionalOrigins = process.env.ADDITIONAL_CORS_ORIGINS.split(',').map(o => o.trim());
+  additionalOrigins.forEach(o => allowedOrigins.add(o));
+}
 
 // Extend allowed origins with IPv6 localhost variants
 const moreLocalOrigins = [
@@ -61,26 +69,50 @@ const moreLocalOrigins = [
 ];
 moreLocalOrigins.forEach(o => allowedOrigins.add(o));
 
+// Log allowed origins for debugging
+console.log('Allowed CORS origins:', Array.from(allowedOrigins));
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
+  
+  // Log CORS attempts for debugging
   if (process.env.NODE_ENV !== 'production') {
-    // lightweight debug to help diagnose CORS during dev
+    console.log('CORS request from origin:', origin);
     if (origin && !allowedOrigins.has(origin)) {
       console.log('CORS origin not in allowlist:', origin);
     }
   }
+  
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    // Set CORS headers for preflight
+    if (origin && allowedOrigins.has(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+      // If no origin header, allow the request (for same-origin requests)
+      res.header('Access-Control-Allow-Origin', '*');
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token, x-device-info');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    res.status(200).end();
+    return;
+  }
+  
+  // Set CORS headers for actual requests
   if (origin && allowedOrigins.has(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    // If no origin header, allow the request (for same-origin requests)
+    res.header('Access-Control-Allow-Origin', '*');
   }
+  
   res.header('Vary', 'Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token');
-  res.header('Access-Control-Max-Age', '600');
-
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token, x-device-info');
+  
   next();
 });
 
@@ -140,6 +172,19 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
+// CORS test route
+app.get('/api/cors-test', (req, res) => {
+  console.log('=== CORS TEST ROUTE HIT ===');
+  console.log('Origin:', req.headers.origin);
+  console.log('Referer:', req.headers.referer);
+  res.json({ 
+    message: 'CORS test successful!',
+    origin: req.headers.origin,
+    referer: req.headers.referer,
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use('/api/v1/user', userRoutes); 
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/payments', paymentRoutes);
@@ -169,6 +214,8 @@ app.use('/api/v1/exams', checkDeviceAuthorization, logDeviceAccess);
 app.use('/api/v1/video-progress', checkDeviceAuthorization, logDeviceAccess);
 app.use('/api/v1/live-meetings', checkDeviceAuthorization, logDeviceAccess);
 
+// Note: Public routes like subjects, blogs, instructors don't need device authorization
+// They are accessible without authentication
 
 app.use('/api/v1/grades', gradeRoutes);
 app.use('/api/v1/instructors', instructorRoutes);

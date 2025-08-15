@@ -12,7 +12,55 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
+// Create axios instance with proper CORS configuration
 export const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    withCredentials: true
-})
+    withCredentials: true, // Keep this for authentication
+    timeout: 30000, // 30 second timeout
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+});
+
+// Add request interceptor to include device info in headers for cross-domain requests
+axiosInstance.interceptors.request.use(
+    (config) => {
+        // Add device info to headers for cross-domain requests
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            try {
+                // Generate basic device info for cross-domain requests
+                const deviceInfo = {
+                    platform: navigator.platform || 'unknown',
+                    screenResolution: `${screen.width}x${screen.height}`,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    userAgent: navigator.userAgent
+                };
+                
+                config.headers['x-device-info'] = JSON.stringify(deviceInfo);
+            } catch (error) {
+                console.log('Failed to add device info to headers:', error);
+            }
+        }
+        
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Add response interceptor for better error handling
+axiosInstance.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        if (error.response?.status === 403 && error.response?.data?.message?.includes('DEVICE_NOT_AUTHORIZED')) {
+            // Handle device authorization errors
+            console.error('Device not authorized:', error.response.data);
+            // You could redirect to login or show a device authorization message
+        }
+        return Promise.reject(error);
+    }
+);
