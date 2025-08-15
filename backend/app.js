@@ -185,6 +185,93 @@ app.get('/api/cors-test', (req, res) => {
   });
 });
 
+// Health check route
+app.get('/api/health', async (req, res) => {
+  try {
+    console.log('=== HEALTH CHECK ROUTE HIT ===');
+    
+    // Test database connection
+    let dbStatus = 'unknown';
+    try {
+      const mongoose = await import('mongoose');
+      dbStatus = mongoose.default.connection.readyState === 1 ? 'connected' : 'disconnected';
+    } catch (e) {
+      dbStatus = 'error';
+    }
+    
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      environment: process.env.NODE_ENV || 'unknown',
+      cors: {
+        allowedOrigins: Array.from(allowedOrigins),
+        clientUrl: process.env.CLIENT_URL,
+        backendUrl: process.env.BACKEND_URL
+      }
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Test featured endpoints route
+app.get('/api/test-featured', async (req, res) => {
+  try {
+    console.log('=== TEST FEATURED ENDPOINTS ===');
+    
+    // Test if we can import the models
+    let modelsStatus = {};
+    
+    try {
+      const Subject = (await import('./models/subject.model.js')).default;
+      modelsStatus.subjects = 'available';
+    } catch (e) {
+      modelsStatus.subjects = 'error: ' + e.message;
+    }
+    
+    try {
+      const Course = (await import('./models/course.model.js')).default;
+      modelsStatus.courses = 'available';
+    } catch (e) {
+      modelsStatus.courses = 'error: ' + e.message;
+    }
+    
+    try {
+      const Instructor = (await import('./models/instructor.model.js')).default;
+      modelsStatus.instructors = 'available';
+    } catch (e) {
+      modelsStatus.instructors = 'error: ' + e.message;
+    }
+    
+    try {
+      const Blog = (await import('./models/blog.model.js')).default;
+      modelsStatus.blogs = 'available';
+    } catch (e) {
+      modelsStatus.blogs = 'error: ' + e.message;
+    }
+    
+    res.json({
+      message: 'Featured endpoints test',
+      timestamp: new Date().toISOString(),
+      models: modelsStatus,
+      environment: process.env.NODE_ENV || 'unknown'
+    });
+  } catch (error) {
+    console.error('Featured endpoints test error:', error);
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 app.use('/api/v1/user', userRoutes); 
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/payments', paymentRoutes);

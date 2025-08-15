@@ -160,7 +160,19 @@ const getAllInstructors = async (req, res, next) => {
 // Get featured instructors
 const getFeaturedInstructors = async (req, res, next) => {
   try {
+    console.log('=== GET FEATURED INSTRUCTORS ===');
+    
+    // Check if Instructor model is available
+    if (!Instructor) {
+      console.error('Instructor model not available');
+      return res.status(500).json({
+        success: false,
+        message: 'Database model not available'
+      });
+    }
+    
     const { limit = 6 } = req.query;
+    console.log('Querying featured instructors with limit:', limit);
 
     const instructors = await Instructor.find({ 
       featured: true, 
@@ -174,16 +186,22 @@ const getFeaturedInstructors = async (req, res, next) => {
       .sort({ rating: -1, totalStudents: -1 })
       .limit(parseInt(limit));
 
+    console.log(`Found ${instructors.length} featured instructors`);
+
     return res.status(200).json({
       success: true,
       message: 'Featured instructors retrieved successfully',
       data: { instructors }
     });
   } catch (error) {
-    console.error('Error getting featured instructors:', error);
+    console.error('❌ Error in getFeaturedInstructors:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Return error response instead of crashing
     return res.status(500).json({
       success: false,
-      message: 'Failed to get featured instructors'
+      message: 'Failed to get featured instructors',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };

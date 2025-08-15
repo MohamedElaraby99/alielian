@@ -242,6 +242,18 @@ export const deleteSubject = async (req, res, next) => {
 // Get featured subjects
 export const getFeaturedSubjects = async (req, res, next) => {
     try {
+        console.log('=== GET FEATURED SUBJECTS ===');
+        
+        // Check if subjectModel is available
+        if (!subjectModel) {
+            console.error('Subject model not available');
+            return res.status(500).json({
+                success: false,
+                message: 'Database model not available'
+            });
+        }
+        
+        console.log('Querying featured subjects...');
         const featuredSubjects = await subjectModel.find({ 
             featured: true, 
             status: 'active' 
@@ -249,13 +261,23 @@ export const getFeaturedSubjects = async (req, res, next) => {
         .sort({ createdAt: -1 })
         .limit(6);
         
+        console.log(`Found ${featuredSubjects.length} featured subjects`);
+        
         res.status(200).json({
             success: true,
             message: 'Featured subjects fetched successfully',
             subjects: featuredSubjects
         });
     } catch (e) {
-        return next(new AppError(e.message, 500));
+        console.error('Error in getFeaturedSubjects:', e);
+        console.error('Error stack:', e.stack);
+        
+        // Return error response instead of crashing
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch featured subjects',
+            error: process.env.NODE_ENV === 'development' ? e.message : 'Internal server error'
+        });
     }
 };
 

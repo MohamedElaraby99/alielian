@@ -270,6 +270,17 @@ export const toggleFeatured = async (req, res, next) => {
 // Get featured courses (secure version)
 export const getFeaturedCourses = async (req, res, next) => {
   try {
+    console.log('=== GET FEATURED COURSES ===');
+    
+    // Check if Course model is available
+    if (!Course) {
+      console.error('Course model not available');
+      return res.status(500).json({
+        success: false,
+        message: 'Database model not available'
+      });
+    }
+    
     let query = {};
     
     // Check if this route also needs stage filtering (based on how it's called)
@@ -300,6 +311,7 @@ export const getFeaturedCourses = async (req, res, next) => {
       }
     }
     
+    console.log('Querying featured courses with query:', JSON.stringify(query, null, 2));
     const courses = await Course.find({ ...query, featured: true })
       .populate('instructor', 'name')
       .populate('stage', 'name')
@@ -308,7 +320,8 @@ export const getFeaturedCourses = async (req, res, next) => {
       .limit(6);
       
     console.log('🎯 Featured courses query used for filtering:', JSON.stringify(query, null, 2));
-    console.log('📚 Featured courses found:', courses.map(c => ({
+    console.log('📚 Featured courses found:', courses.length);
+    console.log('📚 Featured courses details:', courses.map(c => ({
       id: c._id,
       title: c.title,
       stage: c.stage?.name,
@@ -344,7 +357,7 @@ export const getFeaturedCourses = async (req, res, next) => {
           price: lesson.price,
           videosCount: lesson.videos?.length || 0,
           pdfsCount: lesson.pdfs?.length || 0,
-          examsCount: lesson.exams?.length || 0,
+          examsCount: lesson.pdfs?.length || 0,
           trainingsCount: lesson.trainings?.length || 0
         }));
       }
@@ -352,9 +365,18 @@ export const getFeaturedCourses = async (req, res, next) => {
       return courseObj;
     });
 
+    console.log('✅ Returning secure featured courses');
     return res.status(200).json({ success: true, data: { courses: secureCourses } });
   } catch (error) {
-    return next(new AppError(error.message, 500));
+    console.error('❌ Error in getFeaturedCourses:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Return error response instead of crashing
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch featured courses',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 };
 
