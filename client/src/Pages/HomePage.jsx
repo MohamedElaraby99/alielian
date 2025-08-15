@@ -51,7 +51,7 @@ export default function HomePage() {
   const dispatch = useDispatch();
   const { blogs } = useSelector((state) => state.blog);
   const { featuredSubjects } = useSelector((state) => state.subject);
-  const { courses } = useSelector((state) => state.course);
+  const { courses, featuredCourses, featuredLoading } = useSelector((state) => state.course);
 
   const { role } = useSelector((state) => state.auth);
   const [isVisible, setIsVisible] = useState(false);
@@ -251,12 +251,17 @@ export default function HomePage() {
             </p>
           </div>
 
-          {courses && courses.length > 0 ? (
+          {featuredLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">جاري تحميل الكورسات المميزة...</p>
+            </div>
+          ) : featuredCourses && featuredCourses.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {(() => {
-                console.log('🎯 HomePage rendering courses from Redux state:', {
-                  totalCourses: courses.length,
-                  allCourses: courses.map(c => ({
+                console.log('🎯 HomePage rendering featuredCourses from Redux state:', {
+                  totalCourses: featuredCourses.length,
+                  allCourses: featuredCourses.map(c => ({
                     id: c._id,
                     title: c.title,
                     stage: c.stage,
@@ -267,7 +272,7 @@ export default function HomePage() {
                 });
                 return null;
               })()}
-              {courses.slice(0, 6).map((course, index) => (
+              {featuredCourses.slice(0, 6).map((course, index) => (
                 <div
                   key={course._id}
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200 dark:border-gray-700"
@@ -407,15 +412,17 @@ export default function HomePage() {
           )}
 
           {/* View All Courses Button */}
-          <div className="text-center mt-12">
-            <Link
-              to="/courses"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-            >
-              <span>عرض جميع الكورسات  </span>
-              <FaArrowRight />
-            </Link>
-          </div>
+          {featuredCourses && featuredCourses.length > 0 && (
+            <div className="text-center mt-12">
+              <Link
+                to="/courses"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                <span>عرض جميع الكورسات  </span>
+                <FaArrowRight />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
       

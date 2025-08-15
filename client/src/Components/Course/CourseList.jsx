@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { deleteCourse } from '../../Redux/Slices/CourseSlice';
-import { FaEdit, FaTrash, FaList, FaEye } from 'react-icons/fa';
+import { deleteCourse, toggleFeatured } from '../../Redux/Slices/CourseSlice';
+import { FaEdit, FaTrash, FaList, FaEye, FaStar } from 'react-icons/fa';
 import CourseStructureModal from './CourseStructureModal';
 import { generateImageUrl } from "../../utils/fileUtils";
 import { placeholderImages } from "../../utils/placeholderImages";
@@ -42,6 +42,14 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
       } catch (error) {
         // console.error('Error deleting course:', error);
       }
+    }
+  };
+
+  const handleToggleFeatured = async (courseId, currentFeatured) => {
+    try {
+      await dispatch(toggleFeatured(courseId)).unwrap();
+    } catch (error) {
+      // console.error('Error toggling featured status:', error);
     }
   };
 
@@ -87,6 +95,16 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
           <div key={course._id} className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden flex flex-col">
             {/* Course Image */}
             <div className="h-48 relative overflow-hidden">
+              {/* Featured Badge Overlay */}
+              {course.featured && (
+                <div className="absolute top-2 right-2 z-10">
+                  <span className="inline-flex items-center px-2 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full shadow-lg">
+                    <FaStar className="w-3 h-3 mr-1 fill-current" />
+                    مميز
+                  </span>
+                </div>
+              )}
+              
               {course.image?.secure_url ? (
                 <>
                   {console.log('🖼️ Course image found:', {
@@ -163,6 +181,16 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
                 </div>
               )}
               
+              {/* Featured Badge */}
+              {course.featured && (
+                <div className="mb-3">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                    <FaStar className="w-3 h-3 mr-1 fill-current" />
+                    مميز
+                  </span>
+                </div>
+              )}
+              
               {/* Category Info */}
               {course.category && (
                 <div className="mb-3">
@@ -189,6 +217,19 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
                     title="حذف"
                   >
                     <FaTrash className="text-sm" />
+                  </button>
+                )}
+                {role === 'ADMIN' && (
+                  <button
+                    onClick={() => handleToggleFeatured(course._id, course.featured)}
+                    className={`p-2 rounded-lg transition-colors ${
+                      course.featured 
+                        ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' 
+                        : 'text-gray-400 dark:text-gray-500 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+                    }`}
+                    title={course.featured ? 'إلغاء التمييز' : 'تمييز الدورة'}
+                  >
+                    <FaStar className={`text-sm ${course.featured ? 'fill-current' : ''}`} />
                   </button>
                 )}
                 <button

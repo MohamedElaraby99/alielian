@@ -114,10 +114,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Modern Logo */}
-          <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-4 group logo-hover">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-2 md:space-x-4 group logo-hover">
            {/* Modern Brand Name */}
            <div className="flex flex-col">
-              <span className="oi-regular text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-300 dark:text-blue-400 dark:group-hover:text-blue-300 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.5)] dark:group-hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.7)]">
+              <span className="oi-regular text-xl md:text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-300 dark:text-blue-400 dark:group-hover:text-blue-300 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.5)] dark:group-hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.7)]">
                 المنصة الدولية
               </span>
               
@@ -127,7 +127,7 @@ export default function Navbar() {
               <img 
                 src={logo} 
                 alt="المنصة الدولية" 
-                className="w-14 h-14 object-contain group-hover:scale-110 transition-transform duration-300 dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] dark:group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
+                className="w-10 h-10 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-300 dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] dark:group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
               />
             </div>
           
@@ -146,6 +146,16 @@ export default function Navbar() {
                 <FaMoon className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform duration-300" />
               )}
             </button>
+
+            {/* Sign Up Button - Visible on all devices when user not logged in */}
+            {!user && (
+              <Link
+                to="/signup"
+                className="px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold text-sm md:text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                سجل الآن
+              </Link>
+            )}
 
             {/* Desktop User Menu */}
             {user && user.fullName ? (
@@ -345,17 +355,28 @@ export default function Navbar() {
             {/* Guest Actions */}
             {!user && (
               <div className="space-y-4 px-6">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    انضم إلينا الآن
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    ابدأ رحلة التعلم مع المنصة الدولية
+                  </p>
+                </div>
+                
                 <Link
                   to="/login"
-                  className="block w-full px-8 py-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 mobile-menu-item shadow-lg hover:shadow-xl"
+                  className="flex items-center justify-center gap-3 w-full px-8 py-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 mobile-menu-item shadow-lg hover:shadow-xl"
                 >
+                  <FaUser className="w-5 h-5" />
                   تسجيل الدخول
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full px-8 py-4 text-center border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white rounded-2xl font-bold transition-all duration-300 mobile-menu-item shadow-lg hover:shadow-xl"
+                  className="flex items-center justify-center gap-3 w-full px-8 py-4 text-center border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white rounded-2xl font-bold transition-all duration-300 mobile-menu-item shadow-lg hover:shadow-xl"
                 >
-                  إنشاء حساب
+                  <FaPlus className="w-5 h-5" />
+                  إنشاء حساب جديد
                 </Link>
               </div>
             )}

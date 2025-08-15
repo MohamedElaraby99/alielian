@@ -296,7 +296,7 @@ export default function Sidebar({ hideBar = false }) {
                         onClick={closeSidebar}
                       >
                         <FaInfoCircle size={14} className="text-gray-500 dark:text-slate-100" />
-                        عننا
+                        عنا
                       </Link>
                     </li>
                     <li>
@@ -348,7 +348,7 @@ export default function Sidebar({ hideBar = false }) {
                 <li>
                   <Link to="/about" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2" onClick={closeSidebar}>
                     <FaInfoCircle size={16} className="text-gray-500 dark:text-slate-100" />
-                    عننا
+                    عنا
                   </Link>
                 </li>
               </>

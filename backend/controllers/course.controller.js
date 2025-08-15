@@ -67,7 +67,47 @@ export const createCourse = async (req, res, next) => {
 // Get all courses for admin (full data with content)
 export const getAdminCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find()
+    let query = {};
+    
+    // Handle filters from query parameters
+    if (req.query.search) {
+      query.$or = [
+        { title: { $regex: req.query.search, $options: 'i' } },
+        { description: { $regex: req.query.search, $options: 'i' } }
+      ];
+    }
+    
+    if (req.query.instructor) {
+      query.instructor = { $regex: req.query.instructor, $options: 'i' };
+    }
+    
+    if (req.query.subject) {
+      query.subject = { $regex: req.query.subject, $options: 'i' };
+    }
+    
+    if (req.query.stage) {
+      query.stage = { $regex: req.query.stage, $options: 'i' };
+    }
+    
+    if (req.query.featured !== undefined && req.query.featured !== '') {
+      query.featured = req.query.featured === 'true';
+    }
+    
+    if (req.query.isPublished !== undefined && req.query.isPublished !== '') {
+      query.isPublished = req.query.isPublished === 'true';
+    }
+    
+    if (req.query.level) {
+      query.level = req.query.level;
+    }
+    
+    if (req.query.language) {
+      query.language = req.query.language;
+    }
+    
+    console.log('🎯 Admin courses query:', JSON.stringify(query, null, 2));
+    
+    const courses = await Course.find(query)
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
@@ -198,6 +238,35 @@ export const getAllCourses = async (req, res, next) => {
   }
 };
 
+// Toggle course featured status
+export const toggleFeatured = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const course = await Course.findById(id);
+    
+    if (!course) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Course not found' 
+      });
+    }
+    
+    // Toggle featured status
+    course.featured = !course.featured;
+    await course.save();
+    
+    console.log(`🎯 Course ${course.title} ${course.featured ? 'featured' : 'unfeatured'}`);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: `Course ${course.featured ? 'featured' : 'unfeatured'} successfully`,
+      data: { course }
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+};
+
 // Get featured courses (secure version)
 export const getFeaturedCourses = async (req, res, next) => {
   try {
@@ -231,7 +300,7 @@ export const getFeaturedCourses = async (req, res, next) => {
       }
     }
     
-    const courses = await Course.find(query)
+    const courses = await Course.find({ ...query, featured: true })
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')

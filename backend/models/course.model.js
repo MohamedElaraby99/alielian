@@ -169,6 +169,10 @@ const courseSchema = new mongoose.Schema({
       type: String
     }
   },
+  featured: {
+    type: Boolean,
+    default: false
+  },
   units: [unitSchema],
   directLessons: [lessonSchema]
 }, {

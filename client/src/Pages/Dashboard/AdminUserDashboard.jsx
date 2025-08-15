@@ -46,7 +46,8 @@ import {
     FaTimesCircle,
     FaPlus,
     FaSave,
-    FaTimes
+    FaTimes,
+    FaIdCard
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
 import { egyptianGovernorates } from "../../utils/governorateMapping";
@@ -1223,6 +1224,242 @@ export default function AdminUserDashboard() {
                                 >
                                     حذف
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* User Details Modal */}
+                {showUserDetails && selectedUser && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" dir="rtl">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                            {/* Modal Header */}
+                            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                                            <span className="text-white text-2xl font-bold">
+                                                {selectedUser.fullName?.charAt(0)?.toUpperCase() || "U"}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                                {selectedUser.fullName}
+                                            </h3>
+                                            <p className="text-gray-600 dark:text-gray-400">
+                                                {selectedUser.email}
+                                            </p>
+                                            <div className="flex items-center space-x-2 mt-2">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
+                                                    {selectedUser.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                                </span>
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedUser.isActive)}`}>
+                                                    {selectedUser.isActive ? 'نشط' : 'غير نشط'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowUserDetails(false)}
+                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="p-6 space-y-6">
+                                {/* User Statistics */}
+                                {userStats && (
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+                                            <div className="flex items-center space-x-3">
+                                                <FaWallet className="text-blue-600 text-xl" />
+                                                <div>
+                                                    <p className="text-sm text-blue-600 dark:text-blue-400">رصيد المحفظة</p>
+                                                    <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                                                        {userStats.walletBalance || 0} جنيه مصري
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-200 dark:border-green-800">
+                                            <div className="flex items-center space-x-3">
+                                                <FaCreditCard className="text-green-600 text-xl" />
+                                                <div>
+                                                    <p className="text-sm text-green-600 dark:text-green-400">إجمالي المعاملات</p>
+                                                    <p className="text-lg font-bold text-green-900 dark:text-green-100">
+                                                        {userStats.totalTransactions || 0}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
+                                            <div className="flex items-center space-x-3">
+                                                <FaGraduationCap className="text-purple-600 text-xl" />
+                                                <div>
+                                                    <p className="text-sm text-purple-600 dark:text-purple-400">الكورسات المشتراة</p>
+                                                    <p className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                                                        {userStats.purchasedCourses || 0}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-200 dark:border-orange-800">
+                                            <div className="flex items-center space-x-3">
+                                                <FaCalendarAlt className="text-orange-600 text-xl" />
+                                                <div>
+                                                    <p className="text-sm text-orange-600 dark:text-orange-400">تاريخ التسجيل</p>
+                                                    <p className="text-lg font-bold text-orange-900 dark:text-orange-100">
+                                                        {formatDate(selectedUser.createdAt)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Personal Information */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                                        <FaUser className="text-blue-600" />
+                                        <span>المعلومات الشخصية</span>
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">الاسم الكامل</label>
+                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.fullName || 'غير محدد'}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">اسم المستخدم</label>
+                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.username || 'غير محدد'}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">البريد الإلكتروني</label>
+                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.email}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">رقم الهاتف</label>
+                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.phoneNumber || 'غير محدد'}</p>
+                                        </div>
+                                        {selectedUser.fatherPhoneNumber && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">رقم هاتف ولي الأمر</label>
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.fatherPhoneNumber}</p>
+                                            </div>
+                                        )}
+                                        {selectedUser.governorate && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المحافظة</label>
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.governorate}</p>
+                                            </div>
+                                        )}
+                                        {selectedUser.stage && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المرحلة الدراسية</label>
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.stage.name}</p>
+                                            </div>
+                                        )}
+                                        {selectedUser.age && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">العمر</label>
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.age} سنة</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Account Information */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                                        <FaIdCard className="text-purple-600" />
+                                        <span>معلومات الحساب</span>
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">نوع الحساب</label>
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
+                                                {selectedUser.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">حالة الحساب</label>
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedUser.isActive)}`}>
+                                                {selectedUser.isActive ? 'نشط' : 'غير نشط'}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">تاريخ التسجيل</label>
+                                            <p className="text-gray-900 dark:text-white font-medium">{formatDate(selectedUser.createdAt)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Recent Activities */}
+                                {userActivities && userActivities.length > 0 && (
+                                    <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                                            <FaHistory className="text-green-600" />
+                                            <span>الأنشطة الأخيرة</span>
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {userActivities.slice(0, 5).map((activity, index) => (
+                                                <div key={index} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                                                    <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
+                                                        {getTransactionIcon(activity.type)}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {activity.description || 'نشاط غير محدد'}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {formatDate(activity.createdAt)}
+                                                        </p>
+                                                    </div>
+                                                    {activity.amount && (
+                                                        <span className={`text-sm font-medium ${
+                                                            activity.type === 'recharge' ? 'text-green-600' : 'text-red-600'
+                                                        }`}>
+                                                            {activity.type === 'recharge' ? '+' : '-'}{activity.amount} جنيه مصري
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end space-x-3 space-x-reverse pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <button
+                                        onClick={() => handleToggleStatus(selectedUser.id, selectedUser.isActive)}
+                                        className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                                            selectedUser.isActive
+                                                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                                                : 'bg-green-600 hover:bg-green-700 text-white'
+                                        }`}
+                                    >
+                                        {selectedUser.isActive ? 'إلغاء التفعيل' : 'تفعيل'}
+                                    </button>
+                                    <button
+                                        onClick={() => handleUpdateRole(selectedUser.id, selectedUser.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                        className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                                    >
+                                        تغيير الدور
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setUserToDelete(selectedUser.id);
+                                            setUserToDeleteInfo(selectedUser);
+                                            setShowDeleteConfirm(true);
+                                            setShowUserDetails(false);
+                                        }}
+                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                    >
+                                        حذف المستخدم
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

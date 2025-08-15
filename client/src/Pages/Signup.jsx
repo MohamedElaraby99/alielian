@@ -11,6 +11,7 @@ import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduation
 import { axiosInstance } from "../Helpers/axiosInstance";
 import { useEffect } from "react";
 import { egyptianGovernorates } from "../utils/governorateMapping";
+import { generateDeviceFingerprint, getDeviceType, getBrowserInfo, getOperatingSystem } from "../utils/deviceFingerprint";
 
 export default function Signup() {
   const dispatch = useDispatch();
@@ -216,6 +217,24 @@ export default function Signup() {
     formData.append("password", signupData.password);
     formData.append("adminCode", signupData.adminCode);
     formData.append("captchaSessionId", captchaSessionId);
+    
+    // Generate device information for fingerprinting
+    const deviceInfo = {
+      platform: getDeviceType(),
+      screenResolution: `${screen.width}x${screen.height}`,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      additionalInfo: {
+        browser: getBrowserInfo().browser,
+        browserVersion: getBrowserInfo().version,
+        os: getOperatingSystem(),
+        language: navigator.language,
+        colorDepth: screen.colorDepth,
+        touchSupport: 'ontouchstart' in window,
+      }
+    };
+    
+    // Append device info as JSON string
+    formData.append("deviceInfo", JSON.stringify(deviceInfo));
     
     // Only append additional fields for regular users
     if (!isAdminRegistration) {

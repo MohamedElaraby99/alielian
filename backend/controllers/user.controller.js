@@ -9,6 +9,7 @@ import sendEmail from "../utils/sendEmail.js";
 import UserDevice from '../models/userDevice.model.js';
 import { generateDeviceFingerprint, parseDeviceInfo, generateDeviceName } from '../utils/deviceUtils.js';
 import { generateProductionFileUrl } from '../utils/fileUtils.js';
+import { getDeviceLimit } from '../config/device.config.js';
 
 const cookieOptions = {
     httpOnly: true,
@@ -124,6 +125,43 @@ const register = async (req, res, next) => {
 
         user.password = undefined;
 
+        // Register device automatically after successful registration
+        try {
+            const { deviceInfo } = req.body;
+            
+            if (deviceInfo) {
+                let parsedDeviceInfo = {};
+                try {
+                    parsedDeviceInfo = JSON.parse(deviceInfo);
+                } catch (e) {
+                    console.log('Failed to parse deviceInfo JSON, using as is:', e.message);
+                    parsedDeviceInfo = deviceInfo;
+                }
+                
+                const deviceFingerprint = generateDeviceFingerprint(req, parsedDeviceInfo);
+                const deviceName = generateDeviceName(parsedDeviceInfo, req);
+                const finalDeviceInfo = parseDeviceInfo(req, parsedDeviceInfo);
+                
+                // Create the first device for the user
+                await UserDevice.create({
+                    user: user._id,
+                    deviceFingerprint,
+                    deviceName,
+                    deviceInfo: finalDeviceInfo,
+                    isActive: true,
+                    firstLoginAt: new Date(),
+                    lastActivity: new Date(),
+                    loginCount: 1
+                });
+                
+                console.log('Device registered automatically for new user:', user._id);
+            }
+        } catch (deviceError) {
+            console.error('Device registration error during signup:', deviceError);
+            // Continue with registration even if device registration fails
+            console.log('Device registration failed, but user registration successful');
+        }
+
         const token = await user.generateJWTToken();
 
         res.cookie("token", token, cookieOptions);
@@ -186,12 +224,13 @@ const login = async (req, res, next) => {
                         isActive: true
                     });
 
-                    const MAX_DEVICES = 2;
+                    // Get current device limit from shared config
+                    const currentDeviceLimit = getDeviceLimit();
                     
-                    if (userDeviceCount >= MAX_DEVICES) {
-                        console.log(`User has reached device limit: ${userDeviceCount}/${MAX_DEVICES}`);
+                    if (userDeviceCount >= currentDeviceLimit) {
+                        console.log(`User has reached device limit: ${userDeviceCount}/${currentDeviceLimit}`);
                         return next(new AppError(
-                            `تم الوصول للحد الأقصى من الأجهزة المسموحة (${MAX_DEVICES} أجهزة). يرجى التواصل مع الإدارة لإعادة تعيين الأجهزة المصرحة.`,
+                            `تم الوصول للحد الأقصى من الأجهزة المسموحة (${currentDeviceLimit} أجهزة). يرجى التواصل مع الإدارة لإعادة تعيين الأجهزة المصرحة.`,
                             403
                         ));
                     }

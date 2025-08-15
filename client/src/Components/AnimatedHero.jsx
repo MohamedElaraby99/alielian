@@ -1,19 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { FaArrowRight, FaPlay, FaStar, FaUsers, FaGraduationCap, FaAward, FaRocket, FaGlobe } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import ALIELAIN from '../assets/ALIELAIN.png';
 
 const AnimatedHero = ({ onGetStarted }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
-  const handleExploreCourses = () => {
-    // Navigate to courses page
-    window.location.href = '/courses';
+  const handleButtonClick = () => {
+    if (isAuthenticated) {
+      // If user is logged in, navigate to courses page
+      navigate('/courses');
+    } else {
+      // If user is not logged in, call the original onGetStarted function
+      onGetStarted();
+    }
   };
+
+  // Don't show button text until authentication state is determined
+  const buttonText = loading ? 'جاري التحميل...' : (isAuthenticated ? 'ابدأ التعلم الآن' : 'سجل الآن');
+  const subtitleText = loading 
+    ? 'جاري التحقق من حالة تسجيل الدخول...' 
+    : (isAuthenticated 
+        ? 'انقر للانتقال إلى صفحة الكورسات المتاحة' 
+        : 'انقر للتسجيل وإنشاء حساب جديد'
+      );
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
@@ -128,15 +145,24 @@ const AnimatedHero = ({ onGetStarted }) => {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4 justify-end">
                 <button 
-                  onClick={onGetStarted}
-                  className="group relative px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-full text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  onClick={handleButtonClick}
+                  disabled={loading}
+                  className={`group relative px-6 py-3 md:px-8 md:py-4 font-semibold rounded-full text-base md:text-lg shadow-lg transition-all duration-300 ${
+                    loading 
+                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-xl transform hover:scale-105'
+                  }`}
                 >
                   <span className="flex items-center gap-2 justify-center">
-                    سجل الآن
-                    <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
+                    {buttonText}
+                    {!loading && <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />}
                   </span>
                 </button>
                 
+                {/* Helpful subtitle */}
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-right">
+                  {subtitleText}
+                </p>
               </div>
             </div>
           </div>

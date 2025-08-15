@@ -32,6 +32,7 @@ import stageRoutes from './routes/stage.routes.js';
 import express from 'express';
 import connectToDb from './config/db.config.js';
 import errorMiddleware from './middleware/error.middleware.js';
+import { checkDeviceAuthorization, logDeviceAccess } from './middleware/deviceAuth.middleware.js';
 
 const app = express();
 
@@ -160,7 +161,13 @@ app.use('/api/v1/live-meetings', liveMeetingRoutes);
 app.use('/api/v1/captcha', captchaRoutes);
 app.use('/api/v1/stage-categories', stageCategoryRoutes);
 
-
+// Apply device authorization middleware to protected routes
+app.use('/api/v1/courses', checkDeviceAuthorization, logDeviceAccess);
+app.use('/api/v1/payments', checkDeviceAuthorization, logDeviceAccess);
+app.use('/api/v1/wallet', checkDeviceAuthorization, logDeviceAccess);
+app.use('/api/v1/exams', checkDeviceAuthorization, logDeviceAccess);
+app.use('/api/v1/video-progress', checkDeviceAuthorization, logDeviceAccess);
+app.use('/api/v1/live-meetings', checkDeviceAuthorization, logDeviceAccess);
 
 
 app.use('/api/v1/grades', gradeRoutes);

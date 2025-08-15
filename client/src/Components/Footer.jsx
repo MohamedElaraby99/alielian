@@ -34,7 +34,7 @@ export default function Footer() {
         </span>
         <div className="flex gap-5 items-center">
           {/* Protection Toggle Button */}
-          <button
+          {/* <button
             onClick={handleProtectionToggle}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               protectionEnabled
@@ -54,10 +54,10 @@ export default function Footer() {
                 <span className="hidden sm:inline">الحماية معطلة</span>
               </>
             )}
-          </button>
+          </button> */}
           
           <a
-            href="https://www.facebook.com/people/Fikra-Software-%D9%81%D9%83%D8%B1%D8%A9/61572824761047/"
+            href="https://www.facebook.com/ali.alyan.92"
             target="_blank"
             rel="noopener noreferrer"
             className="md:text-3xl text-xl text-gray-900 dark:text-slate-50 hover:text-gray-500 dark:hover:text-slate-300 transition-colors"
@@ -65,7 +65,7 @@ export default function Footer() {
             <BsFacebook />
           </a>
           <a
-            href="https://www.linkedin.com/company/fikra-software-%D9%81%D9%83%D8%B1%D8%A9-%D9%84%D9%84%D8%A8%D8%B1%D9%85%D8%AC%D9%8A%D8%A7%D8%AA/"
+            href="https://www.linkedin.com/in/%D8%B9%D9%84%D9%8A-%D9%85%D8%AD%D9%85%D8%AF-%D9%85%D8%B9%D9%84%D9%8A%D8%A7%D9%86-a42859105/"
             target="_blank"
             rel="noopener noreferrer"
             className="md:text-3xl text-xl text-gray-900 dark:text-slate-50 hover:text-gray-500 dark:hover:text-slate-300 transition-colors"
