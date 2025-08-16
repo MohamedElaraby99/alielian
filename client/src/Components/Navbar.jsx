@@ -117,10 +117,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Modern Logo */}
-          <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-2 md:space-x-4 group logo-hover">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-3 md:space-x-4 group logo-hover">
            {/* Modern Brand Name */}
            <div className="flex flex-col">
-              <span className="oi-regular text-xl md:text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-300 dark:text-blue-400 dark:group-hover:text-blue-300 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.5)] dark:group-hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.7)]">
+              <span className="oi-regular text-lg md:text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors duration-300 dark:text-blue-400 dark:group-hover:text-blue-300 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.5)] dark:group-hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.7)]">
                 المنصة الدولية
               </span>
               
@@ -130,7 +130,7 @@ export default function Navbar() {
               <img 
                 src={logo} 
                 alt="المنصة الدولية" 
-                className="w-10 h-10 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-300 dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] dark:group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
+                className="w-18 h-18 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-300 dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] dark:group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
               />
             </div>
           
@@ -141,12 +141,12 @@ export default function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900 dark:hover:to-purple-900 transition-all duration-300 group shadow-lg hover:shadow-xl"
+              className="p-2.5 md:p-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900 dark:hover:to-purple-900 transition-all duration-300 group shadow-lg hover:shadow-xl"
             >
               {darkMode ? (
-                <FaSun className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300" />
+                <FaSun className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300" />
               ) : (
-                <FaMoon className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform duration-300" />
+                <FaMoon className="w-4 h-4 md:w-5 md:h-5 text-gray-700 group-hover:scale-110 transition-transform duration-300" />
               )}
             </button>
 
@@ -174,9 +174,9 @@ export default function Navbar() {
               {/* Burger Menu Button */}
               <button
                 onClick={toggleMenu}
-                className="p-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900 dark:hover:to-purple-900 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="p-2.5 md:p-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900 dark:hover:to-purple-900 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <FaBars className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                <FaBars className="w-4 h-4 md:w-5 md:h-5 text-gray-700 dark:text-gray-300" />
               </button>
             </div>
           </div>
