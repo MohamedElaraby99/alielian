@@ -12,6 +12,7 @@ import {
     updateUser,
     updateUserPassword,
     resetAllUserWallets,
+    resetUserWallet,
     resetAllRechargeCodes,
     getUserActivities,
     getUserStats,
@@ -371,6 +372,15 @@ export default function AdminUserDashboard() {
         }
     };
 
+    const handleResetUserWallet = async (userId, userName) => {
+        try {
+            await dispatch(resetUserWallet(userId)).unwrap();
+            toast.success(`تم إعادة تعيين محفظة المستخدم ${userName} بنجاح!`);
+        } catch (error) {
+            toast.error("فشل في إعادة تعيين محفظة المستخدم");
+        }
+    };
+
     const handleResetAllCodes = async () => {
         try {
             await dispatch(resetAllRechargeCodes()).unwrap();
@@ -722,6 +732,13 @@ export default function AdminUserDashboard() {
                                                         <FaUserCog />
                                                     </button>
                                                     <button
+                                                        onClick={() => handleResetUserWallet(user.id, user.fullName)}
+                                                        className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                                                        title="إعادة تعيين المحفظة"
+                                                    >
+                                                        <FaWallet />
+                                                    </button>
+                                                    <button
                                                         onClick={() => {
                                                             setUserToDelete(user.id);
                                                             setUserToDeleteInfo(user);
@@ -878,6 +895,13 @@ export default function AdminUserDashboard() {
                                                         title="تغيير الدور"
                                                     >
                                                         <FaUserCog />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleResetUserWallet(user.id, user.fullName)}
+                                                        className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                                                        title="إعادة تعيين المحفظة"
+                                                    >
+                                                        <FaWallet />
                                                     </button>
                                                 </div>
                                             </div>
@@ -1037,6 +1061,13 @@ export default function AdminUserDashboard() {
                                                         title="تغيير الدور"
                                                     >
                                                         <FaUserCog />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleResetUserWallet(user.id, user.fullName)}
+                                                        className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                                                        title="إعادة تعيين المحفظة"
+                                                    >
+                                                        <FaWallet />
                                                     </button>
                                                     <button
                                                         onClick={() => {
@@ -1744,6 +1775,25 @@ export default function AdminUserDashboard() {
                                                 </div>
                                             </>
                                         )}
+                                    </div>
+                                </div>
+
+                                {/* Reset Wallet Section */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                                        <FaWallet className="text-orange-600" />
+                                        <span>إعادة تعيين المحفظة</span>
+                                    </h4>
+                                    <div className="text-center">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                            إعادة تعيين رصيد المحفظة إلى صفر وحذف جميع المعاملات
+                                        </p>
+                                        <button
+                                            onClick={() => handleResetUserWallet(selectedUser.id, selectedUser.fullName)}
+                                            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            إعادة تعيين المحفظة
+                                        </button>
                                     </div>
                                 </div>
 

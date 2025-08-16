@@ -30,10 +30,10 @@ const createAdminUser = async () => {
     
     // Create admin user - don't hash password manually, let the model handle it
     const adminUser1 = {
-      username: 'admin',
+      username: 'adminn',
       fullName: 'System Administrator',
-      email: 'admin@lms.com',
-      password: '123456', // Will be hashed by the pre-save middleware
+      email: 'adminn@lms.com',
+      password: '1234567', // Will be hashed by the pre-save middleware
       role: 'ADMIN',
       isActive: true
     };
@@ -51,8 +51,8 @@ const createAdminUser = async () => {
 
     
     console.log('✅ Admin user created successfully!');
-    console.log('📧 Email: admin@lms.com');
-    console.log('👤 Username: admin');
+    console.log('📧 Email: adminn@lms.com');
+    console.log('👤 Username: adminn');
     console.log('🔐 Password: 123456');
     console.log('👑 Role: ADMIN');
     console.log('\n💡 You can now login with these credentials');

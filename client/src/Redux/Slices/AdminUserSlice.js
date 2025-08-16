@@ -112,6 +112,19 @@ export const resetAllUserWallets = createAsyncThunk(
     }
 );
 
+export const resetUserWallet = createAsyncThunk(
+    "adminUser/resetUserWallet",
+    async (userId, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.post(`/admin/users/${userId}/reset-wallet`);
+            return response.data;
+        }
+        catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to reset user wallet");
+        }
+    }
+);
+
 export const resetAllRechargeCodes = createAsyncThunk(
     "adminUser/resetAllCodes",
     async (_, { rejectWithValue }) => {
@@ -438,6 +451,31 @@ const adminUserSlice = createSlice({
                 }
             })
             .addCase(resetAllUserWallets.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.actionError = action.payload;
+            });
+
+        // Reset specific user wallet
+        builder
+            .addCase(resetUserWallet.pending, (state) => {
+                state.actionLoading = true;
+                state.actionError = null;
+            })
+            .addCase(resetUserWallet.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                // Reset wallet balance for the specific user in the list
+                const userIndex = state.users.findIndex(user => user.id === action.payload.data.userId);
+                if (userIndex !== -1) {
+                    state.users[userIndex].walletBalance = 0;
+                    state.users[userIndex].totalTransactions = 0;
+                }
+                // Reset selected user wallet if it's the same user
+                if (state.selectedUser && state.selectedUser.id === action.payload.data.userId) {
+                    state.selectedUser.walletBalance = 0;
+                    state.selectedUser.totalTransactions = 0;
+                }
+            })
+            .addCase(resetUserWallet.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.actionError = action.payload;
             });

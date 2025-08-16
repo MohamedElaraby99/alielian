@@ -551,6 +551,40 @@ const resetAllUserWallets = async (req, res, next) => {
     }
 };
 
+// Reset wallet for specific user
+const resetUserWallet = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+
+        // Check if user exists
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return next(new AppError('User not found', 404));
+        }
+
+        // Reset wallet
+        user.wallet = {
+            balance: 0,
+            transactions: []
+        };
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully reset wallet for user: ${user.fullName}`,
+            data: {
+                userId: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                wallet: user.wallet
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 // Reset all recharge codes
 const resetAllRechargeCodes = async (req, res, next) => {
     try {
@@ -582,6 +616,7 @@ export {
     updateUser,
     updateUserPassword,
     resetAllUserWallets,
+    resetUserWallet,
     resetAllRechargeCodes,
     getUserActivities,
     getUserStats
