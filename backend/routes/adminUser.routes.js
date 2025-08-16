@@ -7,6 +7,10 @@ import {
     toggleUserStatus,
     deleteUser,
     updateUserRole,
+    updateUser,
+    updateUserPassword,
+    resetAllUserWallets,
+    resetAllRechargeCodes,
     getUserActivities,
     getUserStats
 } from "../controllers/adminUser.controller.js";
@@ -35,6 +39,18 @@ router.patch("/users/:userId/status", toggleUserStatus);
 
 // Update user role
 router.patch("/users/:userId/role", updateUserRole);
+
+// Update user information
+router.patch("/users/:userId", updateUser);
+
+// Update user password
+router.patch("/users/:userId/password", updateUserPassword);
+
+// Reset all user wallets
+router.post("/reset-all-wallets", resetAllUserWallets);
+
+// Reset all recharge codes
+router.post("/reset-all-codes", resetAllRechargeCodes);
 
 // Delete user
 router.delete("/users/:userId", deleteUser);

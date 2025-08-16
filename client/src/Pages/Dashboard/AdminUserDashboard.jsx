@@ -9,6 +9,10 @@ import {
     toggleUserStatus, 
     deleteUser, 
     updateUserRole,
+    updateUser,
+    updateUserPassword,
+    resetAllUserWallets,
+    resetAllRechargeCodes,
     getUserActivities,
     getUserStats,
     clearAdminUserError 
@@ -80,6 +84,15 @@ export default function AdminUserDashboard() {
     const [userToDelete, setUserToDelete] = useState(null);
     const [userToDeleteInfo, setUserToDeleteInfo] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({});
+    const [passwordForm, setPasswordForm] = useState({
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showPasswordChange, setShowPasswordChange] = useState(false);
+    const [showResetWalletsConfirm, setShowResetWalletsConfirm] = useState(false);
+    const [showResetCodesConfirm, setShowResetCodesConfirm] = useState(false);
     const [createUserForm, setCreateUserForm] = useState({
         fullName: '',
         username: '',
@@ -209,7 +222,12 @@ export default function AdminUserDashboard() {
     const handleViewUser = async (userId) => {
         setSelectedUserId(userId);
         setShowUserDetails(true);
-        setActiveTab("details");
+        setIsEditing(false);
+        setEditForm({});
+        setPasswordForm({ newPassword: '', confirmPassword: '' });
+        setShowPasswordChange(false);
+        setShowResetWalletsConfirm(false);
+        setShowResetCodesConfirm(false);
         
         try {
             await dispatch(getUserDetails(userId)).unwrap();
@@ -255,6 +273,111 @@ export default function AdminUserDashboard() {
             setUserToDeleteInfo(null);
         } catch (error) {
             // Error is handled in useEffect
+        }
+    };
+
+    const handleEditUser = async () => {
+        try {
+            // Prepare the data, ensuring stage is properly handled
+            const userData = {
+                ...editForm,
+                stage: editForm.stage || null, // Convert empty string to null for stage
+                age: editForm.age ? parseInt(editForm.age) : undefined // Convert age to number
+            };
+
+            // Remove empty string values and undefined values that could cause validation issues
+            Object.keys(userData).forEach(key => {
+                if (userData[key] === '' || userData[key] === undefined) {
+                    delete userData[key];
+                }
+            });
+
+            // Ensure required fields are present
+            if (!userData.fullName || !userData.username) {
+                toast.error("الاسم الكامل واسم المستخدم مطلوبان");
+                return;
+            }
+
+            await dispatch(updateUser({ 
+                userId: selectedUserId, 
+                userData: userData
+            })).unwrap();
+            toast.success("تم تحديث معلومات المستخدم بنجاح!");
+            setIsEditing(false);
+            setEditForm({});
+            
+            // Refresh user details to show updated information
+            await dispatch(getUserDetails(selectedUserId)).unwrap();
+        } catch (error) {
+            console.error('Update user error:', error);
+            toast.error("فشل في تحديث معلومات المستخدم");
+        }
+    };
+
+    const handleStartEdit = (user) => {
+        setEditForm({
+            fullName: user.fullName || '',
+            username: user.username || '',
+            email: user.email || '',
+            phoneNumber: user.phoneNumber || '',
+            fatherPhoneNumber: user.fatherPhoneNumber || '',
+            governorate: user.governorate || '',
+            stage: user.stage?._id || null,
+            age: user.age || '',
+            role: user.role || 'USER',
+            isActive: user.isActive
+        });
+        setIsEditing(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setEditForm({});
+    };
+
+    const handlePasswordChange = async () => {
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast.error("كلمات المرور غير متطابقة");
+            return;
+        }
+        
+        if (passwordForm.newPassword.length < 6) {
+            toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            return;
+        }
+
+        try {
+            await dispatch(updateUserPassword({ 
+                userId: selectedUserId, 
+                password: passwordForm.newPassword 
+            })).unwrap();
+            
+            toast.success("تم تغيير كلمة المرور بنجاح!");
+            setPasswordForm({ newPassword: '', confirmPassword: '' });
+            setShowPasswordChange(false);
+        } catch (error) {
+            console.error('Password change error:', error);
+            toast.error("فشل في تغيير كلمة المرور");
+        }
+    };
+
+    const handleResetAllWallets = async () => {
+        try {
+            await dispatch(resetAllUserWallets()).unwrap();
+            toast.success("تم إعادة تعيين جميع محافظ المستخدمين بنجاح!");
+            setShowResetWalletsConfirm(false);
+        } catch (error) {
+            toast.error("فشل في إعادة تعيين المحافظ");
+        }
+    };
+
+    const handleResetAllCodes = async () => {
+        try {
+            await dispatch(resetAllRechargeCodes()).unwrap();
+            toast.success("تم حذف جميع رموز الشحن بنجاح!");
+            setShowResetCodesConfirm(false);
+        } catch (error) {
+            toast.error("فشل في حذف رموز الشحن");
         }
     };
 
@@ -411,7 +534,27 @@ export default function AdminUserDashboard() {
                     </div>
 
                     {/* Create User Button */}
-                    <div className="mb-6 flex justify-end">
+                    <div className="mb-6 flex justify-between items-center">
+                        <div className="flex space-x-3 space-x-reverse">
+                            <button
+                                onClick={() => setShowResetWalletsConfirm(true)}
+                                disabled={actionLoading}
+                                className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors duration-200 shadow-lg hover:shadow-xl"
+                                title="إعادة تعيين جميع محافظ المستخدمين"
+                            >
+                                <FaWallet />
+                                إعادة تعيين المحافظ
+                            </button>
+                            <button
+                                onClick={() => setShowResetCodesConfirm(true)}
+                                disabled={actionLoading}
+                                className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors duration-200 shadow-lg hover:shadow-xl"
+                                title="حذف جميع رموز الشحن"
+                            >
+                                <FaTrash />
+                                حذف جميع الرموز
+                            </button>
+                        </div>
                         <button
                             onClick={() => setShowCreateModal(true)}
                             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors duration-200 shadow-lg hover:shadow-xl"
@@ -547,10 +690,10 @@ export default function AdminUserDashboard() {
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
                                                             المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
-                                                            {user.stage && (
+                                                            {user.stage && user.stage.name && (
                                                                 <span className="ml-2">• المرحلة: {user.stage.name}</span>
                                                             )}
-                                                            {user.category && (
+                                                            {user.category && user.category.name && (
                                                                 <span className="ml-2">• الفئة: {user.category.name}</span>
                                                             )}
                                                         </p>
@@ -864,10 +1007,10 @@ export default function AdminUserDashboard() {
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
                                                             المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
-                                                            {user.stage && (
+                                                            {user.stage && user.stage.name && (
                                                                 <span className="ml-2">• المرحلة: {user.stage.name}</span>
                                                             )}
-                                                            {user.category && (
+                                                            {user.category && user.category.name && (
                                                                 <span className="ml-2">• الفئة: {user.category.name}</span>
                                                             )}
                                                         </p>
@@ -1259,12 +1402,48 @@ export default function AdminUserDashboard() {
                                             </div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => setShowUserDetails(false)}
-                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                                    >
-                                        ×
-                                    </button>
+                                    <div className="flex items-center space-x-2">
+                                        {!isEditing ? (
+                                            <button
+                                                onClick={() => handleStartEdit(selectedUser)}
+                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                                            >
+                                                <FaEdit />
+                                                تعديل
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={handleEditUser}
+                                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                                                >
+                                                    <FaSave />
+                                                    حفظ
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                                                >
+                                                    <FaTimes />
+                                                    إلغاء
+                                                </button>
+                                            </>
+                                        )}
+                                        <button
+                                            onClick={() => {
+                                                setShowUserDetails(false);
+                                                setIsEditing(false);
+                                                setEditForm({});
+                                                setPasswordForm({ newPassword: '', confirmPassword: '' });
+                                                setShowPasswordChange(false);
+                                                setShowResetWalletsConfirm(false);
+                                                setShowResetCodesConfirm(false);
+                                            }}
+                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1329,44 +1508,126 @@ export default function AdminUserDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">الاسم الكامل</label>
-                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.fullName || 'غير محدد'}</p>
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={editForm.fullName}
+                                                    onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.fullName || 'غير محدد'}</p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">اسم المستخدم</label>
-                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.username || 'غير محدد'}</p>
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={editForm.username}
+                                                    onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.username || 'غير محدد'}</p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">البريد الإلكتروني</label>
-                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.email}</p>
+                                            {isEditing ? (
+                                                <input
+                                                    type="email"
+                                                    value={editForm.email}
+                                                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.email}</p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">رقم الهاتف</label>
-                                            <p className="text-gray-900 dark:text-white font-medium">{selectedUser.phoneNumber || 'غير محدد'}</p>
+                                            {isEditing ? (
+                                                <input
+                                                    type="tel"
+                                                    value={editForm.phoneNumber}
+                                                    onChange={(e) => setEditForm({...editForm, phoneNumber: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.phoneNumber || 'غير محدد'}</p>
+                                            )}
                                         </div>
-                                        {selectedUser.fatherPhoneNumber && (
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">رقم هاتف ولي الأمر</label>
-                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.fatherPhoneNumber}</p>
-                                            </div>
-                                        )}
-                                        {selectedUser.governorate && (
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المحافظة</label>
-                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.governorate}</p>
-                                            </div>
-                                        )}
-                                        {selectedUser.stage && (
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المرحلة الدراسية</label>
-                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.stage.name}</p>
-                                            </div>
-                                        )}
-                                        {selectedUser.age && (
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">العمر</label>
-                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.age} سنة</p>
-                                            </div>
-                                        )}
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">رقم هاتف ولي الأمر</label>
+                                            {isEditing ? (
+                                                <input
+                                                    type="tel"
+                                                    value={editForm.fatherPhoneNumber}
+                                                    onChange={(e) => setEditForm({...editForm, fatherPhoneNumber: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.fatherPhoneNumber || 'غير محدد'}</p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المحافظة</label>
+                                            {isEditing ? (
+                                                <select
+                                                    value={editForm.governorate}
+                                                    onChange={(e) => setEditForm({...editForm, governorate: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="">اختر المحافظة</option>
+                                                    {egyptianGovernorates.map((gov) => (
+                                                        <option key={gov.value} value={gov.value}>
+                                                            {gov.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.governorate || 'غير محدد'}</p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المرحلة الدراسية</label>
+                                            {isEditing ? (
+                                                <select
+                                                    value={editForm.stage || ""}
+                                                    onChange={(e) => setEditForm({...editForm, stage: e.target.value || null})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="">اختر المرحلة الدراسية</option>
+                                                    {stages.map((stage) => (
+                                                        <option key={stage._id} value={stage._id}>
+                                                            {stage.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">
+                                                    {selectedUser.stage && selectedUser.stage.name ? selectedUser.stage.name : 'غير محدد'}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">العمر</label>
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    min="10"
+                                                    max="25"
+                                                    value={editForm.age || ""}
+                                                    onChange={(e) => setEditForm({...editForm, age: e.target.value || null})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">
+                                                    {selectedUser.age && selectedUser.age > 0 ? `${selectedUser.age} سنة` : 'غير محدد'}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1379,20 +1640,110 @@ export default function AdminUserDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">نوع الحساب</label>
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
-                                                {selectedUser.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
-                                            </span>
+                                            {isEditing ? (
+                                                <select
+                                                    value={editForm.role}
+                                                    onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="USER">مستخدم</option>
+                                                    <option value="ADMIN">مدير</option>
+                                                </select>
+                                            ) : (
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
+                                                    {selectedUser.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">حالة الحساب</label>
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedUser.isActive)}`}>
-                                                {selectedUser.isActive ? 'نشط' : 'غير نشط'}
-                                            </span>
+                                            {isEditing ? (
+                                                <select
+                                                    value={editForm.isActive ? 'active' : 'inactive'}
+                                                    onChange={(e) => setEditForm({...editForm, isActive: e.target.value === 'active'})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="active">نشط</option>
+                                                    <option value="inactive">غير نشط</option>
+                                                </select>
+                                            ) : (
+                                                <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${getStatusColor(selectedUser.isActive)}`}>
+                                                    {selectedUser.isActive ? 'نشط' : 'غير نشط'}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">تاريخ التسجيل</label>
                                             <p className="text-gray-900 dark:text-white font-medium">{formatDate(selectedUser.createdAt)}</p>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Password Change Section */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                                        <FaUserSecret className="text-red-600" />
+                                        <span>تغيير كلمة المرور</span>
+                                    </h4>
+                                    <div className="space-y-4">
+                                        {!showPasswordChange ? (
+                                            <div className="text-center">
+                                                <button
+                                                    onClick={() => setShowPasswordChange(true)}
+                                                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                                >
+                                                    تغيير كلمة المرور
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                            كلمة المرور الجديدة
+                                                        </label>
+                                                        <input
+                                                            type="password"
+                                                            value={passwordForm.newPassword}
+                                                            onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                                                            placeholder="أدخل كلمة المرور الجديدة"
+                                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                            minLength="6"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                            تأكيد كلمة المرور
+                                                        </label>
+                                                        <input
+                                                            type="password"
+                                                            value={passwordForm.confirmPassword}
+                                                            onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                                                            placeholder="أكد كلمة المرور الجديدة"
+                                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                            minLength="6"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end space-x-3 space-x-reverse">
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowPasswordChange(false);
+                                                            setPasswordForm({ newPassword: '', confirmPassword: '' });
+                                                        }}
+                                                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                                                    >
+                                                        إلغاء
+                                                    </button>
+                                                    <button
+                                                        onClick={handlePasswordChange}
+                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                                    >
+                                                        تغيير كلمة المرور
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -1460,6 +1811,84 @@ export default function AdminUserDashboard() {
                                         حذف المستخدم
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Reset All Wallets Confirmation Modal */}
+                {showResetWalletsConfirm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                            <div className="flex items-center space-x-3 mb-4">
+                                <FaExclamationTriangle className="h-8 w-8 text-red-500" />
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    إعادة تعيين جميع المحافظ
+                                </h3>
+                            </div>
+                            <div className="mb-6">
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    هل أنت متأكد من إعادة تعيين جميع محافظ المستخدمين؟ هذا الإجراء سيقوم بـ:
+                                </p>
+                                <ul className="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                    <li>• إعادة تعيين رصيد جميع المستخدمين إلى 0</li>
+                                    <li>• حذف جميع المعاملات</li>
+                                    <li>• هذا الإجراء لا يمكن التراجع عنه!</li>
+                                </ul>
+                            </div>
+                            <div className="flex space-x-3 space-x-reverse">
+                                <button
+                                    onClick={() => setShowResetWalletsConfirm(false)}
+                                    className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
+                                >
+                                    إلغاء
+                                </button>
+                                <button
+                                    onClick={handleResetAllWallets}
+                                    disabled={actionLoading}
+                                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {actionLoading ? 'جاري التنفيذ...' : 'تأكيد'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Reset All Codes Confirmation Modal */}
+                {showResetCodesConfirm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                            <div className="flex items-center space-x-3 mb-4">
+                                <FaExclamationTriangle className="h-8 w-8 text-orange-500" />
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    حذف جميع رموز الشحن
+                                </h3>
+                            </div>
+                            <div className="mb-6">
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    هل أنت متأكد من حذف جميع رموز الشحن؟ هذا الإجراء سيقوم بـ:
+                                </p>
+                                <ul className="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                    <li>• حذف جميع رموز الشحن من النظام</li>
+                                    <li>• عدم إمكانية استخدام أي رمز شحن</li>
+                                    <li>• هذا الإجراء لا يمكن التراجع عنه!</li>
+                                </ul>
+                            </div>
+                            <div className="flex space-x-3 space-x-reverse">
+                                <button
+                                    onClick={() => setShowResetCodesConfirm(false)}
+                                    className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
+                                >
+                                    إلغاء
+                                </button>
+                                <button
+                                    onClick={handleResetAllCodes}
+                                    disabled={actionLoading}
+                                    className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {actionLoading ? 'جاري التنفيذ...' : 'تأكيد'}
+                                </button>
                             </div>
                         </div>
                     </div>

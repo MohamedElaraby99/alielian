@@ -442,6 +442,136 @@ const getUserStats = async (req, res, next) => {
     }
 };
 
+// Update user information
+const updateUser = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const updateData = req.body;
+
+        // Remove sensitive fields that shouldn't be updated
+        delete updateData.password;
+        delete updateData.email; // Email updates should be handled separately for security
+        delete updateData.forgotPasswordToken;
+        delete updateData.forgotPasswordExpiry;
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return next(new AppError("User not found", 404));
+        }
+
+        // Update user fields
+        Object.keys(updateData).forEach(key => {
+            if (updateData[key] !== undefined) {
+                user[key] = updateData[key];
+            }
+        });
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "User updated successfully",
+            data: {
+                userId: user._id,
+                user: {
+                    id: user._id,
+                    fullName: user.fullName,
+                    username: user.username,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                    fatherPhoneNumber: user.fatherPhoneNumber,
+                    governorate: user.governorate,
+                    stage: user.stage,
+                    age: user.age,
+                    role: user.role,
+                    isActive: user.isActive !== false,
+                    createdAt: user.createdAt
+                }
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Update user password
+const updateUserPassword = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            return next(new AppError("Password must be at least 6 characters long", 400));
+        }
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return next(new AppError("User not found", 404));
+        }
+
+        // Hash the new password
+        user.password = newPassword;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "User password updated successfully",
+            data: {
+                userId: user._id
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Reset all users wallet points
+const resetAllUserWallets = async (req, res, next) => {
+    try {
+        // Update all users to reset their wallet balance to 0
+        const result = await userModel.updateMany(
+            {},
+            { 
+                $set: { 
+                    "wallet.balance": 0,
+                    "wallet.transactions": []
+                } 
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully reset wallet points for ${result.modifiedCount} users`,
+            data: {
+                modifiedCount: result.modifiedCount
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Reset all recharge codes
+const resetAllRechargeCodes = async (req, res, next) => {
+    try {
+        // Import recharge code model
+        const rechargeCodeModel = (await import("../models/rechargeCode.model.js")).default;
+        
+        // Delete all recharge codes
+        const result = await rechargeCodeModel.deleteMany({});
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully reset all recharge codes. Deleted ${result.deletedCount} codes.`,
+            data: {
+                deletedCount: result.deletedCount
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 export {
     getAllUsers,
     createUser,
@@ -449,6 +579,10 @@ export {
     toggleUserStatus,
     deleteUser,
     updateUserRole,
+    updateUser,
+    updateUserPassword,
+    resetAllUserWallets,
+    resetAllRechargeCodes,
     getUserActivities,
     getUserStats
 }; 
