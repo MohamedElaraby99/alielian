@@ -88,6 +88,18 @@ export const updateUser = createAsyncThunk(
     }
 );
 
+export const updateUserPassword = createAsyncThunk(
+    "adminUser/updatePassword",
+    async ({ userId, password }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`/admin/users/users/${userId}/password`, { password });
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to update user password");
+        }
+    }
+);
+
 export const resetAllUserWallets = createAsyncThunk(
     "adminUser/resetAllWallets",
     async (_, { rejectWithValue }) => {
@@ -387,6 +399,21 @@ const adminUserSlice = createSlice({
                 }
             })
             .addCase(updateUser.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.actionError = action.payload;
+            });
+
+        // Update user password
+        builder
+            .addCase(updateUserPassword.pending, (state) => {
+                state.actionLoading = true;
+                state.actionError = null;
+            })
+            .addCase(updateUserPassword.fulfilled, (state) => {
+                state.actionLoading = false;
+                // Password update doesn't change the user object, just show success
+            })
+            .addCase(updateUserPassword.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.actionError = action.payload;
             });
