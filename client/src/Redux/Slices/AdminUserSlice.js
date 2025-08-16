@@ -104,7 +104,7 @@ export const resetAllUserWallets = createAsyncThunk(
     "adminUser/resetAllWallets",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post(`/admin/users/reset-all-wallets`);
+            const response = await axiosInstance.post(`/admin/users/users/reset-all-wallets`);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to reset user wallets");
@@ -116,7 +116,7 @@ export const resetUserWallet = createAsyncThunk(
     "adminUser/resetUserWallet",
     async (userId, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post(`/admin/users/${userId}/reset-wallet`);
+            const response = await axiosInstance.post(`/admin/users/users/${userId}/reset-wallet`);
             return response.data;
         }
         catch (error) {
@@ -129,7 +129,7 @@ export const resetAllRechargeCodes = createAsyncThunk(
     "adminUser/resetAllCodes",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post(`/admin/users/reset-all-codes`);
+            const response = await axiosInstance.post(`/admin/users/users/reset-all-codes`);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to reset recharge codes");
