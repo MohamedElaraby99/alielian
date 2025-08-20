@@ -56,14 +56,6 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
             </span>
           </div>
         )}
-        
-        {/* Stage Badge */}
-        <div className="absolute bottom-4 right-4">
-          <span className="px-3 py-2 bg-white/95 backdrop-blur-sm text-gray-800 rounded-full text-sm font-semibold shadow-lg border border-gray-100">
-            <FaGraduationCap className="inline ml-2" />
-            {subject.stage?.name || 'مرحلة غير محددة'}
-          </span>
-        </div>
       </div>
 
       {/* Content Section */}
