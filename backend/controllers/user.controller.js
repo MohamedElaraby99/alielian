@@ -129,32 +129,66 @@ const register = async (req, res, next) => {
         try {
             const { deviceInfo } = req.body;
             
+            console.log('=== DEVICE REGISTRATION DEBUG ===');
+            console.log('Raw deviceInfo from request:', deviceInfo);
+            console.log('Type of deviceInfo:', typeof deviceInfo);
+            
             if (deviceInfo) {
                 let parsedDeviceInfo = {};
                 try {
-                    parsedDeviceInfo = JSON.parse(deviceInfo);
-                } catch (e) {
-                    console.log('Failed to parse deviceInfo JSON, using as is:', e.message);
-                    parsedDeviceInfo = deviceInfo;
+                    // Handle both string and object formats
+                    if (typeof deviceInfo === 'string') {
+                        parsedDeviceInfo = JSON.parse(deviceInfo);
+                        console.log('Successfully parsed deviceInfo JSON');
+                    } else if (typeof deviceInfo === 'object') {
+                        parsedDeviceInfo = deviceInfo;
+                        console.log('DeviceInfo is already an object');
+                    } else {
+                        console.log('DeviceInfo is neither string nor object, skipping device registration');
+                        throw new Error('Invalid device info format');
+                    }
+                    
+                    console.log('Parsed deviceInfo:', parsedDeviceInfo);
+                    
+                    const deviceFingerprint = generateDeviceFingerprint(req, parsedDeviceInfo);
+                    const userAgent = req.get('User-Agent') || '';
+                    const baseInfo = parseDeviceInfo(userAgent);
+                    const finalDeviceInfo = {
+                        userAgent,
+                        platform: parsedDeviceInfo.platform || baseInfo.platform,
+                        browser: baseInfo.browser,
+                        os: baseInfo.os,
+                        ip: req.ip || req.connection?.remoteAddress || '',
+                        screenResolution: parsedDeviceInfo.screenResolution || '',
+                        timezone: parsedDeviceInfo.timezone || ''
+                    };
+                    const deviceName = generateDeviceName(finalDeviceInfo);
+                    
+                    console.log('Final device info:', finalDeviceInfo);
+                    console.log('Device fingerprint:', deviceFingerprint);
+                    console.log('Device name:', deviceName);
+                    
+                    // Create the first device for the user
+                    await UserDevice.create({
+                        user: user._id,
+                        deviceFingerprint,
+                        deviceName,
+                        deviceInfo: finalDeviceInfo,
+                        isActive: true,
+                        firstLogin: new Date(),
+                        lastActivity: new Date(),
+                        loginCount: 1
+                    });
+                    
+                    console.log('Device registered successfully for new user:', user._id);
+                } catch (parseError) {
+                    console.error('Failed to parse deviceInfo:', parseError.message);
+                    console.log('DeviceInfo value:', deviceInfo);
+                    // Continue without device registration
+                    console.log('Continuing registration without device tracking');
                 }
-                
-                const deviceFingerprint = generateDeviceFingerprint(req, parsedDeviceInfo);
-                const deviceName = generateDeviceName(parsedDeviceInfo, req);
-                const finalDeviceInfo = parseDeviceInfo(req, parsedDeviceInfo);
-                
-                // Create the first device for the user
-                await UserDevice.create({
-                    user: user._id,
-                    deviceFingerprint,
-                    deviceName,
-                    deviceInfo: finalDeviceInfo,
-                    isActive: true,
-                    firstLoginAt: new Date(),
-                    lastActivity: new Date(),
-                    loginCount: 1
-                });
-                
-                console.log('Device registered automatically for new user:', user._id);
+            } else {
+                console.log('No deviceInfo provided, skipping device registration');
             }
         } catch (deviceError) {
             console.error('Device registration error during signup:', deviceError);
@@ -236,16 +270,26 @@ const login = async (req, res, next) => {
                     }
 
                     // Register new device automatically on login
-                    const deviceName = generateDeviceName(deviceInfo || {}, req);
-                    const parsedDeviceInfo = parseDeviceInfo(req, deviceInfo || {});
+                    const userAgent = req.get('User-Agent') || '';
+                    const baseInfo = parseDeviceInfo(userAgent);
+                    const finalDeviceInfo = {
+                        userAgent,
+                        platform: (deviceInfo && deviceInfo.platform) || baseInfo.platform,
+                        browser: baseInfo.browser,
+                        os: baseInfo.os,
+                        ip: req.ip || req.connection?.remoteAddress || '',
+                        screenResolution: (deviceInfo && deviceInfo.screenResolution) || '',
+                        timezone: (deviceInfo && deviceInfo.timezone) || ''
+                    };
+                    const deviceName = generateDeviceName(finalDeviceInfo);
 
                     const newDevice = await UserDevice.create({
                         user: user._id,
                         deviceFingerprint,
                         deviceName,
-                        deviceInfo: parsedDeviceInfo,
+                        deviceInfo: finalDeviceInfo,
                         isActive: true,
-                        firstLoginAt: new Date(),
+                        firstLogin: new Date(),
                         lastActivity: new Date(),
                         loginCount: 1
                     });

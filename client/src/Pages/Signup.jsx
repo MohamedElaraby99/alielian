@@ -233,6 +233,8 @@ export default function Signup() {
       }
     };
     
+    console.log('Generated device info:', deviceInfo);
+    
     // Append device info as JSON string
     formData.append("deviceInfo", JSON.stringify(deviceInfo));
     
@@ -250,29 +252,43 @@ export default function Signup() {
     
     formData.append("avatar", signupData.avatar);
 
-    // dispatch create account action
-    const response = await dispatch(createAccount(formData));
-    if (response?.payload?.success) {
-      setSignupData({
-        fullName: "",
-        username: "",
-        email: "",
-        password: "",
-        phoneNumber: "",
-        fatherPhoneNumber: "",
-        governorate: "",
-        stageCategory: "",
-        stage: "",
-        age: "",
-        avatar: "",
-        adminCode: "",
-      });
-      setFilteredStages([]);
-      setPreviewImage("");
-      setIsCaptchaVerified(false);
-      setCaptchaSessionId("");
+    setIsLoading(true);
+    
+    try {
+      // dispatch create account action
+      const response = await dispatch(createAccount(formData));
+      if (response?.payload?.success) {
+        setSignupData({
+          fullName: "",
+          username: "",
+          email: "",
+          password: "",
+          phoneNumber: "",
+          fatherPhoneNumber: "",
+          governorate: "",
+          stageCategory: "",
+          stage: "",
+          age: "",
+          avatar: "",
+          adminCode: "",
+        });
+        setFilteredStages([]);
+        setPreviewImage("");
+        setIsCaptchaVerified(false);
+        setCaptchaSessionId("");
 
-      navigate("/");
+        navigate("/");
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      // If the error is related to device info, show a more specific message
+      if (error?.response?.data?.message?.includes('device information')) {
+        toast.error("حدث خطأ في معلومات الجهاز. يرجى تحديث الصفحة والمحاولة مرة أخرى.");
+      } else {
+        toast.error("حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 

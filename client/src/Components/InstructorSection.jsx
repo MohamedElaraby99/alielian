@@ -92,46 +92,52 @@ const InstructorSection = () => {
             {featuredInstructors.map((instructor, index) => (
               <div
                 key={instructor._id}
-                className="group bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer"
+                className="group bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 overflow-hidden border border-gray-200 dark:border-gray-600 cursor-pointer"
                 onClick={() => handleInstructorClick(instructor)}
               >
                 {/* Large Instructor Photo */}
-                <div className="relative w-full h-48 overflow-hidden">
+                <div className="relative w-full h-64 overflow-hidden">
                   {instructor.profileImage?.secure_url ? (
                     <img
                       src={generateImageUrl(instructor.profileImage.secure_url)}
                       alt={instructor.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       onError={handleImgError}
                     />
                   ) : (
-                    <div className="w-full h-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                      <FaGraduationCap className="text-gray-400 dark:text-gray-500 text-6xl" />
+                    <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                      <FaGraduationCap className="text-blue-400 dark:text-blue-300 text-8xl" />
                     </div>
                   )}
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 {/* Card Content */}
-                <div className="p-6">
+                <div className="p-8">
                   {/* Instructor Name */}
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                     {instructor.name}
                   </h3>
                   
                   {/* Role/Specialization */}
-                  <p className="text-gray-600 dark:text-gray-400 font-medium mb-3">
+                  <p className="text-blue-600 dark:text-blue-400 font-semibold text-lg mb-4">
                     {instructor.specialization}
                   </p>
                   
                   {/* Brief Description */}
-                  <p className="text-gray-500 dark:text-gray-500 text-sm leading-relaxed mb-4 line-clamp-3">
+                  <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 line-clamp-3">
                     {instructor.bio || `${instructor.name} هو مدرس محترف مع خبرة واسعة في مجال ${instructor.specialization}. لديه نهج تعليمي متميز ويساعد الطلاب على تحقيق أهدافهم التعليمية.`}
                   </p>
 
                   {/* Clickable Arrow Icon */}
-                  <div className="flex justify-end">
-                    <div className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 group-hover:scale-110">
-                      <FaArrowRight className="text-sm" />
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <FaGraduationCap className="mr-2" />
+                      <span>مدرس محترف</span>
+                    </div>
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
+                      <FaArrowRight className="text-lg" />
                     </div>
                   </div>
                 </div>
@@ -143,10 +149,10 @@ const InstructorSection = () => {
           <div className="text-center mt-16">
             <Link
               to="/instructors"
-              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200"
+              className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               عرض جميع المدرسين
-              <FaGraduationCap className="mr-2" />
+              <FaGraduationCap className="mr-3 text-xl" />
             </Link>
           </div>
         </div>

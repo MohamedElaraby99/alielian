@@ -7,7 +7,9 @@ import ALIELAIN from '../assets/ALIELAIN.png';
 const AnimatedHero = ({ onGetStarted }) => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { isLoggedIn } = useSelector((state) => state.auth);
+  const isAuthenticated = isLoggedIn;
+  const loading = false;
 
   useEffect(() => {
     setIsVisible(true);

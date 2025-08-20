@@ -725,7 +725,7 @@ export default function CourseDetail() {
                  </h5>
                  
                  {/* Videos Preview */}
-                 {previewItem.videos && previewItem.videos.length > 0 && (
+                 {(previewItem.videos && previewItem.videos.length > 0) ? (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">الفيديوهات ({previewItem.videos.length})</h6>
                      <div className="space-y-2">
@@ -744,10 +744,15 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 )}
+                 ) : (previewItem.videosCount > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الفيديوهات ({previewItem.videosCount})</h6>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل الفيديوهات بعد الشراء.</p>
+                   </div>
+                 ))}
 
                  {/* PDFs Preview */}
-                 {previewItem.pdfs && previewItem.pdfs.length > 0 && (
+                 {(previewItem.pdfs && previewItem.pdfs.length > 0) ? (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">الملفات PDF ({previewItem.pdfs.length})</h6>
                      <div className="space-y-2">
@@ -766,10 +771,15 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 )}
+                 ) : (previewItem.pdfsCount > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الملفات PDF ({previewItem.pdfsCount})</h6>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل الملفات بعد الشراء.</p>
+                   </div>
+                 ))}
 
                  {/* Exams Preview */}
-                 {previewItem.exams && previewItem.exams.length > 0 && (
+                 {(previewItem.exams && previewItem.exams.length > 0) ? (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">الاختبارات ({previewItem.exams.length})</h6>
                      <div className="space-y-2">
@@ -788,10 +798,15 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 )}
+                 ) : (previewItem.examsCount > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الاختبارات ({previewItem.examsCount})</h6>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل الاختبارات بعد الشراء.</p>
+                   </div>
+                 ))}
 
                  {/* Trainings Preview */}
-                 {previewItem.trainings && previewItem.trainings.length > 0 && (
+                 {(previewItem.trainings && previewItem.trainings.length > 0) ? (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">التدريبات ({previewItem.trainings.length})</h6>
                      <div className="space-y-2">
@@ -810,12 +825,22 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 )}
+                 ) : (previewItem.trainingsCount > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">التدريبات ({previewItem.trainingsCount})</h6>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل التدريبات بعد الشراء.</p>
+                   </div>
+                 ))}
 
+                 {/* Empty State */}
                  {(!previewItem.videos || previewItem.videos.length === 0) &&
                   (!previewItem.pdfs || previewItem.pdfs.length === 0) &&
                   (!previewItem.exams || previewItem.exams.length === 0) &&
-                  (!previewItem.trainings || previewItem.trainings.length === 0) && (
+                  (!previewItem.trainings || previewItem.trainings.length === 0) &&
+                  (previewItem.videosCount || 0) === 0 &&
+                  (previewItem.pdfsCount || 0) === 0 &&
+                  (previewItem.examsCount || 0) === 0 &&
+                  (previewItem.trainingsCount || 0) === 0 && (
                    <div className="text-center py-8">
                      <div className="text-4xl mb-2">📚</div>
                      <p className="text-gray-500 dark:text-gray-400">سيتم إضافة المحتوى قريباً</p>

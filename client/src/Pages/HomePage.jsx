@@ -195,13 +195,14 @@ export default function HomePage() {
       <AnimatedHero onGetStarted={onGetStarted} />
 
       {/* Featured Subjects Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900" dir="rtl">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               المواد الدراسية
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto mb-6"></div>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               اكتشف دوراتنا الأكثر شعبية وأعلى تقييماً
             </p>
           </div>
@@ -211,13 +212,15 @@ export default function HomePage() {
               {featuredSubjects.slice(0, 6).map((subject, index) => (
                 <div 
                   key={subject._id} 
-                  className="transform hover:scale-105 transition-all duration-300"
+                  className="transform hover:scale-105 transition-all duration-500"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <Suspense fallback={
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 animate-pulse">
+                      <div className="h-56 bg-gray-200 dark:bg-gray-700 rounded-xl mb-6"></div>
+                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                     </div>
                   }>
                     <SubjectCard subject={subject} />
@@ -226,14 +229,15 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4 animate-bounce">📚</div>
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                لا توجد دورات مميزة بعد
+            <div className="text-center py-16">
+              <div className="text-8xl mb-6 animate-bounce">📚</div>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                لا توجد مواد دراسية مميزة بعد
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                عد قريباً لدورات رائعة!
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                عد قريباً لمواد دراسية رائعة!
               </p>
+              <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto"></div>
             </div>
           )}
         </div>
@@ -275,43 +279,44 @@ export default function HomePage() {
               {featuredCourses.slice(0, 6).map((course, index) => (
                 <div
                   key={course._id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200 dark:border-gray-700"
+                  className="group bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 overflow-hidden border border-gray-200 dark:border-gray-600 cursor-pointer"
                 >
                   {/* Course Image */}
-                  <div className="h-48 relative overflow-hidden">
+                  <div className="h-56 relative overflow-hidden">
                     {course.image?.secure_url ? (
                       <>
                         <img
                           src={generateImageUrl(course.image.secure_url)}
                           alt={course.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.nextSibling.style.display = 'block';
                           }}
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                       </>
                     ) : (
                       <>
                         <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
-                        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <FaBookOpen className="text-6xl text-white opacity-80" />
+                          <FaBookOpen className="text-7xl text-white opacity-90" />
                         </div>
                       </>
                     )}
                     
                     {/* Fallback gradient for broken images */}
                     <div className="hidden w-full h-full bg-gradient-to-br from-blue-500 to-purple-600">
-                      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <FaBookOpen className="text-6xl text-white opacity-80" />
+                        <FaBookOpen className="text-7xl text-white opacity-90" />
                       </div>
                     </div>
                     
+                    {/* Stage Badge */}
                     <div className="absolute top-4 right-4">
-                      <span className="px-2 py-1 bg-white bg-opacity-90 text-gray-800 text-xs font-medium rounded-full">
+                      <span className="px-3 py-2 bg-white/95 backdrop-blur-sm text-gray-800 text-sm font-semibold rounded-full shadow-lg border border-gray-100">
                         {(() => {
                           const stageName = course.stage?.name;
                           const fallback = 'غير محدد';
@@ -344,53 +349,59 @@ export default function HomePage() {
                   </div>
 
                   {/* Course Content */}
-                  <div className="p-6">
+                  <div className="p-8">
                     {/* Course Title */}
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {course.title}
                     </h3>
 
                     {/* Course Description */}
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3 text-base leading-relaxed">
                       {course.description}
                     </p>
 
                     {/* Course Meta */}
-                    <div className="space-y-3 mb-4">
+                    <div className="space-y-4 mb-6">
                       {/* Instructor */}
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <FaUser className="text-gray-400" />
-                        <span>{course.instructor?.name || 'غير محدد'}</span>
+                      <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                          <FaUser className="text-blue-600 dark:text-blue-400 text-sm" />
+                        </div>
+                        <span className="font-medium">{course.instructor?.name || 'غير محدد'}</span>
                       </div>
 
-                                             {/* Subject */}
-                       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                         <FaBookOpen className="text-gray-400" />
-                         <span>{course.subject?.title || 'غير محدد'}</span>
-                       </div>
+                      {/* Subject */}
+                      <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                          <FaBookOpen className="text-purple-600 dark:text-purple-400 text-sm" />
+                        </div>
+                        <span className="font-medium">{course.subject?.title || 'غير محدد'}</span>
+                      </div>
 
-                                             {/* Lessons Count */}
-                       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                         <FaPlay className="text-gray-400" />
-                         <span>
-                           {(course.directLessons?.length || 0) + 
-                            (course.units?.reduce((total, unit) => total + (unit.lessons?.length || 0), 0) || 0)} درس متاح
-                         </span>
-                       </div>
+                      {/* Lessons Count */}
+                      <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                          <FaPlay className="text-green-600 dark:text-green-400 text-sm" />
+                        </div>
+                        <span className="font-medium">
+                          {(course.directLessons?.length || 0) + 
+                           (course.units?.reduce((total, unit) => total + (unit.lessons?.length || 0), 0) || 0)} درس متاح
+                        </span>
+                      </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <Link
                         to={`/courses/${course._id}`}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-center py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg transform group-hover:scale-105"
                       >
                         <FaEye />
                         <span>عرض التفاصيل</span>
                       </Link>
                       <Link
                         to="/courses"
-                        className="px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center"
+                        className="w-12 h-12 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-110 group-hover:shadow-md"
                       >
                         <FaArrowRight />
                       </Link>
