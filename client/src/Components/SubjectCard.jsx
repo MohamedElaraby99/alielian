@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaStar, FaUsers, FaClock, FaTag, FaPlay, FaGraduationCap } from "react-icons/fa";
+import { FaStar, FaUsers, FaClock, FaTrash, FaPlay, FaGraduationCap } from "react-icons/fa";
 import { generateImageUrl } from "../utils/fileUtils";
 import { placeholderImages } from "../utils/placeholderImages";
 
@@ -77,6 +77,32 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
         <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 line-clamp-3">
           {subject.description}
         </p>
+
+        {showActions && (
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit && onEdit(subject)}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all duration-300"
+              >
+                تعديل
+              </button>
+              <button
+                onClick={() => onToggleFeatured && onToggleFeatured(subject._id)}
+                className={`${subject.featured ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-4 py-2 rounded-xl font-semibold transition-all duration-300`}
+              >
+                {subject.featured ? 'إلغاء التميز' : 'تمييز'}
+              </button>
+            </div>
+            <button
+              onClick={() => onDelete && onDelete(subject._id)}
+              className="w-12 h-12 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-xl transition-all duration-300 flex items-center justify-center"
+              aria-label="حذف"
+            >
+              <FaTrash />
+            </button>
+          </div>
+        )}
 
       </div>
     </div>

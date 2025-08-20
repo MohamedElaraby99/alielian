@@ -628,7 +628,7 @@ export default function SubjectDashboard() {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Featured Course
+                    مميز
                   </label>
                 </div>
 
@@ -642,7 +642,7 @@ export default function SubjectDashboard() {
                     }}
                     className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
                   >
-                    Cancel
+                    الغاء
                   </button>
                   <button
                     type="submit"
