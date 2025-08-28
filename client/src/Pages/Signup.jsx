@@ -125,24 +125,18 @@ export default function Signup() {
 
   // CAPTCHA handlers
   function handleCaptchaVerified(sessionId) {
-    console.log('CAPTCHA verified with session ID:', sessionId);
-    console.log('Setting captchaSessionId to:', sessionId);
-    console.log('Setting isCaptchaVerified to true');
+   
     setCaptchaSessionId(sessionId);
     setIsCaptchaVerified(true);
     
     // Add a small delay to ensure state is updated
     setTimeout(() => {
-      console.log('State update delay completed');
-      console.log('Current captchaSessionId:', sessionId);
-      console.log('Current isCaptchaVerified:', true);
+     
     }, 100);
   }
 
   function handleCaptchaError(error) {
-    console.log('CAPTCHA error:', error);
-    console.log('Setting isCaptchaVerified to false');
-    console.log('Clearing captchaSessionId');
+   
     setIsCaptchaVerified(false);
     setCaptchaSessionId("");
   }
@@ -151,14 +145,7 @@ export default function Signup() {
     event.preventDefault();
     
     // Check CAPTCHA verification first
-    console.log('=== FORM SUBMISSION DEBUG ===');
-    console.log('Form submission - CAPTCHA verified:', isCaptchaVerified);
-    console.log('Form submission - CAPTCHA session ID:', captchaSessionId);
-    console.log('Form submission - CAPTCHA session ID type:', typeof captchaSessionId);
-    console.log('Form submission - CAPTCHA session ID length:', captchaSessionId ? captchaSessionId.length : 0);
-    console.log('Form submission - Terms accepted:', termsAccepted);
-    console.log('Form submission - Form data:', signupData);
-    console.log('=== END DEBUG ===');
+   
     
     if (!isCaptchaVerified) {
       toast.error("يرجى التحقق من رمز الأمان أولاً");
@@ -306,17 +293,10 @@ export default function Signup() {
       formData.append("deviceInfo[additionalInfo][colorDepth]", deviceInfo.additionalInfo.colorDepth);
       formData.append("deviceInfo[additionalInfo][touchSupport]", deviceInfo.additionalInfo.touchSupport);
       
-      // Add all other data as JSON string
+     
       formData.append("data", JSON.stringify(requestData));
       
-      // Debug: Log what's being sent
-      console.log('=== SENDING FORMDATA REQUEST ===');
-      console.log('FormData contents:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-      console.log('captchaSessionId from state:', captchaSessionId);
-      console.log('=== END DEBUG ===');
+      
       
       // dispatch create account action with FormData
       const response = await dispatch(createAccount(formData));
@@ -344,10 +324,7 @@ export default function Signup() {
       }
       } else {
       // No avatar file, send as JSON
-      console.log('=== SENDING JSON REQUEST ===');
-      console.log('Request data:', requestData);
-      console.log('captchaSessionId from state:', captchaSessionId);
-      console.log('=== END DEBUG ===');
+        
       
       const response = await dispatch(createAccount(requestData));
       if (response?.payload?.success) {

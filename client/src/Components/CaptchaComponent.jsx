@@ -17,15 +17,15 @@ const CaptchaComponent = ({ onVerified, onError }) => {
     setUserAnswer('');
     
     try {
-      console.log('Generating CAPTCHA...');
+     
       const response = await axiosInstance.get('/captcha/generate');
-      console.log('CAPTCHA Response:', response.data);
+   
       
       if (response.data.success) {
         setCaptchaData(response.data.data);
-        console.log('CAPTCHA generated successfully:', response.data.data);
+       
       } else {
-        console.error('CAPTCHA generation failed:', response.data);
+       
         toast.error('فشل في إنشاء رمز التحقق');
       }
     } catch (error) {
@@ -51,27 +51,22 @@ const CaptchaComponent = ({ onVerified, onError }) => {
 
     setIsVerifying(true);
     
-    try {
-      console.log('Verifying CAPTCHA:', {
-        sessionId: captchaData.sessionId,
-        answer: userAnswer.trim()
-      });
-      
+    try {    
       const response = await axiosInstance.post('/captcha/verify', {
         sessionId: captchaData.sessionId,
         answer: userAnswer.trim()
       });
       
-      console.log('Verification response:', response.data);
+    
       
       if (response.data.success) {
         setIsVerified(true);
         toast.success('تم التحقق بنجاح');
-        console.log('CAPTCHA verified successfully with session ID:', captchaData.sessionId);
+   
         
         // Call the callback with the session ID immediately after verification
         if (onVerified) {
-          console.log('Calling onVerified with session ID:', captchaData.sessionId);
+   
           onVerified(captchaData.sessionId);
         }
       }
@@ -84,7 +79,7 @@ const CaptchaComponent = ({ onVerified, onError }) => {
       
       // If session expired or too many attempts, generate new CAPTCHA
       if (error.response?.status === 400) {
-        console.log('Generating new CAPTCHA due to error');
+     
         generateCaptcha();
       }
       
@@ -115,18 +110,13 @@ const CaptchaComponent = ({ onVerified, onError }) => {
 
   // Generate CAPTCHA on component mount
   useEffect(() => {
-    console.log('CaptchaComponent mounted, generating CAPTCHA...');
+  
     generateCaptcha();
   }, []);
 
   // Debug useEffect to track state changes
   useEffect(() => {
-    console.log('CAPTCHA State Changed:', {
-      captchaData: !!captchaData,
-      isLoading,
-      isVerified,
-      userAnswer
-    });
+
   }, [captchaData, isLoading, isVerified, userAnswer]);
 
   return (

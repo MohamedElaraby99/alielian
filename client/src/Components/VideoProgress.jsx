@@ -41,7 +41,7 @@ const VideoProgress = ({
   // Get video progress when component mounts
   useEffect(() => {
     if (videoId && courseId) {
-      console.log('Getting video progress for:', { courseId, videoId });
+      
       // Reset progress restoration flag when video changes
       progressRestoredRef.current = false;
       dispatch(getVideoProgress({ courseId, videoId }));
@@ -78,13 +78,13 @@ const VideoProgress = ({
     // Prevent progress from going backwards (use stored progress as minimum)
     const storedProgress = currentVideoProgress?.progress || 0;
     if (progress < storedProgress && currentTime > 0) {
-      console.log(`Progress protection: preventing regression from ${storedProgress}% to ${progress}%. Using stored progress.`);
+     
       progress = storedProgress;
     }
     
     // Additional validation: if currentTime is 0 but we have stored progress, don't regress
     if (currentTime === 0 && storedProgress > 0) {
-      console.log(`Progress protection: currentTime is 0 but stored progress is ${storedProgress}%. Maintaining stored progress.`);
+     
       progress = storedProgress;
     }
     
@@ -127,7 +127,7 @@ const VideoProgress = ({
         setNextCheckpointIndex(prev => prev + 1);
         return nextCheckpoint.percentage;
       } else {
-        console.log('Checkpoint not reached: insufficient watch time', { currentTime, checkpointTime: nextCheckpoint.time, totalWatchTime });
+          
       }
     }
     
@@ -137,7 +137,7 @@ const VideoProgress = ({
   // Initialize checkpoint tracking when video loads
   useEffect(() => {
     if (duration > 0 && currentVideoProgress && !progressRestoredRef.current) {
-      console.log('Initializing video progress from saved data:', currentVideoProgress);
+     
       
       // Mark that we've restored progress to prevent infinite loop
       progressRestoredRef.current = true;
@@ -149,7 +149,7 @@ const VideoProgress = ({
       // Validate checkpoint data - if progress is 0% but checkpoints are reached, reset them
       const currentProgress = Math.round((currentVideoProgress.currentTime / duration) * 100);
       if (currentProgress === 0 && reachedPercentageValues.length > 0) {
-        console.log('Data inconsistency detected: 0% progress but checkpoints reached. Resetting checkpoints.');
+       
         // Reset the inconsistent data by not setting any reached checkpoints
         setNextCheckpointIndex(0);
       } else {
@@ -170,14 +170,14 @@ const VideoProgress = ({
       
       // If user has existing progress, seek to that position
       if (currentVideoProgress.currentTime > 0 && onSeek) {
-        console.log('Seeking to saved position:', currentVideoProgress.currentTime, 'seconds');
+       
         // Small delay to ensure player is ready
         setTimeout(() => {
           onSeek(currentVideoProgress.currentTime);
           // Show notification to user
           const minutes = Math.floor(currentVideoProgress.currentTime / 60);
           const seconds = Math.floor(currentVideoProgress.currentTime % 60);
-          console.log(`✅ Progress restored! Resuming from ${minutes}:${seconds.toString().padStart(2, '0')}`);
+         
           setProgressRestored(true);
           // Hide notification after 3 seconds
           setTimeout(() => setProgressRestored(false), 3000);
@@ -186,7 +186,7 @@ const VideoProgress = ({
       
       // Special case: If video is completed but watch time is low, estimate it
       if (currentProgress >= 90 && (!currentVideoProgress.totalWatchTime || currentVideoProgress.totalWatchTime < duration * 0.8)) {
-        console.log('Video completed but watch time seems low, estimating...');
+       
         const estimatedWatchTime = Math.max(duration * 0.8, currentTime); // At least 80% of duration
         setTotalWatchTime(estimatedWatchTime);
         
@@ -217,7 +217,7 @@ const VideoProgress = ({
           if (watchTime > 0) {
             setTotalWatchTime(prev => {
               const newTotal = prev + watchTime;
-              console.log('Accumulating watch time:', prev, '+', watchTime, '=', newTotal);
+             
               return newTotal;
             });
           }
@@ -225,7 +225,7 @@ const VideoProgress = ({
           // Ensure watch time is at least as much as current time (for completed videos)
           const estimatedWatchTime = calculateWatchTimeFromProgress(currentTime, duration);
           if (estimatedWatchTime > totalWatchTime) {
-            console.log('Updating watch time to match current progress:', totalWatchTime, '->', estimatedWatchTime);
+           
             setTotalWatchTime(estimatedWatchTime);
           }
           
@@ -242,12 +242,7 @@ const VideoProgress = ({
           const shouldUpdate = (progressChanged || checkpointReached || watchTimeIncreased || estimatedTimeIncreased) && !isProgressRegressive;
           
           if (shouldUpdate) {
-            console.log('Updating backend progress:', {
-              progress: `${currentBackendProgress}% -> ${progress}%`,
-              watchTime: watchTime,
-              checkpoint: newReachedPercentage,
-              totalWatchTime: totalWatchTime
-            });
+           
             
             dispatch(updateVideoProgress({
               courseId,
@@ -261,12 +256,7 @@ const VideoProgress = ({
               }
             }));
           } else if (isProgressRegressive) {
-            console.log('Skipping regressive progress update:', {
-              currentBackendProgress: `${currentBackendProgress}%`,
-              calculatedProgress: `${progress}%`,
-              currentTime,
-              reason: 'Progress would go backwards'
-            });
+
           }
         }
       }, 1000);

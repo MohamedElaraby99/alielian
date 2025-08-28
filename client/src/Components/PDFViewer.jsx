@@ -34,8 +34,7 @@ const PDFViewer = ({
 
    useEffect(() => {
      if (isOpen && pdfUrl) {
-       console.log('PDFViewer opened with URL:', pdfUrl);
-       console.log('Current device type:', isMobile ? 'Mobile' : 'Desktop');
+      
        setIsLoading(true);
        setError(null);
        setCurrentPage(1);
@@ -51,7 +50,7 @@ const PDFViewer = ({
     const cleanUrl = getCleanPdfUrl(pdfUrl);
     
     try {
-             console.log('Starting PDF processing...');
+           
       setConversionProgress(10);
       
       // Simulate conversion progress
@@ -90,30 +89,28 @@ const PDFViewer = ({
           setTotalPages(convertedImages.length);
           setIsLoading(false);
           setUseNativePdf(false);
-          
-          console.log('PDF conversion completed successfully');
-          console.log('Converted images:', convertedImages);
+         
         } else {
           // Client-side render via pdf.js when server returned empty data
-          console.log('Server conversion empty, rendering with pdf.js');
+         
           await renderWithPdfJs(cleanUrl);
         }
       } else {
         // If conversion fails, use the original PDF URL directly
-        console.log('Processing failed, rendering with pdf.js fallback');
+       
         await renderWithPdfJs(cleanUrl);
       }
          } catch (error) {
-       console.error('Error processing PDF:', error);
+      
        
        // Show user-friendly error message
-       console.log('PDF conversion failed:', error.message);
+      
        
         // If API call fails, attempt client-side render; if that fails, iframe fallback
         try {
           await renderWithPdfJs(cleanUrl);
         } catch (e) {
-          console.warn('pdf.js fallback failed, using native iframe', e);
+         
           setUseNativePdf(true);
           setNativePdfUrl(cleanUrl);
           setPageImages([]);
@@ -162,7 +159,7 @@ const PDFViewer = ({
     setTotalPages(images.length);
     setIsLoading(false);
     setUseNativePdf(false);
-    console.log('Client-side PDF render complete');
+   
   };
 
   const handlePreviousPage = () => {
@@ -334,7 +331,7 @@ const PDFViewer = ({
                   {/* Current Page PDF Display */}
                   <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
                     {(() => {
-                      console.log('Rendering PDF display. isMobile:', isMobile);
+                      
                       if (useNativePdf && nativePdfUrl) {
                         return (
                           <iframe
@@ -358,12 +355,11 @@ const PDFViewer = ({
                             maxHeight: '80vh'
                           }}
                           onLoad={() => {
-                            console.log(`Page ${currentPage} image loaded successfully`);
+                           
                           }}
                           onError={(e) => {
-                            console.error(`Failed to load page ${currentPage} image:`, e);
-                            console.log('Current device type:', isMobile ? 'Mobile' : 'Desktop');
-                            console.log('Image URL being loaded:', pageImages[currentPage - 1]?.imageUrl);
+                           
+                           
                             // Switch to native PDF viewer as a fallback
                             const clean = getCleanPdfUrl(pdfUrl);
                             setUseNativePdf(true);

@@ -54,7 +54,7 @@ export default function BlogDashboard() {
       const formDataObj = new FormData();
       Object.keys(formData).forEach(key => {
         if (key === 'image' && formData[key]) {
-          console.log('Adding image to form data:', formData[key].name, formData[key].size);
+            
           formDataObj.append('image', formData[key]);
         } else if (key === 'tags') {
           formDataObj.append(key, formData[key]);

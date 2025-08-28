@@ -98,13 +98,7 @@ export default function Profile() {
       previewImage: null,
       userId: userData?._id,
     });
-    console.log('Edit mode - userInput set to:', {
-      name: userData?.fullName || "",
-      phoneNumber: userData?.phoneNumber || "",
-      fatherPhoneNumber: userData?.fatherPhoneNumber || "",
-      governorate: userData?.governorate || "",
-      age: userData?.age || "",
-    });
+    
   }
 
   function handleCancelEdit() {
@@ -140,19 +134,7 @@ export default function Profile() {
           userInput.age !== userData?.age;
       }
       
-      console.log('Change detection:', {
-        nameChanged: userInput.name !== userData?.fullName,
-        usernameChanged: userInput.username !== userData?.username,
-        phoneChanged: userInput.phoneNumber !== userData?.phoneNumber,
-        fatherPhoneChanged: userData?.role !== 'ADMIN' && userData?.role !== 'SUPER_ADMIN' ? userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber : false,
-        governorateChanged: userData?.role !== 'ADMIN' && userData?.role !== 'SUPER_ADMIN' ? userInput.governorate !== userData?.governorate : false,
 
-        ageChanged: userData?.role !== 'ADMIN' && userData?.role !== 'SUPER_ADMIN' ? userInput.age !== userData?.age : false,
-        avatarChanged: !!userInput.avatar,
-        userRole: userData?.role,
-        hasChanges
-      });
-      
       setIschanged(hasChanges);
     } else {
       setIschanged(false);
@@ -161,17 +143,14 @@ export default function Profile() {
 
   useEffect(() => {
     async function fetchUser() {
-      console.log('Fetching user data...');
+      
       const result = await dispatch(getUserData());
-      console.log('User data fetch result:', result);
+     
     }
     if (Object.keys(userData).length < 1) fetchUser();
   }, []);
 
-  // Debug: Log user data to see what's being received
-  useEffect(() => {
-    console.log('Current userData:', userData);
-  }, [userData]);
+  
 
   useEffect(() => {
     if (userData && Object.keys(userData).length > 0) {
@@ -480,9 +459,7 @@ export default function Profile() {
                       : 'bg-green-500 hover:bg-green-600'
                   }`}
               disabled={!isChanged || isUpdating}
-              onClick={() => {
-                console.log('Save button clicked. isChanged:', isChanged, 'isUpdating:', isUpdating);
-              }}
+             
             >
                   {isUpdating ? (
                     <>

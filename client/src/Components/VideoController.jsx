@@ -84,23 +84,20 @@ const VideoController = ({
     setShowControls(true);
     setVideoState({ ready: false, canPlay: false, seeking: false, error: null });
     
-    // Debug: Log video data
-    console.log('Video data received:', video);
-    console.log('Video URL:', getVideoUrl(video));
-    console.log('Video title:', getVideoTitle(video));
+   
     
     // Check if it's a YouTube video
     const videoUrl = getVideoUrl(video);
     const videoId = extractYouTubeVideoId(videoUrl);
     
     if (videoId) {
-      console.log('YouTube video detected with ID:', videoId);
+     
       setIsYouTube(true);
       setYoutubeVideoId(videoId);
       setVideoState(prev => ({ ...prev, ready: true, canPlay: true }));
       setIsLoading(false);
     } else {
-      console.log('Not a YouTube video, using simulated player');
+     
       setIsYouTube(false);
       setYoutubeVideoId(null);
       // Simulate video loading for non-YouTube videos
@@ -216,19 +213,19 @@ const VideoController = ({
     setIsPlaying(!isPlaying);
     if (!isPlaying) {
       // Simulate play action
-      console.log('Playing video...');
+     
     } else {
       // Simulate pause action
-      console.log('Pausing video...');
+     
     }
   };
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
     if (isMuted) {
-      console.log('Unmuting video...');
+      
     } else {
-      console.log('Muting video...');
+     
     }
   };
 
@@ -251,7 +248,7 @@ const VideoController = ({
       setVideoState(prev => ({ ...prev, seeking: false }));
     }, 500);
     
-    console.log(`Seeking to ${formatTime(newTime)}`);
+   
   };
 
   const adjustVolume = (change) => {
@@ -262,7 +259,7 @@ const VideoController = ({
     } else if (isMuted) {
       setIsMuted(false);
     }
-    console.log(`Volume set to ${Math.round(newVolume * 100)}%`);
+   
   };
 
   const handleVolumeChange = (newVolume) => {
@@ -272,7 +269,7 @@ const VideoController = ({
     } else if (isMuted) {
       setIsMuted(false);
     }
-    console.log(`Volume set to ${Math.round(newVolume * 100)}%`);
+   
   };
 
   const handleProgressClick = (e) => {
@@ -314,7 +311,7 @@ const VideoController = ({
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      console.log('Link copied to clipboard');
+     
     }
   };
 
@@ -345,7 +342,7 @@ const VideoController = ({
     if (!videoId) return '';
     // Simple embed URL that should work
     const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    console.log('Generated YouTube embed URL:', embedUrl);
+    
     return embedUrl;
   };
 
@@ -419,12 +416,12 @@ const VideoController = ({
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                   allowFullScreen
                   onLoad={() => {
-                    console.log('YouTube iframe loaded successfully');
+                   
                     setIsLoading(false);
                     setVideoState(prev => ({ ...prev, ready: true, canPlay: true }));
                   }}
                   onError={() => {
-                    console.error('YouTube iframe failed to load');
+
                     setIsLoading(false);
                     setVideoState(prev => ({ ...prev, error: 'Failed to load video' }));
                   }}
@@ -691,7 +688,7 @@ const VideoController = ({
                               onClick={() => {
                                 setPlaybackRate(rate);
                                 setShowSettings(false);
-                                console.log(`Playback rate set to ${rate}x`);
+                                setIsLoading(true);   
                               }}
                               className={`block w-full text-left px-2 py-1 rounded text-sm ${
                                 playbackRate === rate ? 'bg-blue-500' : 'hover:bg-white/20'

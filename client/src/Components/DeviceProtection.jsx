@@ -62,10 +62,10 @@ const DeviceProtection = ({ children }) => {
             // First, try to check if device is already authorized
             try {
                 await dispatch(checkDeviceAuthorization(deviceData)).unwrap();
-                console.log('Device authorization successful');
+              
                 setDeviceStatus('authorized');
             } catch (checkError) {
-                console.log('Device check failed, trying to register:', checkError);
+              
                 // If device check fails, try to register the device
                 await registerNewDevice(deviceData);
             }
@@ -84,9 +84,9 @@ const DeviceProtection = ({ children }) => {
     const registerNewDevice = async (deviceData) => {
         try {
             setDeviceStatus('registering');
-            console.log('Attempting to register device with data:', deviceData);
+
             const result = await dispatch(registerDevice(deviceData)).unwrap();
-            console.log('Device registration successful:', result);
+          
             setDeviceStatus('authorized');
             toast.success('تم تسجيل الجهاز بنجاح في المنصة');
         } catch (registerError) {
@@ -96,7 +96,7 @@ const DeviceProtection = ({ children }) => {
             
             const errorMessage = registerError?.message || registerError || '';
             if (errorMessage.includes('DEVICE_LIMIT_EXCEEDED') || errorMessage.includes('الحد الأقصى')) {
-                console.log('Device limit exceeded, blocking access');
+              
                 setDeviceStatus('unauthorized');
             } else {
                 // For other errors, allow access with warning to avoid blocking logged-in users

@@ -98,7 +98,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
         alert(`فشل في مسح محاولة الامتحان: ${errorData.message || 'خطأ غير معروف'}`);
       }
     } catch (error) {
-      console.error('Error clearing exam attempt:', error);
+     
       alert('حدث خطأ أثناء مسح محاولة الامتحان');
     }
   };
@@ -122,7 +122,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
         alert(`فشل في مسح محاولة التدريب: ${errorData.message || 'خطأ غير معروف'}`);
       }
     } catch (error) {
-      console.error('Error clearing training attempt:', error);
+
       alert('حدث خطأ أثناء مسح محاولة التدريب');
     }
   };
@@ -184,10 +184,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
     const convertedUrl = convertUrl(url);
     setConvertedUrl(convertedUrl);
     
-    console.log('URL Conversion:', {
-      input: url,
-      converted: convertedUrl
-    });
+    
   };
 
   const renderVideoContent = () => (
@@ -213,7 +210,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
                     alt={video.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      console.log('Thumbnail failed to load, using fallback');
+                      
                       e.target.style.display = 'none';
                       e.target.parentElement.style.background = 'linear-gradient(to bottom right, #1f2937, #111827)';
                     }}
@@ -874,10 +871,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
       {/* PDF Viewer */}
       {pdfViewerOpen && currentPdf && (() => {
         const pdfUrl = convertUrl(currentPdf.url);
-        console.log('🔍 PDF Debug Info:');
-        console.log('Current PDF data:', currentPdf);
-        console.log('Original URL:', currentPdf.url);
-        console.log('Processed URL:', pdfUrl);
+      
         return (
           <PDFViewer
             pdfUrl={pdfUrl}

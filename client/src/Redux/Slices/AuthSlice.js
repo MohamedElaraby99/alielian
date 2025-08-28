@@ -9,10 +9,10 @@ const initialState = {
         try {
             const data = localStorage.getItem("data");
             const parsedData = data ? JSON.parse(data) : {};
-            console.log("Initializing Redux state with data:", parsedData);
+                    
             return parsedData;
         } catch (error) {
-            console.error("Error parsing localStorage data:", error);
+           
             return {};
         }
     })()
@@ -61,10 +61,10 @@ export const logout = createAsyncThunk("/auth/logout", async () => {
 export const getUserData = createAsyncThunk("/auth/user/me", async () => {
     try {
         const res = await axiosInstance.get("/user/me");
-        console.log("getUserData response:", res?.data);
+       
         return res?.data
     } catch (error) {
-        console.error("getUserData error:", error);
+       
         throw error;
     }
 })
@@ -146,10 +146,10 @@ const authSlice = createSlice({
                     state.data = parsedData;
                     state.role = storedRole;
                     state.isLoggedIn = true;
-                    console.log("Synced from localStorage:", { data: parsedData, role: storedRole });
+                   
                 }
             } catch (error) {
-                console.error("Error syncing from localStorage:", error);
+              
             }
         },
         // Clear all user data (called from other slices)
@@ -173,7 +173,7 @@ const authSlice = createSlice({
             state.role = "";
             state.isLoggedIn = false;
             
-            console.log("All user data cleared from auth slice");
+            
         }
     },
     extraReducers: (builder) => {
@@ -220,15 +220,12 @@ const authSlice = createSlice({
             // Clear sessionStorage as well
             sessionStorage.clear();
             
-            console.log("Logout completed - all user data cleared");
+
         })
 
         // for get user data
         builder.addCase(getUserData.fulfilled, (state, action) => {
-            console.log("=== GETUSERDATA FULFILLED ===");
-            console.log("Action payload:", action?.payload);
-            console.log("User data:", action?.payload?.user);
-            console.log("User role:", action?.payload?.user?.role);
+            
             
             localStorage.setItem("data", JSON.stringify(action?.payload?.user));
             localStorage.setItem("role", action?.payload?.user?.role);
@@ -236,11 +233,7 @@ const authSlice = createSlice({
             state.data = action?.payload?.user;
             state.role = action?.payload?.user?.role;
             state.isLoggedIn = true;
-            
-            console.log("Updated Redux state:");
-            console.log("- state.data:", state.data);
-            console.log("- state.role:", state.role);
-            console.log("- state.isLoggedIn:", state.isLoggedIn);
+
         })
     }
 })

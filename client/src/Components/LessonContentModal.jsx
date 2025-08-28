@@ -238,7 +238,7 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
   const getPdfUrl = (url) => {
     if (!url) return '';
     
-    console.log('Original PDF URL:', url);
+    
     
     // Get the base backend URL from axiosInstance configuration
     const backendBaseUrl = axiosInstance.defaults.baseURL.replace('/api/v1', '');
@@ -246,13 +246,13 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
     // If it's already a full URL pointing to frontend, convert it to backend
     if (url.includes('localhost:5173')) {
       const convertedUrl = url.replace('http://localhost:5173', backendBaseUrl);
-      console.log('Frontend URL detected, converting to backend:', convertedUrl);
+    
       return convertedUrl;
     }
     
     // If it's already a full URL pointing to backend, return as is
     if (url.startsWith(backendBaseUrl) || url.startsWith('https://api.fikra.solutions')) {
-      console.log('Backend URL detected, returning as is:', url);
+    
       return url;
     }
     
@@ -260,31 +260,31 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
     if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
       const cleanPath = url.startsWith('/') ? url.substring(1) : url;
       const fullBackendUrl = `${backendBaseUrl}/${cleanPath}`;
-      console.log('Converted to backend URL:', fullBackendUrl);
+    
       return fullBackendUrl;
     }
     
     // If it's just a filename, assume it's in uploads/pdfs/
     const fullBackendUrl = `${backendBaseUrl}/uploads/pdfs/${url}`;
-    console.log('Assumed PDF path, converted to:', fullBackendUrl);
+  
     return fullBackendUrl;
   };
 
   // Test PDF URL function
   const testPdfUrl = (url) => {
     const testUrl = getPdfUrl(url);
-    console.log('Testing PDF URL:', testUrl);
+  
     
     // Create a test iframe to check if the URL works
     const testIframe = document.createElement('iframe');
     testIframe.style.display = 'none';
     testIframe.src = testUrl;
     testIframe.onload = () => {
-      console.log('✅ PDF URL is working!');
+    
       document.body.removeChild(testIframe);
     };
     testIframe.onerror = () => {
-      console.log('❌ PDF URL failed to load');
+    
       document.body.removeChild(testIframe);
     };
     document.body.appendChild(testIframe);
@@ -379,7 +379,7 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
                       alt={data.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        console.log('Thumbnail failed to load, using fallback');
+                        
                         e.target.style.display = 'none';
                         // Add fallback background when thumbnail fails
                         e.target.parentElement.style.background = 'linear-gradient(to bottom right, #1f2937, #111827)';
@@ -680,10 +680,7 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
              {/* PDF Viewer */}
        {pdfViewerOpen && currentPdf && (() => {
          const pdfUrl = getPdfUrl(currentPdf.url);
-         console.log('🔍 PDF Debug Info:');
-         console.log('Current PDF data:', currentPdf);
-         console.log('Original URL:', currentPdf.url);
-         console.log('Processed URL:', pdfUrl);
+        
          return (
            <PDFViewer
              pdfUrl={pdfUrl}

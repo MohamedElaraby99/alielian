@@ -16,8 +16,7 @@ export default function Navbar() {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  // Debug: Simple check to see what's happening
-  console.log("🔍 Navbar - User state:", { user, role, hasUser: !!user?.fullName });
+
 
   // Use scroll to top utility
   useScrollToTop();
@@ -31,10 +30,10 @@ export default function Navbar() {
     const drawerToggle = document.getElementById('sidebar-drawer');
     
     if (drawerToggle) {
-      console.log("Navbar burger clicked - toggling drawer");
+      
       drawerToggle.checked = !drawerToggle.checked;
     } else {
-      console.log("Drawer element not found");
+     
     }
   };
 

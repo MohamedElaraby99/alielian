@@ -527,8 +527,7 @@ export default function DeviceManagementDashboard() {
                                         </button>
                                         <button
                                             onClick={() => {
-                                                console.log('Device Stats:', deviceStats);
-                                                console.log('Users Devices:', usersDevices);
+                                                    
                                                 toast.success('تم طباعة البيانات في وحدة التحكم');
                                             }}
                                             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium flex items-center space-x-2"

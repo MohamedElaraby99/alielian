@@ -7,13 +7,6 @@ const ApiTest = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Log API configuration
-    console.log('🔧 API Test Component Mounted');
-    console.log('Axios Instance Base URL:', axiosInstance.defaults.baseURL);
-    console.log('Current Location:', window.location.href);
-    console.log('Environment:', import.meta.env.MODE);
-    console.log('Is Dev:', import.meta.env.DEV);
-
     setApiInfo({
       baseURL: axiosInstance.defaults.baseURL,
       currentLocation: window.location.href,
@@ -27,7 +20,6 @@ const ApiTest = () => {
   const testApiConnection = async () => {
     setLoading(true);
     try {
-      console.log('🧪 Testing API connection...');
       // Test the base API endpoint
       const baseUrl = axiosInstance.defaults.baseURL.replace('/api/v1', '');
       const response = await fetch(`${baseUrl}/api/health`);
@@ -38,9 +30,9 @@ const ApiTest = () => {
         data: data,
         status: response.status
       });
-      console.log('✅ API test successful:', data);
+     
     } catch (error) {
-      console.error('❌ API test failed:', error);
+     
       setTestResult({
         success: false,
         error: error.message,
@@ -55,7 +47,7 @@ const ApiTest = () => {
   const testCaptcha = async () => {
     setLoading(true);
     try {
-      console.log('🧪 Testing CAPTCHA endpoint...');
+     
       const response = await axiosInstance.get('/captcha/generate');
       setTestResult({
         success: true,
@@ -63,7 +55,7 @@ const ApiTest = () => {
         status: response.status,
         endpoint: 'captcha/generate'
       });
-      console.log('✅ CAPTCHA test successful:', response.data);
+     
     } catch (error) {
       console.error('❌ CAPTCHA test failed:', error);
       setTestResult({

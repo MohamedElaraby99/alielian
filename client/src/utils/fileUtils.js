@@ -7,13 +7,7 @@
  */
 const getBaseApiUrl = () => {
   // Debug logging
-  console.log('🔧 FileUtils API URL Configuration:', {
-    isDev: import.meta.env.DEV,
-    hostname: window.location.hostname,
-    port: window.location.port,
-    href: window.location.href,
-    NODE_ENV: import.meta.env.MODE
-  });
+ 
 
   // For development, always use localhost
   if (import.meta.env.DEV || 
@@ -22,13 +16,13 @@ const getBaseApiUrl = () => {
       window.location.port === '5173' ||
       window.location.port === '5190') {
     const devUrl = 'http://localhost:4001/api/v1';
-    console.log('✅ FileUtils using development API URL:', devUrl);
+   
     return devUrl;
   }
   
   // Production fallback
   const prodUrl = 'https://lms.alielian.online/api/v1';
-  console.log('🌐 FileUtils using production API URL:', prodUrl);
+  
   return prodUrl;
 };
 
@@ -70,13 +64,7 @@ export const generateFileUrl = (filePath, subfolder = '') => {
     fullUrl = `${baseUrl}/uploads/${cleanPath}`;
   }
   
-  console.log('generateFileUrl:', {
-    filePath,
-    subfolder,
-    baseUrl,
-    cleanPath,
-    fullUrl
-  });
+  
   
   return fullUrl;
 };

@@ -30,7 +30,7 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(() => {
     const limit = exam?.timeLimit;
-    console.log('ExamModal: Setting initial timeLimit from exam data:', limit);
+    
     return (limit && !isNaN(limit)) ? limit * 60 : 1800; // Default to 30 minutes (1800 seconds)
   });
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -72,7 +72,7 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   useEffect(() => {
     if (exam && !examStarted) {
       const limit = exam.timeLimit;
-      console.log('ExamModal: Resetting timeLimit from exam data:', limit);
+     
       const validLimit = (limit && !isNaN(limit)) ? limit * 60 : 1800; // Default to 30 minutes
       setTimeLeft(validLimit);
       setAnswers({});
@@ -159,16 +159,7 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
       timeTaken: timeTakenMinutes // Keep for backwards compatibility
     };
 
-    console.log('=== EXAM SUBMISSION DEBUG ===');
-    console.log('Exam Type:', examType);
-    console.log('Exam Object:', exam);
-    console.log('Exam ID:', exam._id);
-    console.log('Course ID:', courseId);
-    console.log('Lesson ID:', lessonId);
-    console.log('Unit ID:', unitId);
-    console.log('Exam Data:', examData);
-    console.log('Total Questions:', totalQuestions);
-    console.log('Answers:', answers);
+   
 
     if (examType === 'training') {
       dispatch(takeTrainingExam(examData));
@@ -226,8 +217,7 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
                   alt="صورة السؤال" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    console.error('Failed to load image:', question.image);
-                    console.error('Attempted URL:', e.target.src);
+                    
                     e.target.style.display = 'none';
                   }}
                 />

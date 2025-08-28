@@ -20,7 +20,7 @@ const VideoUserProgress = ({ videoId, courseId }) => {
 
   useEffect(() => {
     if (videoId && courseId) {
-      console.log('Fetching all users progress for video:', videoId);
+      
       dispatch(getAllUsersProgress({ videoId, courseId }));
     }
   }, [dispatch, videoId, courseId]);

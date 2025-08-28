@@ -24,10 +24,7 @@ import liveMeetingRoutes from './routes/liveMeeting.routes.js';
 import captchaRoutes from './routes/captcha.routes.js';
 import stageCategoryRoutes from './routes/stageCategory.routes.js';
 import courseAccessRoutes from './routes/courseAccess.routes.js';
-
-
-
-
+import examQuestionRoutes from './routes/examQuestion.routes.js';
 import gradeRoutes from './routes/grade.routes.js';
 import instructorRoutes from './routes/instructor.routes.js';
 import stageRoutes from './routes/stage.routes.js';
@@ -296,6 +293,7 @@ app.use('/api/v1/live-meetings', liveMeetingRoutes);
 app.use('/api/v1/captcha', captchaRoutes);
 app.use('/api/v1/stage-categories', stageCategoryRoutes);
 app.use('/api/v1/course-access', courseAccessRoutes);
+app.use('/api/v1/exam-questions', examQuestionRoutes);
 
 // Apply device authorization middleware to protected routes
 app.use('/api/v1/courses', checkDeviceAuthorization, logDeviceAccess);

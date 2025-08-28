@@ -127,17 +127,16 @@ export default function AdminDashboard() {
     try {
       setStagesLoading(true);
       // Use the real stages stats API endpoint
-      console.log('📊 Fetching real stages statistics...');
+      
       const response = await axiosInstance.get('/stages/stats');
       
       if (response.data.success) {
         const stagesData = response.data.data?.stages || response.data.data || [];
-        console.log('📊 Real stages data received:', response.data);
-        console.log('📊 Raw stages array:', stagesData);
+       
         
         // Process real stages data
         const processedStages = stagesData.map(stage => {
-          console.log('📊 Processing stage:', stage);
+         
           return {
             name: stage.name || 'مرحلة غير محددة',
             studentsCount: stage.studentsCount || 0,
@@ -146,22 +145,22 @@ export default function AdminDashboard() {
           };
         });
         
-        console.log('✅ Real stages data processed and set:', processedStages);
+       
         
         // Only set stages if we have valid data
         if (processedStages.length > 0) {
           setStages(processedStages);
         } else {
-          console.log('⚠️ No valid stages data - chart will show empty state');
+         
           setStages([]);
         }
       } else {
-        console.log('⚠️ No stages data available in response');
+       
         setStages([]);
       }
     } catch (error) {
       console.error('❌ Error fetching stages data:', error);
-      console.log('⚠️ Stages API error - chart will show empty state');
+     
       setStages([]);
       toast.error('فشل في تحميل بيانات المراحل الدراسية');
     } finally {
@@ -172,11 +171,11 @@ export default function AdminDashboard() {
   // Function to fetch recharge codes statistics
   const fetchRechargeCodesStats = async () => {
     try {
-      console.log('📊 Fetching real recharge codes statistics...');
+     
       const response = await axiosInstance.get('/admin/recharge-codes/stats');
       if (response.data.success) {
         const stats = response.data.data.stats;
-        console.log('📊 Real recharge codes data received:', stats);
+       
         setRechargeCodesStats({
           totalGenerated: stats.totalCodes || 0,
           totalUsed: stats.usedCodes || 0,
@@ -185,7 +184,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching recharge codes stats:', error);
-      console.log('⚠️ Using fallback data - API might not be available');
+     
       // Set fallback data that's clearly marked as fake
       setRechargeCodesStats({
         totalGenerated: 0,
@@ -197,7 +196,7 @@ export default function AdminDashboard() {
 
   // Enhanced chart data for stages - now using real data
   const stagesChartData = useMemo(() => {
-    console.log('📊 Creating chart data for stages:', stages);
+   
     
     if (!stages || stages.length === 0) {
       return {
@@ -249,7 +248,7 @@ export default function AdminDashboard() {
       ],
     };
     
-    console.log('📊 Final chart data:', chartData);
+   
     return chartData;
   }, [stages]);
 
@@ -277,24 +276,16 @@ export default function AdminDashboard() {
 
 
   useEffect(() => {
-    // Suppress browser extension errors
-    const originalError = console.error;
-    console.error = (...args) => {
-      if (args[0]?.includes?.('runtime.lastError') || args[0]?.includes?.('message channel closed')) {
-        return; // Suppress these specific errors
-      }
-      originalError.apply(console, args);
-    };
+    
 
     (async () => {
-      console.log('🚀 Starting to fetch all real data for dashboard...');
+      
       await dispatch(getStatsData());
-      console.log('✅ Real stats data fetched from /admin/stats/users');
+     
       await fetchStagesData(); // Fetch stages data
-      console.log('✅ Real stages data fetched');
+     
       await fetchRechargeCodesStats(); // Fetch recharge codes statistics
-      console.log('✅ Real recharge codes data fetched');
-      console.log('🎯 All real data loaded - no fake data should be displayed');
+     
     })();
 
     // Hero entrance animation
@@ -307,7 +298,6 @@ export default function AdminDashboard() {
 
     // Cleanup
     return () => {
-      console.error = originalError;
       clearTimeout(timer);
     };
   }, []);
@@ -705,6 +695,13 @@ export default function AdminDashboard() {
               >
                   <FaBook className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs lg:text-sm font-medium">الامتحانات المقالية</span>
+                </button>
+                <button
+                  onClick={() => navigate("/admin/exam-questions")}
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg lg:rounded-xl text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                >
+                  <FaQuestionCircle className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="text-xs lg:text-sm font-medium">إدارة أسئلة الامتحانات</span>
                 </button>
               </div>
             </div>

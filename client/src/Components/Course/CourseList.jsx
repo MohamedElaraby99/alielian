@@ -111,12 +111,7 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role, onRefres
               
               {course.image?.secure_url ? (
                 <>
-                  {console.log('🖼️ Course image found:', {
-                    courseTitle: course.title,
-                    imageUrl: course.image.secure_url,
-                    isDataUri: course.image.secure_url.startsWith('data:'),
-                    isUpload: course.image.secure_url.startsWith('/uploads/')
-                  })}
+
                   <img
                     src={generateImageUrl(course.image?.secure_url)}
                     alt={course.title}
@@ -129,7 +124,7 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role, onRefres
                 </>
               ) : (
                 <>
-                  {console.log('📚 No course image, using fallback for:', course.title)}
+                 
                   <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
                   <div className="absolute inset-0 bg-black bg-opacity-20"></div>
                   <div className="absolute inset-0 flex items-center justify-center">

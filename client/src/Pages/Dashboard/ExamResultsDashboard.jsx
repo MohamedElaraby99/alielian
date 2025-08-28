@@ -81,7 +81,7 @@ const ExamResultsDashboard = () => {
       const response = await axiosInstance.get(`/exam-results?${queryParams}`);
       
       if (response.data.success) {
-        console.log('📊 Exam results API response:', response.data);
+        
         
         // Map the backend data structure to frontend expectations
         const results = response.data.data || [];
@@ -111,7 +111,7 @@ const ExamResultsDashboard = () => {
           answers: result.answers || []
         }));
         
-        console.log('📊 Mapped exam results:', mappedResults);
+            
         
         setExamResults(mappedResults);
         setSummary(response.data.summary || {});

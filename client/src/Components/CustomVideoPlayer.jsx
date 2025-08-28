@@ -105,20 +105,20 @@ const CustomVideoPlayer = ({
     const loadYouTubeAPI = () => {
       return new Promise((resolve, reject) => {
         if (typeof YT !== 'undefined' && YT.Player) {
-          console.log('YouTube API already loaded');
+         
           resolve();
           return;
         }
 
-        console.log('Loading YouTube IFrame API...');
+   
         
         // Check if script is already loading
         if (window.YTLoading) {
-          console.log('YouTube API already loading, waiting...');
+      
           const checkLoaded = setInterval(() => {
             if (typeof YT !== 'undefined' && YT.Player) {
               clearInterval(checkLoaded);
-              console.log('YouTube API loaded successfully');
+         
               resolve();
             }
           }, 100);
@@ -133,13 +133,13 @@ const CustomVideoPlayer = ({
         script.async = true;
         
         script.onload = () => {
-          console.log('YouTube API script loaded');
+    
           // Wait for YT object to be available
           const checkYT = setInterval(() => {
             if (typeof YT !== 'undefined' && YT.Player) {
               clearInterval(checkYT);
               window.YTLoading = false;
-              console.log('YouTube API ready');
+       
               resolve();
             }
           }, 100);
@@ -167,7 +167,7 @@ const CustomVideoPlayer = ({
         await loadYouTubeAPI();
         
         if (youtubeVideoId && !player) {
-          console.log('Creating YouTube player for video:', youtubeVideoId);
+ 
           
           const newPlayer = new YT.Player('youtube-player', {
             height: '100%',
@@ -208,11 +208,11 @@ const CustomVideoPlayer = ({
 
     return () => {
       if (player) {
-        console.log('Destroying YouTube player');
+
         try {
           player.destroy();
         } catch (error) {
-          console.log('Error destroying player:', error);
+
         }
         setPlayer(null);
         setPlayerReady(false);
@@ -222,7 +222,7 @@ const CustomVideoPlayer = ({
 
   // YouTube player event handlers
   const onPlayerReady = (event) => {
-    console.log('YouTube player ready');
+
     setPlayerReady(true);
     setIsLoading(false);
     setShowThumbnail(false);
@@ -230,14 +230,14 @@ const CustomVideoPlayer = ({
     // Get the real duration with retry mechanism
     const getDurationWithRetry = () => {
       const videoDuration = event.target.getDuration();
-      console.log('Attempting to get duration:', videoDuration, 'seconds');
+
       
       if (videoDuration > 0 && videoDuration < 7200) {
         setDuration(videoDuration);
-        console.log('Duration set successfully:', videoDuration);
+
         return true;
       } else {
-        console.log('Invalid duration received:', videoDuration);
+
         return false;
       }
     };
@@ -250,7 +250,7 @@ const CustomVideoPlayer = ({
           // If still failed, try again after longer delay
           setTimeout(() => {
             if (!getDurationWithRetry()) {
-              console.log('Failed to get duration after multiple attempts');
+
               // For live videos, set a default duration or show as live
               setDuration(0);
             }
@@ -267,19 +267,18 @@ const CustomVideoPlayer = ({
     
     // Restore saved progress position if available
     if (savedProgress && savedProgress.currentTime > 0) {
-      console.log('Restoring saved progress:', savedProgress.currentTime, 'seconds');
+
       // Seek to saved position
       event.target.seekTo(savedProgress.currentTime, true);
       setCurrentTime(savedProgress.currentTime);
       
       // Show a notification to user
-      console.log(`Resumed from ${Math.floor(savedProgress.currentTime / 60)}:${(savedProgress.currentTime % 60).toString().padStart(2, '0')}`);
+  
     }
   };
 
   const onPlayerStateChange = (event) => {
-    console.log('YouTube player state changed:', event.data);
-    
+
     switch (event.data) {
       case YT.PlayerState.PLAYING:
         setIsPlaying(true);
@@ -342,7 +341,7 @@ const CustomVideoPlayer = ({
   }, []);
 
   const initializeVideo = () => {
-    console.log('Initializing video with object:', video);
+
     setIsLoading(true);
     setCurrentTime(0);
     setDuration(0);
@@ -354,24 +353,24 @@ const CustomVideoPlayer = ({
     
     // Extract YouTube video ID
     const videoUrl = getVideoUrl(video);
-    console.log('Extracted video URL:', videoUrl);
+ 
     const videoId = extractYouTubeVideoId(videoUrl);
-    console.log('Extracted YouTube video ID:', videoId);
+
     
     if (videoId) {
-      console.log('YouTube video detected with ID:', videoId);
+
       setYoutubeVideoId(videoId);
       
       // Set thumbnail URL
       const thumbnail = getYouTubeThumbnail(videoId);
       setThumbnailUrl(thumbnail);
-      console.log('Thumbnail URL set:', thumbnail);
+
       
       // The YouTube IFrame API will handle player creation and duration fetching
-      console.log('Video ID detected, YouTube IFrame API will handle duration');
+
     } else {
-      console.log('No YouTube video found');
-      console.log('Video object structure:', JSON.stringify(video, null, 2));
+
+
       setYoutubeVideoId(null);
       setThumbnailUrl('');
       setIsLoading(false);
@@ -381,11 +380,11 @@ const CustomVideoPlayer = ({
 
   const extractYouTubeVideoId = (url) => {
     if (!url) {
-      console.log('No URL provided to extractYouTubeVideoId');
+
       return null;
     }
     
-    console.log('Extracting YouTube ID from URL:', url);
+
     
     // Handle different YouTube URL formats including live URLs
     const patterns = [
@@ -408,41 +407,41 @@ const CustomVideoPlayer = ({
       const match = url.match(patterns[i]);
       if (match) {
         const videoId = match[1];
-        console.log(`Pattern ${i + 1} matched, extracted video ID:`, videoId);
+
         return videoId;
       }
     }
     
-    console.log('No YouTube video ID found in URL:', url);
+
     return null;
   };
 
   const getVideoUrl = (video) => {
-    console.log('Getting video URL from object:', video);
+
     
     // Check for different possible URL properties
     if (video?.url) {
-      console.log('Found URL in video.url:', video.url);
+
       return video.url;
     }
     if (video?.youtubeUrl) {
-      console.log('Found URL in video.youtubeUrl:', video.youtubeUrl);
+
       return video.youtubeUrl;
     }
     if (video?.lecture?.youtubeUrl) {
-      console.log('Found URL in video.lecture.youtubeUrl:', video.lecture.youtubeUrl);
+
       return video.lecture.youtubeUrl;
     }
     if (video?.lecture?.secure_url) {
-      console.log('Found URL in video.lecture.secure_url:', video.lecture.secure_url);
+
       return video.lecture.secure_url;
     }
     if (video?.secure_url) {
-      console.log('Found URL in video.secure_url:', video.secure_url);
+
       return video.secure_url;
     }
     
-    console.log('No URL found in video object');
+
     return '';
   };
 
@@ -460,7 +459,7 @@ const CustomVideoPlayer = ({
     
     // Send playback rate command to YouTube player
     player.setPlaybackRate(rate);
-    console.log(`Playback rate set to ${rate}x`);
+
   };
 
   const getVideoTitle = (video) => {
@@ -494,11 +493,11 @@ const CustomVideoPlayer = ({
   // Manual function to request duration (can be called if duration is still 0)
   const requestDuration = () => {
     if (youtubeVideoId && player) {
-      console.log('Manually requesting duration from YouTube player...');
+
       const videoDuration = player.getDuration();
       if (videoDuration > 0 && videoDuration < 7200) {
         setDuration(videoDuration);
-        console.log('Manual duration request successful:', videoDuration);
+
       }
     }
   };
@@ -612,11 +611,11 @@ const CustomVideoPlayer = ({
     if (isPlaying) {
       // Pause video
       player.pauseVideo();
-      console.log('Pause command sent to YouTube player');
+
     } else {
       // Play video
       player.playVideo();
-      console.log('Play command sent to YouTube player');
+
     }
   };
 
@@ -626,11 +625,11 @@ const CustomVideoPlayer = ({
     if (isMuted) {
       player.unMute();
       setIsMuted(false);
-      console.log('Unmute command sent to YouTube player');
+
     } else {
       player.mute();
       setIsMuted(true);
-      console.log('Mute command sent to YouTube player');
+
     }
   };
 
@@ -658,7 +657,7 @@ const CustomVideoPlayer = ({
         setIsFullscreen(false);
       }
     } catch (error) {
-      console.log('Fullscreen toggle failed:', error);
+
     }
   };
 
@@ -676,7 +675,7 @@ const CustomVideoPlayer = ({
     
     // Send seek command to YouTube player
     player.seekTo(newTime, true);
-    console.log('Seek command sent to YouTube player:', newTime);
+
     
     setTimeout(() => {
       setVideoState(prev => ({ ...prev, seeking: false }));
@@ -696,7 +695,7 @@ const CustomVideoPlayer = ({
     
     // Send volume command to YouTube player
     player.setVolume(newVolume * 100);
-    console.log('Volume command sent to YouTube player:', newVolume * 100);
+
   };
 
   const handleVolumeChange = (newVolume) => {
@@ -711,7 +710,7 @@ const CustomVideoPlayer = ({
     
     // Send volume command to YouTube player
     player.setVolume(newVolume * 100);
-    console.log('Volume command sent to YouTube player:', newVolume * 100);
+
   };
 
   const handleProgressClick = (e) => {
@@ -753,7 +752,7 @@ const CustomVideoPlayer = ({
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      console.log('Link copied to clipboard');
+
     }
   };
 
@@ -792,11 +791,11 @@ const CustomVideoPlayer = ({
         try {
           await screen.orientation.lock('landscape');
         } catch (error) {
-          console.log('Orientation lock not supported');
+
         }
       }
     } catch (error) {
-      console.log('Fullscreen request failed:', error);
+
     }
   };
 
@@ -857,7 +856,7 @@ const CustomVideoPlayer = ({
       }
       if (seconds > 0) {
         setDuration(seconds);
-        console.log('Manual duration set:', seconds, 'seconds');
+
         setShowDurationModal(false);
         setManualDurationInput('');
       }
@@ -936,7 +935,7 @@ const CustomVideoPlayer = ({
                         alt={getVideoTitle(video)}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.log('Thumbnail failed to load, using fallback');
+                         
                           e.target.style.display = 'none';
                         }}
                       />
@@ -1023,7 +1022,7 @@ const CustomVideoPlayer = ({
             <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-30">
               <button
                 onClick={() => {
-                  console.log('Fallback play button clicked! Player ready:', playerReady, 'Is playing:', isPlaying);
+                
                   togglePlay();
                 }}
                 className="bg-white/20 backdrop-blur-sm rounded-full p-6 hover:bg-white/30 transition-colors"
@@ -1079,7 +1078,7 @@ const CustomVideoPlayer = ({
               <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
                 <button
                   onClick={() => {
-                    console.log('Play button clicked! Player ready:', playerReady, 'Is playing:', isPlaying);
+                  
                     togglePlay();
                   }}
                   disabled={!playerReady}
@@ -1162,7 +1161,7 @@ const CustomVideoPlayer = ({
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => {
-                        console.log('Bottom play button clicked! Player ready:', playerReady, 'Is playing:', isPlaying);
+                       
                         togglePlay();
                       }}
                       disabled={!playerReady}

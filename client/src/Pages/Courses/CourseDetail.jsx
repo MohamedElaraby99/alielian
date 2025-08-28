@@ -332,14 +332,8 @@ export default function CourseDetail() {
       }
     }
     
-    // Allow preview for all users (logged in or not)
-    console.log('Preview item data:', item);
-    console.log('Content counts:', {
-      videos: item.videosCount,
-      pdfs: item.pdfsCount,
-      exams: item.examsCount,
-      trainings: item.trainingsCount
-    });
+   
+      
     setPreviewItem({ ...item, purchaseType });
     setShowPreviewModal(true);
   };

@@ -87,7 +87,7 @@ export default function AdminCourseAccessCodes() {
       alert('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
       return;
     }
-    console.log('📤 Generating course access codes with payload:', payload);
+
     await dispatch(adminGenerateCourseAccessCodes(payload));
     dispatch(adminListCourseAccessCodes({ courseId: form.courseId, page, limit }));
   };
@@ -280,12 +280,7 @@ export default function AdminCourseAccessCodes() {
     }
   };
 
-  // Debug: Log the first code to see its structure
-  if (filteredCodes.length > 0) {
-    console.log('First code structure:', filteredCodes[0]);
-    console.log('CourseId type:', typeof filteredCodes[0].courseId, filteredCodes[0].courseId);
-    console.log('UsedBy type:', typeof filteredCodes[0].usedBy, filteredCodes[0].usedBy);
-  }
+    
 
   return (
     <Layout>

@@ -41,7 +41,12 @@ router.post('/upload/image', upload.single('image'), (req, res) => {
   const destPath = path.join(uploadsDir, req.file.filename);
   fs.renameSync(req.file.path, destPath);
   const fileUrl = `/uploads/images/${req.file.filename}`;
-  return res.status(200).json({ success: true, url: fileUrl, fileName: req.file.filename });
+  return res.status(200).json({ 
+    success: true, 
+    data: { url: fileUrl },
+    url: fileUrl, 
+    fileName: req.file.filename 
+  });
 });
 
 // Generic file upload endpoint (supports pdf, doc, docx, images)

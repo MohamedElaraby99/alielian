@@ -81,7 +81,7 @@ const LiveMeetingDashboard = () => {
   const [showStudentsOnly, setShowStudentsOnly] = useState(true);
 
   useEffect(() => {
-    console.log('🔍 useEffect triggered - fetching data...');
+    
     dispatch(getAllLiveMeetings({ page: currentPage, limit: 10, status: statusFilter, stage: stageFilter, subject: subjectFilter }));
     dispatch(getLiveMeetingStats());
     dispatch(getAllUsers({ limit: 1000 }));
@@ -90,15 +90,7 @@ const LiveMeetingDashboard = () => {
     dispatch(getAllSubjects());
   }, [dispatch, currentPage, statusFilter, stageFilter, subjectFilter]);
 
-  // Debug logging for state changes
-  useEffect(() => {
-    console.log('📊 Current Redux State:', {
-      instructors: instructors?.length || 0,
-      subjects: subjects?.length || 0,
-      stages: stages?.length || 0,
-      users: users?.length || 0
-    });
-  }, [instructors, subjects, stages, users]);
+ 
 
   const resetForm = () => {
     setFormData({
@@ -141,13 +133,7 @@ const LiveMeetingDashboard = () => {
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : []
       };
       
-      console.log('🔍 Frontend - Data being sent to update meeting:', {
-        meetingId: selectedMeeting._id,
-        meetingData: meetingData,
-        attendees: meetingData.attendees,
-        attendeesType: typeof meetingData.attendees,
-        isArray: Array.isArray(meetingData.attendees)
-      });
+     
       
       await dispatch(updateLiveMeeting({ meetingId: selectedMeeting._id, meetingData })).unwrap();
       setShowEditModal(false);
@@ -207,12 +193,7 @@ const LiveMeetingDashboard = () => {
       return;
     }
 
-    console.log('Debug - Frontend addAttendees data:', {
-      meetingId: selectedMeeting._id,
-      attendees: attendeesFormData.selectedUsers,
-      selectedUsersCount: attendeesFormData.selectedUsers.length,
-      hasNullValues: attendeesFormData.selectedUsers.some(id => !id)
-    });
+   
 
     try {
       const result = await dispatch(addAttendees({
@@ -220,7 +201,7 @@ const LiveMeetingDashboard = () => {
         attendees: attendeesFormData.selectedUsers
       })).unwrap();
       
-      console.log('Debug - Backend response:', result);
+      
       
       setShowAttendeesModal(false);
       setAttendeesFormData({ selectedUsers: [] });
@@ -1120,11 +1101,7 @@ const LiveMeetingDashboard = () => {
                             .filter(id => id); // Filter out null/undefined IDs
                           const allSelected = allUserIds.every(id => attendeesFormData.selectedUsers.includes(id));
                           
-                          console.log('Debug - Select All clicked:', { 
-                            filteredUserIds: allUserIds, 
-                            hasNullIds: getFilteredUsers().some(user => !(user.id || user._id)),
-                            allSelected 
-                          });
+                          
                           
                           if (allSelected) {
                             // Deselect all
@@ -1157,12 +1134,12 @@ const LiveMeetingDashboard = () => {
                             onChange={(e) => {
                               const userId = user.id || user._id;
                               if (e.target.checked && userId) {
-                                console.log('Debug - Adding user:', { userId, userName: user.fullName });
+                                
                                 setAttendeesFormData({
                                   selectedUsers: [...attendeesFormData.selectedUsers, userId]
                                 });
                               } else {
-                                console.log('Debug - Removing user:', { userId, userName: user.fullName });
+                                  
                                 setAttendeesFormData({
                                   selectedUsers: attendeesFormData.selectedUsers.filter(id => id !== userId)
                                 });

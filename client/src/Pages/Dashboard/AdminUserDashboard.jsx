@@ -135,21 +135,13 @@ export default function AdminUserDashboard() {
 
     // Monitor filter changes
     useEffect(() => {
-        console.log('Filters changed:', filters);
     }, [filters]);
 
     useEffect(() => {
-        console.log('=== AUTH DEBUG ===');
-        console.log('Current user:', user);
-        console.log('Is logged in:', isLoggedIn);
-        console.log('User role:', role);
-        console.log('User object:', user);
-        console.log('LocalStorage data:', localStorage.getItem('data'));
-        console.log('LocalStorage role:', localStorage.getItem('role'));
-        console.log('LocalStorage isLoggedIn:', localStorage.getItem('isLoggedIn'));
+       
         
         if (isLoggedIn && (role === "ADMIN" || role === "SUPER_ADMIN")) {
-            console.log('Dispatching getAllUsers...');
+           
             let roleFilter = "";
             if (activeTab === "users") {
                 roleFilter = "USER";
@@ -157,8 +149,7 @@ export default function AdminUserDashboard() {
                 roleFilter = "ADMIN";
             }
             
-            console.log('Initial role filter:', roleFilter);
-            console.log('Initial filters:', filters);
+           
             
             dispatch(getAllUsers({ 
                 page: 1, 
@@ -170,9 +161,7 @@ export default function AdminUserDashboard() {
                 codeSearch: filters.codeSearch
             }));
         } else {
-            console.log('User not admin or not logged in');
-            console.log('isLoggedIn:', isLoggedIn);
-            console.log('role:', role);
+           
         }
     }, [dispatch, user, isLoggedIn, role, activeTab]);
 
@@ -189,7 +178,7 @@ export default function AdminUserDashboard() {
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        console.log('Filter change:', name, value);
+       
         setFilters(prev => ({
             ...prev,
             [name]: value
@@ -197,8 +186,7 @@ export default function AdminUserDashboard() {
     };
 
     const handleApplyFilters = () => {
-        console.log('Applying filters:', filters);
-        console.log('Active tab:', activeTab);
+       
         
         let roleFilter = "";
         if (activeTab === "users") {
@@ -208,17 +196,6 @@ export default function AdminUserDashboard() {
         } else {
             roleFilter = filters.role;
         }
-        
-        console.log('Role filter:', roleFilter);
-        console.log('Final filter params:', { 
-            page: 1, 
-            limit: 20, 
-            role: roleFilter,
-            status: filters.status,
-            stage: filters.stage,
-            search: filters.search,
-            codeSearch: filters.codeSearch
-        });
         
         dispatch(getAllUsers({ 
             page: 1, 
@@ -741,7 +718,7 @@ export default function AdminUserDashboard() {
                                         <div className="flex items-end">
                                             <button
                                                 onClick={() => {
-                                                    console.log('Filter button clicked!');
+                                                    
                                                     handleApplyFilters();
                                                 }}
                                                 className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-colors"
@@ -929,7 +906,7 @@ export default function AdminUserDashboard() {
                                         <div className="flex items-end">
                                             <button
                                                 onClick={() => {
-                                                    console.log('Filter button clicked (admins)!');
+                                                    
                                                     handleApplyFilters();
                                                 }}
                                                 className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
@@ -1123,7 +1100,7 @@ export default function AdminUserDashboard() {
                                         <div className="flex items-end">
                                             <button
                                                 onClick={() => {
-                                                    console.log('Filter button clicked (all)!');
+                                                    
                                                     handleApplyFilters();
                                                 }}
                                                 className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"

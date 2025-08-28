@@ -124,18 +124,18 @@ const VideoPlayer = ({
     if (window.YT && window.YT.Player) {
       const videoId = extractYouTubeVideoId(video.lecture.youtubeUrl);
       if (videoId) {
-        console.log('Initializing YouTube player with video ID:', videoId);
+        
         
         // Wait for YouTube API to be fully ready
         if (window.YT.PlayerState) {
           createPlayer();
         } else {
-          console.log('YouTube API not fully ready, waiting...');
+          
           setTimeout(initializeYouTubePlayer, 100);
         }
       }
     } else {
-      console.log('YouTube API not ready, retrying...');
+      
       setTimeout(initializeYouTubePlayer, 100);
     }
   };
@@ -173,16 +173,7 @@ const VideoPlayer = ({
   };
 
   const onPlayerReady = (event) => {
-    console.log('YouTube player ready!');
-    console.log('Player object:', event.target);
-    console.log('Available methods:', {
-      playVideo: typeof event.target.playVideo,
-      pauseVideo: typeof event.target.pauseVideo,
-      seekTo: typeof event.target.seekTo,
-      setVolume: typeof event.target.setVolume,
-      mute: typeof event.target.mute,
-      unMute: typeof event.target.unMute
-    });
+   
     
     // Wait a bit more to ensure all methods are available
     setTimeout(() => {
@@ -191,13 +182,13 @@ const VideoPlayer = ({
       setDuration(event.target.getDuration());
       setVolume(event.target.getVolume() / 100);
       setIsMuted(event.target.isMuted());
-      console.log('Player fully initialized and ready for controls');
+     
     }, 500);
   };
 
   const onPlayerStateChange = (event) => {
     const state = event.data;
-    console.log('Player state changed:', state);
+   
     switch (state) {
       case window.YT.PlayerState.PLAYING:
         setIsPlaying(true);
@@ -217,7 +208,7 @@ const VideoPlayer = ({
   };
 
   const onPlayerError = (event) => {
-    console.error('YouTube player error:', event.data);
+   
     setIsLoading(false);
     setPlayerReady(false);
   };
@@ -280,9 +271,7 @@ const VideoPlayer = ({
 
   const togglePlay = () => {
     if (isYouTube && player && playerReady) {
-      console.log('Toggling play/pause, current state:', isPlaying);
-      console.log('Player object:', player);
-      console.log('Player methods:', typeof player.playVideo, typeof player.pauseVideo);
+     
       
       // Check if player methods are available
       if (typeof player.playVideo === 'function' && typeof player.pauseVideo === 'function') {
@@ -292,13 +281,13 @@ const VideoPlayer = ({
           player.playVideo();
         }
       } else {
-        console.error('Player methods not available yet, trying postMessage fallback');
+       
         // Fallback: try to access the iframe directly using postMessage
         const iframe = document.getElementById(playerId);
         if (iframe && iframe.contentWindow) {
           try {
             const command = isPlaying ? 'pauseVideo' : 'playVideo';
-            console.log('Sending postMessage command:', command);
+           
             iframe.contentWindow.postMessage(
               JSON.stringify({
                 event: 'command',
@@ -310,22 +299,21 @@ const VideoPlayer = ({
             // Update state manually since we can't rely on the API
             setIsPlaying(!isPlaying);
           } catch (error) {
-            console.error('Failed to control iframe via postMessage:', error);
+           
           }
         } else {
-          console.error('Iframe not found for postMessage fallback');
+         
         }
       }
     } else {
-      console.log('Player not ready or not YouTube video');
-      console.log('isYouTube:', isYouTube, 'player:', !!player, 'playerReady:', playerReady);
+     
       setIsPlaying(!isPlaying);
     }
   };
 
   const toggleMute = () => {
     if (isYouTube && player && playerReady) {
-      console.log('Toggling mute, current state:', isMuted);
+      
       if (typeof player.mute === 'function' && typeof player.unMute === 'function') {
         if (isMuted) {
           player.unMute();
@@ -335,7 +323,7 @@ const VideoPlayer = ({
           setIsMuted(true);
         }
       } else {
-        console.error('Mute methods not available');
+       
       }
     } else {
       setIsMuted(!isMuted);
@@ -349,12 +337,12 @@ const VideoPlayer = ({
   const seek = (seconds) => {
     if (isYouTube && player && playerReady) {
       const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
-      console.log('Seeking to:', newTime);
+     
       if (typeof player.seekTo === 'function') {
         player.seekTo(newTime);
         setCurrentTime(newTime);
       } else {
-        console.error('Seek method not available');
+       
       }
     } else {
       const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
@@ -365,12 +353,12 @@ const VideoPlayer = ({
   const seekTo = (time) => {
     if (isYouTube && player && playerReady) {
       const newTime = Math.max(0, Math.min(duration, time));
-      console.log('Seeking to:', newTime);
+     
       if (typeof player.seekTo === 'function') {
         player.seekTo(newTime);
         setCurrentTime(newTime);
       } else {
-        console.error('Seek method not available');
+       
       }
     } else {
       const newTime = Math.max(0, Math.min(duration, time));
@@ -381,7 +369,7 @@ const VideoPlayer = ({
   const adjustVolume = (change) => {
     if (isYouTube && player && playerReady) {
       const newVolume = Math.max(0, Math.min(100, (volume * 100) + (change * 100)));
-      console.log('Setting volume to:', newVolume);
+     
       if (typeof player.setVolume === 'function') {
         player.setVolume(newVolume);
         setVolume(newVolume / 100);
@@ -391,7 +379,7 @@ const VideoPlayer = ({
           setIsMuted(false);
         }
       } else {
-        console.error('Volume method not available');
+       
       }
     } else {
       const newVolume = Math.max(0, Math.min(1, volume + change));
@@ -407,7 +395,7 @@ const VideoPlayer = ({
   const handleVolumeChange = (newVolume) => {
     if (isYouTube && player && playerReady) {
       const volumePercent = newVolume * 100;
-      console.log('Setting volume to:', volumePercent);
+     
       if (typeof player.setVolume === 'function') {
         player.setVolume(volumePercent);
         setVolume(newVolume);
@@ -417,7 +405,7 @@ const VideoPlayer = ({
           setIsMuted(false);
         }
       } else {
-        console.error('Volume method not available');
+          
       }
     } else {
       setVolume(newVolume);

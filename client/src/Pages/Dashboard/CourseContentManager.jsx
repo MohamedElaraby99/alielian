@@ -64,31 +64,21 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const course = courses.find(c => c._id === courseId);
   let lesson = null;
   
-  console.log('=== ADMIN LESSON MODAL DEBUG ===');
-  console.log('Course ID:', courseId);
-  console.log('Unit ID:', unitId);
-  console.log('Lesson ID:', lessonId);
-  console.log('Found course:', course?.title);
-  
   if (course) {
     if (unitId) {
       const unit = course.units.find(u => u._id === unitId);
-      console.log('Found unit:', unit?.title);
+      
       if (unit) {
         lesson = unit.lessons.find(l => l._id === lessonId);
-        console.log('Found lesson in unit:', lesson?.title);
+        
       }
     } else {
       lesson = course.directLessons.find(l => l._id === lessonId);
-      console.log('Found direct lesson:', lesson?.title);
+      
     }
   }
   
-  console.log('Final lesson data:', lesson);
-  console.log('Lesson videos:', lesson?.videos);
-  console.log('Lesson PDFs:', lesson?.pdfs);
-  console.log('Lesson exams:', lesson?.exams);
-  console.log('Lesson trainings:', lesson?.trainings);
+
   const [tab, setTab] = useState('videos');
   const [videos, setVideos] = useState(lesson?.videos || []);
   const [pdfs, setPdfs] = useState(lesson?.pdfs || []);
@@ -502,19 +492,15 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
 
   const handleAddExam = () => {
     if (!newExam.title.trim() || newExam.questions.length === 0) {
-      console.log('Cannot add exam - missing title or questions');
-      console.log('Title:', newExam.title);
-      console.log('Questions length:', newExam.questions.length);
+    
       return;
     }
     
-    console.log('=== ADDING EXAM DEBUG ===');
-    console.log('Exam to add:', newExam);
-    console.log('Current exams state before adding:', exams);
+   
     
     setExams(prevExams => {
       const newExams = [...prevExams, newExam];
-      console.log('New exams state after adding:', newExams);
+     
       return newExams;
     });
     
@@ -528,12 +514,11 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
       questions: []
     });
     
-    console.log('Exam added successfully!');
+   
   };
 
   const handleRemoveExam = (idx) => {
-    console.log('Removing exam at index:', idx);
-    console.log('Current exams:', exams);
+   
     setExams(exams.filter((_, i) => i !== idx));
   };
 
@@ -561,7 +546,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
         // Update the lesson data in the parent component
         // This will trigger the useEffect and update the local state
         const updatedLesson = response.data.data.lesson;
-        console.log('🔄 Refreshed lesson data:', updatedLesson);
+       
         
         // Update the local state directly
         setVideos(updatedLesson.videos || []);
@@ -577,23 +562,14 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const handleSaveVideos = async () => {
     setSaving(true);
     try {
-      console.log('Saving videos for lesson:', lessonId);
-      console.log('Videos to save:', videos);
-      console.log('Videos with publishDate details:', videos.map(v => ({
-        title: v.title,
-        url: v.url,
-        publishDate: v.publishDate,
-        publishDateType: typeof v.publishDate,
-        publishDateISO: v.publishDate ? new Date(v.publishDate).toISOString() : null
-      })));
-      console.log('Request data:', { unitId, videos });
+     
       
       const response = await axiosInstance.put(`/courses/${courseId}/lessons/${lessonId}/content`, {
         unitId,
         videos
       });
       
-      console.log('API Response:', response.data);
+     
       
       toast.success('تم حفظ الفيديوهات بنجاح');
       // Refresh lesson data instead of course data
@@ -611,23 +587,14 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const handleSavePdfs = async () => {
     setSaving(true);
     try {
-      console.log('Saving PDFs for lesson:', lessonId);
-      console.log('PDFs to save:', pdfs);
-      console.log('PDFs with publishDate details:', pdfs.map(p => ({
-        title: p.title,
-        fileName: p.fileName,
-        publishDate: p.publishDate,
-        publishDateType: typeof p.publishDate,
-        publishDateISO: p.publishDate ? new Date(p.publishDate).toISOString() : null
-      })));
-      console.log('Request data:', { unitId, pdfs });
+     
       
       const response = await axiosInstance.put(`/courses/${courseId}/lessons/${lessonId}/content`, {
         unitId,
         pdfs
       });
       
-      console.log('API Response:', response.data);
+     
       
       toast.success('تم حفظ ملفات PDF بنجاح');
       // Refresh lesson data instead of course data
@@ -645,21 +612,14 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const handleSaveExams = async () => {
     setSaving(true);
     try {
-      console.log('=== SAVING EXAMS DEBUG ===');
-      console.log('Lesson ID:', lessonId);
-      console.log('Course ID:', courseId);
-      console.log('Unit ID:', unitId);
-      console.log('Current exams state:', exams);
-      console.log('Exams array length:', exams.length);
-      console.log('Exams to save:', exams);
-      console.log('Request data:', { unitId, exams });
+      
       
       const response = await axiosInstance.put(`/courses/${courseId}/lessons/${lessonId}/content`, {
         unitId,
         exams
       });
       
-      console.log('API Response:', response.data);
+     
       
       toast.success('تم حفظ الامتحانات بنجاح');
       // Refresh lesson data instead of course data
@@ -696,11 +656,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
 
   useEffect(() => {
     if (lesson) {
-      console.log('🔄 Updating local state from lesson prop');
-      console.log('Lesson videos:', lesson.videos);
-      console.log('Lesson PDFs:', lesson.pdfs);
-      console.log('Lesson exams:', lesson.exams);
-      console.log('Lesson trainings:', lesson.trainings);
+     
       
       // Ensure existing questions have numberOfOptions field
       const processedExams = lesson.exams?.map(exam => ({
@@ -744,12 +700,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     loadEssayExams();
   }, [courseId, lessonId, unitId]);
 
-  // Monitor exams state changes
-  useEffect(() => {
-    console.log('=== EXAMS STATE CHANGED ===');
-    console.log('Current exams state:', exams);
-    console.log('Exams length:', exams.length);
-  }, [exams]);
+
 
   // Video edit handlers
   const handleEditVideo = (idx) => {
@@ -1933,7 +1884,7 @@ const CourseContentManager = () => {
                         className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs flex items-center gap-1 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log('Opening direct lesson content modal for:', lesson.title);
+                          
                           setSelectedLesson({ ...lesson, courseId: selectedCourse._id, unitId: null });
                         }}
                       >
@@ -1973,7 +1924,7 @@ const CourseContentManager = () => {
                               className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs flex items-center gap-1 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log('Opening lesson content modal for:', lesson.title);
+                                    
                                 setSelectedLesson({ ...lesson, courseId: selectedCourse._id, unitId: unit._id });
                               }}
                             >
