@@ -12,6 +12,7 @@ import { axiosInstance } from "../Helpers/axiosInstance";
 import { useEffect } from "react";
 import { egyptianGovernorates } from "../utils/governorateMapping";
 import { generateDeviceFingerprint, getDeviceType, getBrowserInfo, getOperatingSystem } from "../utils/deviceFingerprint";
+import logo from "../assets/logo.png";
 
 export default function Signup() {
   const dispatch = useDispatch();
@@ -298,8 +299,8 @@ export default function Signup() {
         <div className="max-w-md w-full space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="mx-auto h-20 w-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-              <FaGraduationCap className="h-10 w-10 text-white" />
+            <div className="flex justify-center items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+              <span className="text-2xl font-bold text-blue-600 dark:text-white">المنصة الدولية</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               انضم إلى منصتنا التعليمية
@@ -318,7 +319,7 @@ export default function Signup() {
                   الاسم الكامل
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaUser className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -326,7 +327,7 @@ export default function Signup() {
                     name="fullName"
                     type="text"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                     placeholder="أدخل اسمك الكامل"
                     value={signupData.fullName}
                     onChange={handleUserInput}
@@ -340,7 +341,7 @@ export default function Signup() {
                   اسم المستخدم
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaUser className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -348,7 +349,7 @@ export default function Signup() {
                     name="username"
                     type="text"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                     placeholder="أدخل اسم المستخدم"
                     value={signupData.username}
                     onChange={handleUserInput}
@@ -365,7 +366,7 @@ export default function Signup() {
                   البريد الإلكتروني
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaEnvelope className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -373,7 +374,7 @@ export default function Signup() {
                     name="email"
                     type="email"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                     placeholder="أدخل بريدك الإلكتروني"
                     value={signupData.email}
                     onChange={handleUserInput}
@@ -387,7 +388,7 @@ export default function Signup() {
                   كلمة المرور
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaLock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -395,14 +396,14 @@ export default function Signup() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="block w-full pr-10 pl-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                     placeholder="أنشئ كلمة مرور قوية"
                     value={signupData.password}
                     onChange={handleUserInput}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 left-0 pl-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -421,7 +422,7 @@ export default function Signup() {
                     رقم الهاتف
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <FaPhone className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -429,7 +430,7 @@ export default function Signup() {
                       name="phoneNumber"
                       type="tel"
                       required={!signupData.adminCode}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                       placeholder="أدخل رقم هاتفك"
                       value={signupData.phoneNumber}
                       onChange={handleUserInput}
@@ -445,7 +446,7 @@ export default function Signup() {
                     رقم هاتف ولي الامر<span className="text-gray-400 text-xs">(اختياري)</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <FaPhone className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -453,7 +454,7 @@ export default function Signup() {
                       name="fatherPhoneNumber"
                       type="tel"
                       required={false}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                       placeholder="أدخل رقم هاتف ولي الامر(اختياري)"
                       value={signupData.fatherPhoneNumber}
                       onChange={handleUserInput}
@@ -469,14 +470,14 @@ export default function Signup() {
                     المحافظة
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <FaMapMarkerAlt className="h-5 w-5 text-gray-400" />
                     </div>
                     <select
                       id="governorate"
                       name="governorate"
                       required={!signupData.adminCode}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                       value={signupData.governorate}
                       onChange={handleUserInput}
                     >
@@ -498,14 +499,14 @@ export default function Signup() {
                     منهج المرحلة الدراسية
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <FaBook className="h-5 w-5 text-gray-400" />
                     </div>
                     <select
                       id="stageCategory"
                       name="stageCategory"
                       required={!signupData.adminCode}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                       value={signupData.stageCategory}
                       onChange={handleUserInput}
                     >
@@ -527,14 +528,14 @@ export default function Signup() {
                     المرحلة الدراسية
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <FaBook className="h-5 w-5 text-gray-400" />
                     </div>
                     <select
                       id="stage"
                       name="stage"
                       required={!signupData.adminCode}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                       value={signupData.stage}
                       onChange={handleUserInput}
                     >
@@ -556,7 +557,7 @@ export default function Signup() {
                     العمر
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <FaUser className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -566,7 +567,7 @@ export default function Signup() {
                       min="5"
                       max="100"
                       required={!signupData.adminCode}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-right"
                       placeholder="أدخل عمرك"
                       value={signupData.age}
                       onChange={handleUserInput}
@@ -580,7 +581,7 @@ export default function Signup() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   الصورة الشخصية <span className="text-gray-500 text-xs">(اختياري)</span>
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-reverse space-x-4">
                   <div className="relative">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex items-center justify-center border-2 border-gray-200 dark:border-gray-600 overflow-hidden">
                       {previewImage ? (
@@ -594,7 +595,7 @@ export default function Signup() {
                       )}
                     </div>
                     {previewImage && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -left-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                         <FaCamera className="w-3 h-3 text-white" />
                       </div>
                     )}
@@ -602,10 +603,10 @@ export default function Signup() {
                   <div className="flex-1">
                     <label htmlFor="image_uploads" className="cursor-pointer">
                       <div className="flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-400 dark:hover:border-purple-400 transition-colors duration-200">
-                        <FaUpload className="w-4 h-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-600 dark:text-gray-300">
                           {previewImage ? "تغيير الصورة" : "رفع صورة"}
                         </span>
+                        <FaUpload className="w-4 h-4 text-gray-400 ml-2" />
                       </div>
                     </label>
                     <input
@@ -631,12 +632,12 @@ export default function Signup() {
                 disabled={isLoading || !isCaptchaVerified}
                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                <span className="absolute right-0 inset-y-0 flex items-center pr-3">
                   <FaUserPlus className="h-5 w-5 text-purple-200 group-hover:text-purple-100" />
                 </span>
                 {isLoading ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
                     جاري إنشاء الحساب...
                   </div>
                 ) : (

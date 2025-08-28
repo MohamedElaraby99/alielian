@@ -75,8 +75,8 @@ export default function Login() {
         <div className="max-w-md w-full space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="mx-auto h-20 w-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-              <FaGraduationCap className="h-10 w-10 text-white" />
+          <div className="flex justify-center items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+              <span className="text-2xl font-bold text-blue-600 dark:text-white">المنصة الدولية</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               مرحباً بعودتك
@@ -95,7 +95,7 @@ export default function Login() {
                   البريد الإلكتروني
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaEnvelope className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -103,7 +103,7 @@ export default function Login() {
                     name="email"
                     type="email"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-right"
                     placeholder="أدخل بريدك الإلكتروني"
                     value={loginData.email}
                     onChange={handleUserInput}
@@ -117,7 +117,7 @@ export default function Login() {
                   كلمة المرور
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaLock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -125,14 +125,14 @@ export default function Login() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="block w-full pr-10 pl-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-right"
                     placeholder="أدخل كلمة المرور"
                     value={loginData.password}
                     onChange={handleUserInput}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 left-0 pl-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -150,12 +150,12 @@ export default function Login() {
                 disabled={isLoading}
                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                <span className="absolute right-0 inset-y-0 flex items-center pr-3">
                   <FaSignInAlt className="h-5 w-5 text-blue-200 group-hover:text-blue-100" />
                 </span>
                 {isLoading ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
                     جاري تسجيل الدخول...
                   </div>
                 ) : (
