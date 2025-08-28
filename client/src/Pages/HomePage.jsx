@@ -936,11 +936,11 @@ export default function HomePage() {
                     <div className="p-6 space-y-6">
                       {/* App Header */}
                       <div className="flex items-center space-x-4" dir="rtl">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-white-600 rounded-xl flex items-center justify-center">
                           <img src={logo} alt="logo" className="w-12 h-12" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-lg text-gray-900">تطبيقالمنصة الدولية</h3>
+                          <h3 className="font-bold text-lg text-gray-900">تطبيق المنصة الدولية</h3>
                           <p className="text-sm text-gray-600">منصة التعلم الذكية</p>
                         </div>
                       </div>
