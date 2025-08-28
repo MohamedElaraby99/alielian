@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { BsPersonCircle } from "react-icons/bs";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../Layout/Layout";
 import { createAccount } from "../Redux/Slices/AuthSlice";
+import { getAllStageCategories } from "../Redux/Slices/StageCategorySlice";
 import InputBox from "../Components/InputBox/InputBox";
 import CaptchaComponent from "../Components/CaptchaComponent";
-import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduationCap, FaCamera, FaUpload, FaPhone, FaMapMarkerAlt, FaBook, FaExclamationTriangle, FaTimes, FaCheckCircle, FaInfoCircle } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduationCap, FaCamera, FaUpload, FaPhone, FaMapMarkerAlt, FaBook, FaExclamationTriangle, FaTimes, FaCheckCircle, FaInfoCircle, FaList } from "react-icons/fa";
 import { axiosInstance } from "../Helpers/axiosInstance";
 import { useEffect } from "react";
 import { egyptianCities } from "../utils/governorateMapping";
@@ -34,16 +35,20 @@ export default function Signup() {
     phoneNumber: "",
     fatherPhoneNumber: "",
     governorate: "",
+    stageCategory: "",
     stage: "",
     age: "",
     avatar: "",
     adminCode: "",
   });
 
+  // Get stage categories from Redux store
+  const { categories: stageCategories } = useSelector((state) => state.stageCategory);
+
   // Check if this is an admin registration
   const isAdminRegistration = signupData.adminCode === 'ADMIN123';
 
-  // Fetch stages on component mount
+  // Fetch stages and stage categories on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -52,22 +57,53 @@ export default function Signup() {
         if (stagesResponse.data.success) {
           setStages(stagesResponse.data.data.stages);
         }
+
+        // Fetch stage categories
+        dispatch(getAllStageCategories({ page: 1, limit: 100 }));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [dispatch]);
 
   function handleUserInput(e) {
     const { name, value } = e.target;
     
-    setSignupData({
-      ...signupData,
-      [name]: value,
-    });
+      setSignupData({
+        ...signupData,
+        [name]: value,
+      });
+
+    // If stage category changes, reset stage selection
+    if (name === 'stageCategory') {
+      setSignupData(prev => ({
+        ...prev,
+        stageCategory: value,
+        stage: "" // Reset stage when category changes
+      }));
+    }
   }
+
+  // Get filtered stages based on selected stage category
+  const getFilteredStages = () => {
+    if (!signupData.stageCategory) {
+      return stages; // Show all stages if no category selected
+    }
+    
+    const selectedCategory = stageCategories.find(cat => cat._id === signupData.stageCategory);
+    if (!selectedCategory || !selectedCategory.stages) {
+      return stages;
+    }
+    
+    // Filter stages that belong to the selected category
+    return stages.filter(stage => 
+      selectedCategory.stages.some(categoryStage => 
+        categoryStage._id === stage._id || categoryStage.toString() === stage._id
+      )
+    );
+  };
 
   function getImage(event) {
     event.preventDefault();
@@ -160,7 +196,7 @@ export default function Signup() {
       }
     } else {
       // For regular users: phone number is required, email is optional
-      if (!signupData.phoneNumber || !signupData.governorate || !signupData.stage || !signupData.age) {
+      if (!signupData.phoneNumber || !signupData.governorate || !signupData.stageCategory || !signupData.stage || !signupData.age) {
         toast.error("يرجى ملء جميع الحقول المطلوبة");
         return;
       }
@@ -206,7 +242,7 @@ export default function Signup() {
         return;
       }
     }
-
+    
     // Generate device information for fingerprinting
     const deviceInfo = {
       platform: getDeviceType(),
@@ -221,7 +257,7 @@ export default function Signup() {
         touchSupport: 'ontouchstart' in window,
       }
     };
-
+    
     // Create request data with device info as JSON object
     const requestData = {
       fullName: signupData.fullName,
@@ -246,6 +282,7 @@ export default function Signup() {
         requestData.fatherPhoneNumber = signupData.fatherPhoneNumber;
       }
       requestData.governorate = signupData.governorate;
+      requestData.stageCategory = signupData.stageCategory;
       requestData.stage = signupData.stage;
       requestData.age = signupData.age;
     }
@@ -253,8 +290,8 @@ export default function Signup() {
     // Handle avatar file separately if present
     if (signupData.avatar) {
       const formData = new FormData();
-      formData.append("avatar", signupData.avatar);
-      
+    formData.append("avatar", signupData.avatar);
+
       // Add captchaSessionId at the top level for middleware access
       formData.append("captchaSessionId", captchaSessionId);
       
@@ -292,6 +329,7 @@ export default function Signup() {
           phoneNumber: "",
           fatherPhoneNumber: "",
           governorate: "",
+          stageCategory: "",
           stage: "",
           age: "",
           avatar: "",
@@ -304,7 +342,7 @@ export default function Signup() {
 
         navigate("/");
       }
-    } else {
+      } else {
       // No avatar file, send as JSON
       console.log('=== SENDING JSON REQUEST ===');
       console.log('Request data:', requestData);
@@ -321,6 +359,7 @@ export default function Signup() {
           phoneNumber: "",
           fatherPhoneNumber: "",
           governorate: "",
+          stageCategory: "",
           stage: "",
           age: "",
           avatar: "",
@@ -561,6 +600,35 @@ export default function Signup() {
                 </div>
               )}
 
+              {/* Stage Category Field - Only for regular users */}
+              {!isAdminRegistration && (
+                <div className="group">
+                  <label htmlFor="stageCategory" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-right">
+                    فئة المرحلة الدراسية
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                      <FaList className="h-5 w-5 text-blue-500 group-focus-within:text-blue-600 transition-colors duration-200" />
+                    </div>
+                    <select
+                      id="stageCategory"
+                      name="stageCategory"
+                      required
+                      className="block w-full pr-12 pl-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-right shadow-sm hover:shadow-md"
+                      value={signupData.stageCategory}
+                      onChange={handleUserInput}
+                    >
+                      <option value="">اختر فئة المرحلة الدراسية</option>
+                      {stageCategories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Stage Field - Only for regular users */}
               {!isAdminRegistration && (
                 <div className="group">
@@ -575,12 +643,20 @@ export default function Signup() {
                       id="stage"
                       name="stage"
                       required
-                      className="block w-full pr-12 pl-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-right shadow-sm hover:shadow-md"
+                      disabled={!signupData.stageCategory}
+                      className={`block w-full pr-12 pl-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-right shadow-sm hover:shadow-md ${
+                        !signupData.stageCategory ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                       value={signupData.stage}
                       onChange={handleUserInput}
                     >
-                      <option value="">اختر المرحلة الدراسية</option>
-                      {stages.map((stage) => (
+                      <option value="">
+                        {!signupData.stageCategory 
+                          ? "اختر فئة المرحلة الدراسية أولاً" 
+                          : "اختر المرحلة الدراسية"
+                        }
+                      </option>
+                      {getFilteredStages().map((stage) => (
                         <option key={stage._id} value={stage._id}>
                           {stage.name}
                         </option>
@@ -728,15 +804,15 @@ export default function Signup() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-gray-200 dark:border-gray-700">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
               <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                بإنشاء حساب، فإنك توافق على{" "}
+              بإنشاء حساب، فإنك توافق على{" "}
                 <Link to="/terms" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
-                  شروط الخدمة
-                </Link>{" "}
-                و{" "}
+                شروط الخدمة
+              </Link>{" "}
+              و{" "}
                 <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
-                  سياسة الخصوصية
-                </Link>
-              </p>
+                سياسة الخصوصية
+              </Link>
+            </p>
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse animation-delay-1000"></div>
             </div>
           </div>

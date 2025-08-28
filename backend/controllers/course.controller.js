@@ -134,8 +134,11 @@ export const getAllCourses = async (req, res, next) => {
       query.stage = req.user.stage;
       console.log('🎯 Filtering courses by user stage:', req.user.stage, '(' + req.user.stageName + ')');
       
-      // Stage filtering only (category field removed)
-      console.log('🎯 Filtering courses by user stage only');
+      // If user also has a stage category, log it for reference
+      if (req.user.stageCategory) {
+        console.log('🎯 User also has stage category:', req.user.stageCategory, '(' + req.user.stageCategoryName + ')');
+        console.log('📚 Courses will be filtered by stage only, but user category is tracked for future enhancements');
+      }
     } else {
       console.log('⚠️ No stage filtering applied - showing all courses');
       if (req.user && !req.user.stage) {

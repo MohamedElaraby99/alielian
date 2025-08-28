@@ -38,15 +38,17 @@ router.get('/', async (req, res, next) => {
       // Try to verify the token and set user info
       const userDetails = await jwt.verify(token, process.env.JWT_SECRET);
       
-      // Fetch full user data including stage
-      const user = await User.findById(userDetails.id).populate('stage');
+      // Fetch full user data including stage and stage category
+      const user = await User.findById(userDetails.id).populate('stage').populate('stageCategory');
       if (user) {
         req.user = {
           ...userDetails,
           stage: user.stage?._id,
-          stageName: user.stage?.name
+          stageName: user.stage?.name,
+          stageCategory: user.stageCategory?._id,
+          stageCategoryName: user.stageCategory?.name
         };
-        console.log('Optional auth success - User stage:', req.user.stage);
+        console.log('Optional auth success - User stage:', req.user.stage, 'User stage category:', req.user.stageCategory);
       }
     } catch (error) {
       console.log('Optional auth failed, continuing without user context:', error.message);

@@ -71,6 +71,13 @@ const userSchema = new Schema({
             return !['ADMIN', 'SUPER_ADMIN'].includes(this.role);
         }
     },
+    stageCategory: {
+        type: Schema.Types.ObjectId,
+        ref: 'StageCategory',
+        required: function() {
+            return !['ADMIN', 'SUPER_ADMIN'].includes(this.role);
+        }
+    },
     age: {
         type: Number,
         required: function() {

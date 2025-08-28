@@ -949,10 +949,10 @@ export default function HomePage() {
                       <div className="space-y-4">
                         <div className="bg-gradient-to-r from-blue-50 to-blue-50 rounded-xl p-4">
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-semibold text-gray-900">الكيمياء</h4>
+                            <h4 className="font-semibold text-gray-900">اللغة العربية</h4>
                             <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">جديد</span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-3"> الكيمياء </p>
+                          <p className="text-sm text-gray-600 mb-3"> اللغة العربية </p>
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-blue-600 font-medium">30% مكتمل</span>
                             <button className="bg-blue-600 text-white px-4 py-1 rounded-full text-xs">متابعة</button>
@@ -961,10 +961,10 @@ export default function HomePage() {
 
                         <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4">
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-semibold text-gray-900">علوم متكاملة </h4>
+                            <h4 className="font-semibold text-gray-900">اللغة العربية </h4>
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">شائع</span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-3">  علوم متكاملة </p>
+                          <p className="text-sm text-gray-600 mb-3">  اللغة العربية </p>
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-green-600 font-medium">75% مكتمل</span>
                             <button className="bg-blue-600 text-white px-4 py-1 rounded-full text-xs">متابعة</button>
@@ -1057,8 +1057,8 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">الهاتف</h3>
-                  <a href="tel:01125800332" className="text-blue-600 dark:text-blue-400 hover:underline">
-                    01125800332
+                  <a href="tel:01143982522" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    01143982522
                   </a>
                 </div>
               </div>
@@ -1070,8 +1070,8 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">واتساب</h3>
-                  <a href="https://wa.me/+201125800332" className="text-green-600 dark:text-green-400 hover:underline">
-                  +201125800332
+                  <a href="https://wa.me/+201143982522" className="text-green-600 dark:text-green-400 hover:underline">
+                  +201143982522
                   </a>
                 </div>
               </div>
@@ -1084,7 +1084,7 @@ export default function HomePage() {
               </h3>
               <div className="flex flex-wrap justify-center gap-6 max-w-md mx-auto">
                 <a
-                  href="https://www.facebook.com/people/MrMahmoud-Abdel-Aziz/100070094625467/?mibextid=ZbWKwL"
+                  href="https://www.facebook.com/ali.alyan.92"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:text-blue-600 hover:scale-105"
@@ -1098,7 +1098,7 @@ export default function HomePage() {
                   </span>
                 </a>
                 <a
-                  href="https://www.youtube.com/@mahmoudAbdel_Aziz"
+                  href="https://www.youtube.com/@%D8%A3.%D8%B9%D9%84%D9%8A%D9%85%D8%AD%D9%85%D8%AF%D8%B9%D9%84%D9%8A%D8%A7%D9%86"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:text-blue-600 hover:scale-105"
@@ -1112,7 +1112,7 @@ export default function HomePage() {
                   </span>
                 </a>
                 <a
-                  href="https://wa.me/01125800332"
+                  href="https://wa.me/01143982522"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:text-green-500 hover:scale-105"
@@ -1212,7 +1212,7 @@ export default function HomePage() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/+201125800332"
+        href="https://wa.me/+201143982522"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed left-8 bottom-8 z-50 p-4 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 group animate-bounce"

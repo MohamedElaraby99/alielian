@@ -15,6 +15,7 @@ import ExamSliceReducer from "./Slices/ExamSlice"
 import GradeSliceReducer from "./Slices/GradeSlice"
 import InstructorSliceReducer from "./Slices/InstructorSlice"
 import StageSliceReducer from "./Slices/StageSlice"
+import StageCategorySliceReducer from "./Slices/StageCategorySlice"
 import PaymentSliceReducer from "./Slices/PaymentSlice"
 import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
 import DeviceManagementSliceReducer from "./Slices/DeviceManagementSlice"
@@ -44,6 +45,7 @@ import EssayExamSliceReducer from "./Slices/EssayExamSlice"
   grade: GradeSliceReducer,
   instructor: InstructorSliceReducer,
   stage: StageSliceReducer,
+  stageCategory: StageCategorySliceReducer,
   payment: PaymentSliceReducer,
   videoProgress: VideoProgressSliceReducer,
   deviceManagement: DeviceManagementSliceReducer,
