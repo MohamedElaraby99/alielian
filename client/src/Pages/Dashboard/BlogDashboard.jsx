@@ -209,10 +209,10 @@ export default function BlogDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">المسودات</p>
-                  <p className="text-2xl font-bold text-yellow-600">{draftBlogs}</p>
+                  <p className="text-2xl font-bold text-blue-600">{draftBlogs}</p>
                 </div>
-                <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full">
-                  <FaEdit className="text-yellow-600 dark:text-yellow-400" />
+                <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
+                  <FaEdit className="text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </div>
@@ -221,10 +221,10 @@ export default function BlogDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي المشاهدات</p>
-                  <p className="text-2xl font-bold text-purple-600">{totalViews}</p>
+                  <p className="text-2xl font-bold text-blue-600">{totalViews}</p>
                 </div>
-                <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
-                  <FaEye className="text-purple-600 dark:text-purple-400" />
+                <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
+                  <FaEye className="text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function BlogDashboard() {
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                             blog.status === 'published' 
                               ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                              : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                              : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                           }`}>
                             {blog.status}
                           </span>

@@ -24,6 +24,8 @@ import {
   FaServer,
   FaVideo,
   FaClipboardCheck,
+  FaUserSecret,
+  FaChartBar,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -36,7 +38,7 @@ export default function Sidebar({ hideBar = false }) {
 
   // Fetch wallet balance when user is logged in
   useEffect(() => {
-    if (isLoggedIn && role !== "ADMIN") {
+    if (isLoggedIn && !["ADMIN", "SUPER_ADMIN"].includes(role)) {
       dispatch(getWalletBalance());
     }
   }, [dispatch, isLoggedIn, role]);
@@ -75,16 +77,29 @@ export default function Sidebar({ hideBar = false }) {
         <div className="min-h-full w-64 bg-white dark:bg-gray-900 text-base-content p-3 relative z-60" dir="rtl">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              منصة Al Mongez
+            </h2>
             <button onClick={closeSidebar} className="text-red-500 hover:text-red-700">
               <AiFillCloseCircle size={20} />
             </button>
-            <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400">
-              المنصة الدولية
-            </h2>
           </div>
 
+          {/* Super Admin Status Banner */}
+          {role === "SUPER_ADMIN" && (
+            <div className="mb-4 bg-gradient-to-r from-red-600 to-pink-600 rounded-lg p-3 text-white shadow-lg">
+              <div className="flex items-center gap-2">
+                <FaUserSecret size={18} className="text-white" />
+                <div>
+                  <div className="font-bold text-sm">المدير المميز</div>
+                  <div className="text-xs opacity-90">صلاحيات كاملة للنظام</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Wallet Balance */}
-          {isLoggedIn && role !== "ADMIN" && (
+          {isLoggedIn && !["ADMIN", "SUPER_ADMIN"].includes(role) && (
             <div className="mb-4">
               <div className="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 rounded-lg p-3 text-white shadow-md">
                 <div className="flex items-center justify-between mb-2">
@@ -119,7 +134,7 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
 
-            {role === "ADMIN" && (
+            {(role === "ADMIN" || role === "SUPER_ADMIN") && (
               <li>
                 <Link to="/admin/dashboard" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right py-2" onClick={closeSidebar}>
                 <FaUserCircle size={16} className="text-gray-500 dark:text-slate-100" />
@@ -138,7 +153,7 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
 
-            {isLoggedIn && role !== "ADMIN" && (
+            {isLoggedIn && !["ADMIN", "SUPER_ADMIN"].includes(role) && (
               <li>
                 <Link to="/wallet" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right py-2" onClick={closeSidebar}>
                 <FaWallet size={16} className="text-gray-500 dark:text-slate-100" />
@@ -167,7 +182,7 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
             {/* Admin Services Dropdown */}
-            {role === "ADMIN" && (
+            {(role === "ADMIN" || role === "SUPER_ADMIN") && (
               <li>
                 <button 
                   onClick={toggleAdminDropdown}
@@ -229,16 +244,6 @@ export default function Sidebar({ hideBar = false }) {
                     </li>
                     <li>
                       <Link 
-                        to="/admin/exam-results" 
-                        className="flex gap-3 items-center text-xs text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={closeSidebar}
-                      >
-                        <FaClipboardCheck size={14} className="text-gray-500 dark:text-slate-100" />
-                        نتائج الامتحانات
-                      </Link>
-                    </li>
-                    <li>
-                      <Link 
                         to="/about" 
                         className="flex gap-3 items-center text-xs text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={closeSidebar}
@@ -262,8 +267,15 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
+            {/* Visual Separator for Super Admin */}
+            {role === "SUPER_ADMIN" && (
+              <li>
+                <div className="border-t border-red-200 dark:border-red-800 my-2 bg-red-200 dark:bg-red-800"></div>
+              </li>
+            )}
+
             {/* Show these links for non-admin users */}
-            {role !== "ADMIN" && (
+            {!["ADMIN", "SUPER_ADMIN"].includes(role) && (
               <>
                 <li>
                   <Link to="/blogs" className="flex gap-3 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2" onClick={closeSidebar}>
@@ -310,7 +322,7 @@ export default function Sidebar({ hideBar = false }) {
                 {/* User Avatar */}
                 <Link 
                   to="/user/profile" 
-                  className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-gray-700"
+                  className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-gray-700"
                   onClick={closeSidebar}
                 >
                   {data?.avatar?.secure_url ? (
@@ -330,7 +342,7 @@ export default function Sidebar({ hideBar = false }) {
                     {data?.fullName || "User"}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {role === "ADMIN" ? "مدير" : "طالب"}
+                    {role === "SUPER_ADMIN" ? "مدير مميز" : role === "ADMIN" ? "مدير" : "طالب"}
                   </div>
                 </div>
 
@@ -365,7 +377,7 @@ export default function Sidebar({ hideBar = false }) {
                 <Link 
                   to="/login" 
                   onClick={closeSidebar}
-                  className="w-full group relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+                  className="w-full group relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 p-0.5 hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
                 >
                   <div className="relative flex items-center justify-center gap-2 rounded-[8px] bg-white dark:bg-gray-800 px-3 py-2 transition-all duration-300 group-hover:bg-transparent">
                     <div className="relative z-10 flex items-center gap-2">

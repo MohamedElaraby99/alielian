@@ -59,7 +59,7 @@ const GradeDashboard = () => {
 
   // Load grades and subjects on component mount
   useEffect(() => {
-    if (role === 'ADMIN') {
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
       dispatch(getAllGrades());
       dispatch(getGradesWithSubjectsCount());
       dispatch(getAllSubjects());
@@ -220,7 +220,7 @@ const GradeDashboard = () => {
     return matchesSearch && matchesFilter;
   });
 
-  if (role !== 'ADMIN') {
+  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
     return (
       <Layout>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -285,8 +285,8 @@ const GradeDashboard = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <FaBook className="text-purple-600 dark:text-purple-400 text-xl" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <FaBook className="text-blue-600 dark:text-blue-400 text-xl" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Subjects</p>
@@ -297,8 +297,8 @@ const GradeDashboard = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center">
-                <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                  <FaUsers className="text-orange-600 dark:text-orange-400 text-xl" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <FaUsers className="text-blue-600 dark:text-blue-400 text-xl" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Linked Subjects</p>

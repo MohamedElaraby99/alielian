@@ -294,8 +294,8 @@ const VideoProgress = ({
 
   const getProgressColor = (progress) => {
     if (progress >= 90) return 'text-green-500';
-    if (progress >= 70) return 'text-yellow-500';
-    if (progress >= 50) return 'text-orange-500';
+    if (progress >= 70) return 'text-blue-500';
+    if (progress >= 50) return 'text-blue-500';
     return 'text-red-500';
   };
 
@@ -440,7 +440,7 @@ const VideoProgress = ({
             <div>
               <span className="text-gray-500 dark:text-gray-400">Status:</span>
               <span className={`ml-2 font-semibold ${
-                currentVideoProgress?.isCompleted ? 'text-green-500' : 'text-yellow-500'
+                currentVideoProgress?.isCompleted ? 'text-green-500' : 'text-blue-500'
               }`}>
                 {currentVideoProgress?.isCompleted ? 'Completed' : 'In Progress'}
               </span>

@@ -304,7 +304,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">درس</h3>
               <button
                 onClick={() => setShowAddDirectLesson(true)}
-                className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 <FaPlus className="text-sm" />
 اضافة درس
@@ -356,36 +356,36 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
         {showAddUnit && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4">Add New Unit</h3>
+              <h3 className="text-lg font-semibold mb-4">اضافة وحدة جديدة</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Title *</label>
+                  <label className="block text-sm font-medium mb-1">العنوان *</label>
                   <input
                     type="text"
                     value={newUnit.title}
                     onChange={(e) => setNewUnit({ ...newUnit, title: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Enter unit title"
+                    placeholder="ادخل عنوان الوحدة"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-1">الوصف</label>
                   <textarea
                     value={newUnit.description}
                     onChange={(e) => setNewUnit({ ...newUnit, description: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     rows="3"
-                    placeholder="Enter unit description"
+                    placeholder="ادخل وصف الوحدة"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price</label>
+                  <label className="block text-sm font-medium mb-1">السعر</label>
                   <input
                     type="number"
                     value={newUnit.price || ''}
                     onChange={(e) => setNewUnit({ ...newUnit, price: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Enter unit price"
+                    placeholder="ادخل سعر الوحدة"
                     min="0"
                   />
                 </div>
@@ -395,13 +395,13 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                   onClick={handleAddUnit}
                   className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
                 >
-                  Add Unit
+                  اضافة وحدة
                 </button>
                 <button
                   onClick={() => setShowAddUnit(false)}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400"
                 >
-                  Cancel
+                  الغاء
                 </button>
               </div>
             </div>
@@ -412,36 +412,36 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
         {selectedUnit && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4">Edit Unit</h3>
+              <h3 className="text-lg font-semibold mb-4">تعديل الوحدة</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Title *</label>
+                  <label className="block text-sm font-medium mb-1">العنوان *</label>
                   <input
                     type="text"
                     value={selectedUnit.title}
                     onChange={(e) => setSelectedUnit({ ...selectedUnit, title: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Enter unit title"
+                    placeholder="ادخل عنوان الوحدة"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-1">الوصف</label>
                   <textarea
                     value={selectedUnit.description || ''}
                     onChange={(e) => setSelectedUnit({ ...selectedUnit, description: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     rows="3"
-                    placeholder="Enter unit description"
+                      placeholder="ادخل وصف الوحدة"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price</label>
+                  <label className="block text-sm font-medium mb-1">السعر</label>
                   <input
                     type="number"
                     value={selectedUnit.price !== undefined ? selectedUnit.price : ''}
                     onChange={(e) => setSelectedUnit({ ...selectedUnit, price: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Enter unit price"
+                    placeholder="ادخل سعر الوحدة"
                     min="0"
                   />
                 </div>
@@ -451,13 +451,13 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                   onClick={() => handleUpdateUnit(selectedUnit._id, { title: selectedUnit.title, description: selectedUnit.description, price: selectedUnit.price })}
                   className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
                 >
-                  Update Unit
+                  تعديل الوحدة
                 </button>
                 <button
                   onClick={() => setSelectedUnit(null)}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400"
                 >
-                  Cancel
+                  الغاء
                 </button>
               </div>
             </div>
@@ -468,47 +468,37 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
         {(showAddLesson.show || showAddDirectLesson) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4">Add New Lesson</h3>
+              <h3 className="text-lg font-semibold mb-4">اضافة درس جديد</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Title *</label>
+                  <label className="block text-sm font-medium mb-1">العنوان *</label>
                   <input
                     type="text"
                     value={newLesson.title}
                     onChange={(e) => setNewLesson({ ...newLesson, title: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Enter lesson title"
+                    placeholder="ادخل عنوان الدرس"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-1">الوصف</label>
                   <textarea
                     value={newLesson.description}
                     onChange={(e) => setNewLesson({ ...newLesson, description: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     rows="3"
-                    placeholder="Enter lesson description"
+                    placeholder="ادخل وصف الدرس"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price</label>
+                  <label className="block text-sm font-medium mb-1">السعر</label>
                   <input
                     type="number"
                     value={newLesson.price || ''}
                     onChange={(e) => setNewLesson({ ...newLesson, price: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Enter lesson price"
+                    placeholder="ادخل سعر الدرس"
                     min="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Content</label>
-                  <textarea
-                    value={newLesson.content || ''}
-                    onChange={(e) => setNewLesson({ ...newLesson, content: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    rows="3"
-                    placeholder="Enter lesson content (e.g. video URL, PDF URL, etc.)"
                   />
                 </div>
               </div>
@@ -517,7 +507,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                   onClick={() => showAddDirectLesson ? handleAddLesson() : handleAddLesson(showAddLesson.unitId)}
                   className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
                 >
-                  Add Lesson
+                  اضافة الدرس
                 </button>
                 <button
                   onClick={() => {
@@ -526,7 +516,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                   }}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400"
                 >
-                  Cancel
+                  الغاء
                 </button>
               </div>
             </div>

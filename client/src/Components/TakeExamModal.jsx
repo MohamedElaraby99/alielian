@@ -204,7 +204,7 @@ const TakeExamModal = ({
   const getScoreColor = (score) => {
     if (score >= 90) return 'text-green-600';
     if (score >= 80) return 'text-blue-600';
-    if (score >= 70) return 'text-yellow-600';
+    if (score >= 70) return 'text-blue-600';
     return 'text-red-600';
   };
 
@@ -218,7 +218,7 @@ const TakeExamModal = ({
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <div className="flex items-center gap-1 sm:gap-2">
               {examType === 'training' ? (
-                <FaClipboardCheck className="text-lg sm:text-2xl text-purple-500 flex-shrink-0" />
+                <FaClipboardCheck className="text-lg sm:text-2xl text-blue-500 flex-shrink-0" />
               ) : (
                 <FaGraduationCap className="text-lg sm:text-2xl text-red-500 flex-shrink-0" />
               )}
@@ -304,7 +304,7 @@ const TakeExamModal = ({
                       <span>Total Questions: {totalQuestions}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <FaTrophy className="text-yellow-500" />
+                      <FaTrophy className="text-blue-500" />
                       <span>Passing Score: {exam?.passingScore}%</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -316,7 +316,7 @@ const TakeExamModal = ({
                 
                 <button
                   onClick={startExam}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
                 >
                   Start {examType === 'training' ? 'Training' : 'Final'} Exam
                 </button>
@@ -443,7 +443,7 @@ const TakeExamModal = ({
                             Question {index + 1}: {question.question}
                           </p>
                           <div className="space-y-1">
-                            {question.options.map((option, optionIndex) => (
+                            {question.options.slice(0, question.numberOfOptions || 4).map((option, optionIndex) => (
                               <div
                                 key={optionIndex}
                                 className={`p-2 rounded ${
@@ -489,7 +489,7 @@ const TakeExamModal = ({
                       onClick={() => setReviewMode(!reviewMode)}
                       className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm ${
                         reviewMode 
-                          ? 'bg-yellow-500 text-white' 
+                          ? 'bg-blue-500 text-white' 
                           : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                       }`}
                     >

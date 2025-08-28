@@ -81,6 +81,7 @@ const LiveMeetingDashboard = () => {
   const [showStudentsOnly, setShowStudentsOnly] = useState(true);
 
   useEffect(() => {
+    console.log('🔍 useEffect triggered - fetching data...');
     dispatch(getAllLiveMeetings({ page: currentPage, limit: 10, status: statusFilter, stage: stageFilter, subject: subjectFilter }));
     dispatch(getLiveMeetingStats());
     dispatch(getAllUsers({ limit: 1000 }));
@@ -88,6 +89,16 @@ const LiveMeetingDashboard = () => {
     dispatch(getAllStages());
     dispatch(getAllSubjects());
   }, [dispatch, currentPage, statusFilter, stageFilter, subjectFilter]);
+
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('📊 Current Redux State:', {
+      instructors: instructors?.length || 0,
+      subjects: subjects?.length || 0,
+      stages: stages?.length || 0,
+      users: users?.length || 0
+    });
+  }, [instructors, subjects, stages, users]);
 
   const resetForm = () => {
     setFormData({
@@ -129,6 +140,15 @@ const LiveMeetingDashboard = () => {
         ...formData,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : []
       };
+      
+      console.log('🔍 Frontend - Data being sent to update meeting:', {
+        meetingId: selectedMeeting._id,
+        meetingData: meetingData,
+        attendees: meetingData.attendees,
+        attendeesType: typeof meetingData.attendees,
+        isArray: Array.isArray(meetingData.attendees)
+      });
+      
       await dispatch(updateLiveMeeting({ meetingId: selectedMeeting._id, meetingData })).unwrap();
       setShowEditModal(false);
       setSelectedMeeting(null);
@@ -278,7 +298,7 @@ const LiveMeetingDashboard = () => {
       }
       
       // Filter by role (show only students if enabled)
-      if (showStudentsOnly && user.role === 'ADMIN') {
+      if (showStudentsOnly && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
         return false;
       }
       
@@ -316,13 +336,21 @@ const LiveMeetingDashboard = () => {
               <p className="text-gray-600 dark:text-gray-300">
                 إدارة الجلسات المباشرة والجدولة
               </p>
+              {/* Data Loading Status */}
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {!instructors || !subjects || !stages ? (
+                  <span className="text-blue-600">🔄 جاري تحميل البيانات الأساسية...</span>
+                ) : (
+                  <span className="text-green-600">✅ البيانات جاهزة</span>
+                )}
+              </div>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <FaPlus />
-              إنشاء جلسةمباشر جديد
+              إنشاء جلسة مباشر جديد
             </button>
           </div>
 
@@ -342,8 +370,8 @@ const LiveMeetingDashboard = () => {
             
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div className="flex items-center">
-                <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-                  <FaClock className="text-2xl text-yellow-600 dark:text-yellow-400" />
+                <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+                  <FaClock className="text-2xl text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="mr-4">
                   <p className="text-sm text-gray-600 dark:text-gray-400">القادمة</p>
@@ -447,7 +475,7 @@ const LiveMeetingDashboard = () => {
                         العنوان
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        المحاضر
+                        المدرب
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         التاريخ والوقت
@@ -518,7 +546,7 @@ const LiveMeetingDashboard = () => {
                             </button>
                             <button
                               onClick={() => window.open(meeting.googleMeetLink, '_blank')}
-                              className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                               title="فتح الاجتماع"
                             >
                               <FaExternalLinkAlt />
@@ -684,7 +712,7 @@ const LiveMeetingDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      المحاضر *
+                      المدرب * {instructors?.length > 0 && <span className="text-xs text-gray-500">({instructors.length} متاح)</span>}
                     </label>
                     <select
                       required
@@ -692,10 +720,14 @@ const LiveMeetingDashboard = () => {
                       onChange={(e) => setFormData({...formData, instructor: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
-                      <option value="">اختر المحاضر</option>
-                      {instructors.map((instructor) => (
-                        <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
-                      ))}
+                      <option value="">اختر المدرب</option>
+                      {instructors && instructors.length > 0 ? (
+                        instructors.map((instructor) => (
+                          <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
+                        ))
+                      ) : (
+                        <option value="" disabled>جاري تحميل المدربين...</option>
+                      )}
                     </select>
                   </div>
 
@@ -718,7 +750,7 @@ const LiveMeetingDashboard = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      المادة *
+                      المادة * {subjects?.length > 0 && <span className="text-xs text-gray-500">({subjects.length} متاح)</span>}
                     </label>
                     <select
                       required
@@ -727,9 +759,13 @@ const LiveMeetingDashboard = () => {
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="">اختر المادة</option>
-                      {subjects.map((subject) => (
-                        <option key={subject._id} value={subject._id}>{subject.title}</option>
-                      ))}
+                      {subjects && subjects.length > 0 ? (
+                        subjects.map((subject) => (
+                          <option key={subject._id} value={subject._id}>{subject.title}</option>
+                        ))
+                      ) : (
+                        <option value="" disabled>جاري تحميل المواد...</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -875,7 +911,7 @@ const LiveMeetingDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      المحاضر *
+                      المدرب * {instructors?.length > 0 && <span className="text-xs text-gray-500">({instructors.length} متاح)</span>}
                     </label>
                     <select
                       required
@@ -883,7 +919,7 @@ const LiveMeetingDashboard = () => {
                       onChange={(e) => setFormData({...formData, instructor: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
-                      <option value="">اختر المحاضر</option>
+                      <option value="">اختر المدرب</option>
                       {instructors.map((instructor) => (
                         <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
                       ))}
@@ -909,7 +945,7 @@ const LiveMeetingDashboard = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      المادة *
+                      المادة * {subjects?.length > 0 && <span className="text-xs text-gray-500">({subjects.length} متاح)</span>}
                     </label>
                     <select
                       required

@@ -71,7 +71,7 @@ const TestimonialSection = () => {
 
               <div className="flex items-center mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <FaStar key={i} className="text-yellow-400 w-4 h-4" />
+                  <FaStar key={i} className="text-blue-400 w-4 h-4" />
                 ))}
               </div>
 
@@ -89,7 +89,7 @@ const TestimonialSection = () => {
           <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 px-6 py-3 rounded-full shadow-lg">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 w-4 h-4" />
+                <FaStar key={i} className="text-blue-400 w-4 h-4" />
               ))}
             </div>
             <span className="text-gray-900 dark:text-white font-semibold ml-2">

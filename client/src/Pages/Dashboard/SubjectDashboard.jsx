@@ -5,13 +5,12 @@ import {
   createSubject, 
   updateSubject, 
   deleteSubject,
-  toggleFeatured,
-  updateSubjectStatus
+  toggleFeatured
 } from "../../Redux/Slices/SubjectSlice";
-import { getAllStages } from "../../Redux/Slices/StageSlice";
 import { getAllInstructors } from "../../Redux/Slices/InstructorSlice";
 import Layout from "../../Layout/Layout";
 import SubjectCard from "../../Components/SubjectCard";
+import { generateImageUrl } from "../../utils/fileUtils";
 import { 
   FaPlus, 
   FaEdit, 
@@ -25,22 +24,24 @@ import {
 
 export default function SubjectDashboard() {
   const dispatch = useDispatch();
-  const { subjects, loading, categories } = useSelector((state) => state.subject);
-  const { stages } = useSelector((state) => state.stage);
+  const { subjects, loading } = useSelector((state) => state.subject);
   const { instructors } = useSelector((state) => state.instructor);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [status, setStatus] = useState("");
+  const handleToggleFeatured = async (subjectId) => {
+    try {
+      await dispatch(toggleFeatured(subjectId));
+    } catch (error) {
+      console.error('Toggle featured error:', error);
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     instructor: "",
-    stage: "",
-    featured: false,
     image: null
   });
 
@@ -48,7 +49,6 @@ export default function SubjectDashboard() {
 
   useEffect(() => {
     dispatch(getAllSubjects({ page: 1, limit: 100 }));
-    dispatch(getAllStages({ page: 1, limit: 100 }));
     dispatch(getAllInstructors({ page: 1, limit: 100 }));
   }, [dispatch]);
 
@@ -66,8 +66,6 @@ export default function SubjectDashboard() {
     if (!formData.instructor) {
       newErrors.instructor = "المدرس مطلوب";
     }
-
-    // stage is optional now
 
     // Only require image for new subjects, not for editing
     if (!showEditModal && !formData.image) {
@@ -94,8 +92,6 @@ export default function SubjectDashboard() {
           }
         } else if (key === 'tags') {
           subjectData.append(key, formData[key]);
-        } else if (key === 'featured') {
-          subjectData.append(key, formData[key].toString());
         } else {
           subjectData.append(key, formData[key]);
         }
@@ -121,9 +117,7 @@ export default function SubjectDashboard() {
       Object.keys(formData).forEach(key => {
         if (key === 'tags') {
           subjectData.append(key, formData[key]);
-        } else if (key === 'featured') {
-          subjectData.append(key, formData[key].toString());
-        } else if (key === 'instructor' || key === 'stage') {
+        } else if (key === 'instructor') {
           const value = formData[key];
           // Ensure we send an ObjectId string, not an object
           if (value && typeof value === 'object') {
@@ -155,13 +149,7 @@ export default function SubjectDashboard() {
     }
   };
 
-  const handleToggleFeatured = async (subjectId) => {
-    try {
-      await dispatch(toggleFeatured(subjectId));
-    } catch (error) {
-      console.error('Toggle featured error:', error);
-    }
-  };
+  
 
   const openEditModal = (subject) => {
     setSelectedSubject(subject);
@@ -169,8 +157,6 @@ export default function SubjectDashboard() {
       title: subject.title,
       description: subject.description,
       instructor: subject.instructor?._id || subject.instructor || "",
-      stage: subject.stage?._id || subject.stage || "",
-      featured: subject.featured,
       image: null
     });
     setShowEditModal(true);
@@ -181,8 +167,6 @@ export default function SubjectDashboard() {
       title: "",
       description: "",
       instructor: "",
-      stage: "",
-      featured: false,
       image: null
     });
     setErrors({});
@@ -206,10 +190,7 @@ export default function SubjectDashboard() {
   const filteredSubjects = subjects.filter(subject => {
     const matchesSearch = subject.title.toLowerCase().includes(search.toLowerCase()) ||
                          subject.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = !category || subject.category === category;
-    const matchesStatus = !status || subject.status === status;
-    
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch;
   });
 
   return (
@@ -249,28 +230,6 @@ export default function SubjectDashboard() {
                 />
               </div>
 
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">جميع الفئات</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">جميع الحالات</option>
-                <option value="active">نشط</option>
-                <option value="inactive">غير نشط</option>
-                <option value="featured">مميز</option>
-              </select>
-
               <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
                 {filteredSubjects.length} مادة دراسية تم العثور عليها
               </div>
@@ -293,7 +252,6 @@ export default function SubjectDashboard() {
                   onEdit={openEditModal}
                   onDelete={handleDeleteSubject}
                   onToggleFeatured={handleToggleFeatured}
-                  onUpdateStatus={updateSubjectStatus}
                 />
               ))}
             </div>
@@ -525,27 +483,7 @@ export default function SubjectDashboard() {
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        المرحلة (اختياري)
-                      </label>
-                      <select
-                        name="stage"
-                        value={formData.stage}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                          errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                        }`}
-                      >
-                        <option value="">بدون مرحلة</option>
-                        {stages.map((stage) => (
-                          <option key={stage._id} value={stage._id}>{stage.name}</option>
-                        ))}
-                      </select>
-                      {errors.stage && (
-                        <p className="text-red-500 text-sm mt-1">{errors.stage}</p>
-                      )}
-                  </div>
+                  
                 </div>
 
                 {/* Image Upload Section */}
@@ -560,7 +498,7 @@ export default function SubjectDashboard() {
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">الصورة الحالية:</p>
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
                         <img
-                          src={selectedSubject.image.secure_url}
+                          src={generateImageUrl(selectedSubject.image.secure_url)}
                           alt="Current subject image"
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -619,18 +557,7 @@ export default function SubjectDashboard() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="featured"
-                    checked={formData.featured}
-                    onChange={handleInputChange}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    مميز
-                  </label>
-                </div>
+                
 
                 <div className="flex gap-3 justify-end pt-4">
                   <button
@@ -642,7 +569,7 @@ export default function SubjectDashboard() {
                     }}
                     className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
                   >
-                    الغاء
+                    Cancel
                   </button>
                   <button
                     type="submit"

@@ -10,17 +10,12 @@ const faqData = [
   {
     id: 2,
     question: "ما هي طرق الدفع التي تقبلونها؟",
-    answer: "نقبل الدفع عبر فودافون كاش  والمحافظ الالكترونية وانستا باي فقط. تتم معالجة المدفوعات بأمان، وستجد بيانات التحويل والتعليمات داخل صفحة الدفع."
+    answer: "نحن نقبل Instapay transfer وVodafone Cash كطرق دفع رئيسية. كما نقبل جميع بطاقات الائتمان الرئيسية وبطاقات الخصم. جميع المدفوعات تتم معالجتها بأمان من خلال شركائنا الموثوقين في الدفع. كما نقدم خطط تقسيط لبعض الدورات."
   },
   {
     id: 3,
     question: "هل يمكنني الوصول الكورسات  بدون إنترنت؟",
     answer: "حالياً، دوراتنا متاحة عبر الإنترنت فقط للحصول على أفضل تجربة تعليمية. ومع ذلك، يمكنك تحميل المواد التعليمية والملفات PDF والموارد للاستخدام بدون إنترنت. نحن نعمل على تحميل الفيديوهات بدون إنترنت للأعضاء المميزين."
-  },
-  {
-    id: 4,
-    question: "هل تقدمون شهادات عند الانتهاء؟",
-    answer: "نعم! عند الانتهاء من الدرس، ستحصل على شهادة مهنية يمكنك تحميلها ومشاركتها في ملفك الشخصي على LinkedIn أو سيرتك الذاتية أو محفظتك. شهاداتنا معترف بها من قبل أصحاب العمل في جميع أنحاء العالم."
   },
   {
     id: 5,
@@ -31,11 +26,6 @@ const faqData = [
     id: 6,
     question: "كيف أحصل على المساعدة إذا واجهت مشاكل تقنية؟",
     answer: "فريق الدعم لدينا متاح على مدار الساعة طوال أيام الأسبوع لمساعدتك في أي مشاكل تقنية. يمكنك الوصول إلينا من خلال الدردشة المباشرة أو البريد الإلكتروني أو منتدى المجتمع. كما لدينا مركز مساعدة شامل مع دروس تعليمية وأدلة."
-  },
-  {
-    id: 7,
-    question: "هل الكورسات مناسبة للمبتدئين؟",
-    answer: "بالتأكيد! نحن نقدم دورات لجميع مستويات المهارة - من المبتدئين تماماً إلى المحترفين المتقدمين. كل دورة تشير بوضوح إلى مستوى المهارة المطلوب، والعديد منها يتضمن معلومات متطلبات مسبقة لمساعدتك في اختيار الدرس المناسبة."
   },
   {
     id: 8,
@@ -49,8 +39,11 @@ const FAQItem = ({ item, isOpen, onToggle }) => {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
       <button
         onClick={() => onToggle(item.id)}
-        className="w-full px-6 py-4 text-right flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
       >
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white pr-4">
+          {item.question}
+        </h3>
         <div className="flex-shrink-0">
           {isOpen ? (
             <FaChevronUp className="w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform duration-200" />
@@ -58,9 +51,6 @@ const FAQItem = ({ item, isOpen, onToggle }) => {
             <FaChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform duration-200" />
           )}
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white pl-4">
-          {item.question}
-        </h3>
       </button>
       
       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -68,15 +58,15 @@ const FAQItem = ({ item, isOpen, onToggle }) => {
       }`}>
         <div className="px-6 pb-4">
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-right">
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               {item.answer}
             </p>
             {isOpen && (
-              <div className="mt-4 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 justify-end">
-                <span>إجابة مفيدة</span>
+              <div className="mt-4 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
+                <span>إجابة مفيدة</span>
               </div>
             )}
           </div>
@@ -122,7 +112,7 @@ const FAQAccordion = () => {
     <div className="space-y-4">
       {/* Search Input */}
       <div className="relative mb-6">
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -132,10 +122,10 @@ const FAQAccordion = () => {
           placeholder="البحث في الأسئلة الشائعة..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pr-10 pl-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
         {searchTerm && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               {filteredItems.length} نتيجة
             </span>
@@ -162,17 +152,17 @@ const FAQAccordion = () => {
               >
                 {showAll ? (
                   <>
-                    عرض أقل
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     </svg>
+                    عرض أقل
                   </>
                 ) : (
                   <>
-                    عرض جميع الأسئلة
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
+                    عرض جميع الأسئلة
                   </>
                 )}
               </button>

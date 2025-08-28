@@ -55,7 +55,8 @@ import {
     FaIdCard
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
-import { egyptianGovernorates } from "../../utils/governorateMapping";
+import { egyptianCities } from "../../utils/governorateMapping";
+import CodeSearch from "../../Components/CodeSearch";
 
 export default function AdminUserDashboard() {
     const dispatch = useDispatch();
@@ -86,7 +87,9 @@ export default function AdminUserDashboard() {
     const [userToDeleteInfo, setUserToDeleteInfo] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [editForm, setEditForm] = useState({});
+    const [editForm, setEditForm] = useState({
+        code: ''
+    });
     const [passwordForm, setPasswordForm] = useState({
         newPassword: '',
         confirmPassword: ''
@@ -108,6 +111,11 @@ export default function AdminUserDashboard() {
     });
     const [activeTab, setActiveTab] = useState("users");
     const [stages, setStages] = useState([]);
+
+    // Check if current user can create admin users
+    const canCreateAdmin = user && (user.role === 'SUPER_ADMIN');
+    const canDeleteAdmin = user && (user.role === 'SUPER_ADMIN');
+    const canChangeRoleToAdmin = user && (user.role === 'SUPER_ADMIN');
 
     // Fetch stages on component mount
     useEffect(() => {
@@ -140,7 +148,7 @@ export default function AdminUserDashboard() {
         console.log('LocalStorage role:', localStorage.getItem('role'));
         console.log('LocalStorage isLoggedIn:', localStorage.getItem('isLoggedIn'));
         
-        if (isLoggedIn && role === "ADMIN") {
+        if (isLoggedIn && (role === "ADMIN" || role === "SUPER_ADMIN")) {
             console.log('Dispatching getAllUsers...');
             let roleFilter = "";
             if (activeTab === "users") {
@@ -158,7 +166,8 @@ export default function AdminUserDashboard() {
                 role: roleFilter,
                 status: filters.status,
                 stage: filters.stage,
-                search: filters.search 
+                search: filters.search,
+                codeSearch: filters.codeSearch
             }));
         } else {
             console.log('User not admin or not logged in');
@@ -207,7 +216,8 @@ export default function AdminUserDashboard() {
             role: roleFilter,
             status: filters.status,
             stage: filters.stage,
-            search: filters.search 
+            search: filters.search,
+            codeSearch: filters.codeSearch
         });
         
         dispatch(getAllUsers({ 
@@ -216,8 +226,21 @@ export default function AdminUserDashboard() {
             role: roleFilter,
             status: filters.status,
             stage: filters.stage,
-            search: filters.search 
+            search: filters.search,
+            codeSearch: filters.codeSearch 
         }));
+    };
+
+    const handleCodeSearchUserSelect = (user) => {
+        // When a user is selected from code search, show their details
+        setSelectedUserId(user.id);
+        setShowUserDetails(true);
+        setIsEditing(false);
+        
+        // Load user details
+        dispatch(getUserDetails(user.id));
+        dispatch(getUserStats(user.id));
+        dispatch(getUserActivities({ userId: user.id, page: 1, limit: 20 }));
     };
 
     const handleViewUser = async (userId) => {
@@ -287,9 +310,13 @@ export default function AdminUserDashboard() {
             };
 
             // Remove empty string values and undefined values that could cause validation issues
+            // But preserve required fields (fullName, username, email)
             Object.keys(userData).forEach(key => {
                 if (userData[key] === '' || userData[key] === undefined) {
-                    delete userData[key];
+                    // Don't delete required fields, just skip them
+                    if (key !== 'fullName' && key !== 'username' && key !== 'email') {
+                        delete userData[key];
+                    }
                 }
             });
 
@@ -305,7 +332,9 @@ export default function AdminUserDashboard() {
             })).unwrap();
             toast.success("تم تحديث معلومات المستخدم بنجاح!");
             setIsEditing(false);
-            setEditForm({});
+            setEditForm({
+                code: ''
+            });
             
             // Refresh user details to show updated information
             await dispatch(getUserDetails(selectedUserId)).unwrap();
@@ -326,6 +355,7 @@ export default function AdminUserDashboard() {
             stage: user.stage?._id || null,
             age: user.age || '',
             role: user.role || 'USER',
+            code: user.code || '',
             isActive: user.isActive
         });
         setIsEditing(true);
@@ -333,17 +363,27 @@ export default function AdminUserDashboard() {
 
     const handleCancelEdit = () => {
         setIsEditing(false);
-        setEditForm({});
+        setEditForm({
+            code: ''
+        });
     };
 
-    const handlePasswordChange = async () => {
+        const handlePasswordChange = async () => {
+        // Validate password length
+        if (passwordForm.newPassword.length < 6) {
+            toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            return;
+        }
+
+        // Validate password confirmation
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             toast.error("كلمات المرور غير متطابقة");
             return;
         }
-        
-        if (passwordForm.newPassword.length < 6) {
-            toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+
+        // Additional password validation
+        if (passwordForm.newPassword.trim() === '') {
+            toast.error("كلمة المرور لا يمكن أن تكون فارغة");
             return;
         }
 
@@ -408,9 +448,13 @@ export default function AdminUserDashboard() {
     };
 
     const getRoleColor = (role) => {
-        return role === 'ADMIN' 
-            ? 'text-purple-600 bg-purple-50 dark:bg-purple-900/20' 
-            : 'text-blue-600 bg-blue-50 dark:bg-blue-900/20';
+        if (role === 'SUPER_ADMIN') {
+            return 'text-red-600 bg-red-50 dark:bg-red-900/20';
+        } else if (role === 'ADMIN') {
+            return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20';
+        } else {
+            return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20';
+        }
     };
 
     const getTransactionIcon = (type) => {
@@ -426,13 +470,21 @@ export default function AdminUserDashboard() {
         }
     };
 
+    const getPasswordStrength = (password) => {
+        if (!password) return { strength: 'weak', color: 'text-gray-400', text: 'أدخل كلمة المرور' };
+        if (password.length < 6) return { strength: 'weak', color: 'text-red-500', text: 'ضعيفة جداً' };
+        if (password.length < 8) return { strength: 'medium', color: 'text-blue-500', text: 'متوسطة' };
+        if (password.length < 10) return { strength: 'good', color: 'text-blue-500', text: 'جيدة' };
+        return { strength: 'strong', color: 'text-green-500', text: 'قوية' };
+    };
+
     return (
         <Layout>
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8" dir="rtl">
+            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8" dir="rtl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <div className="mx-auto h-16 w-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <div className="mx-auto h-16 w-16 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
                             <FaUsers className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -443,68 +495,82 @@ export default function AdminUserDashboard() {
                         </p>
                     </div>
 
-                    {/* Statistics Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center">
-                                <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
-                                    <FaUsers className="h-6 w-6 text-blue-600" />
-                                </div>
-                                <div className="mr-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي المستخدمين</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
+                    {/* Statistics Cards - Only visible to SUPER_ADMIN */}
+                    {role === "SUPER_ADMIN" && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center">
+                                    <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
+                                        <FaUsers className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي المستخدمين</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center">
-                                <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/20">
-                                    <FaUserCheck className="h-6 w-6 text-green-600" />
-                                </div>
-                                <div className="mr-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون النشطون</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeUsers}</p>
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center">
+                                    <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/20">
+                                        <FaUserCheck className="h-6 w-6 text-green-600" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون النشطون</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeUsers}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center">
-                                <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/20">
-                                    <FaUserTimes className="h-6 w-6 text-red-600" />
-                                </div>
-                                <div className="mr-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون غير النشطين</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.inactiveUsers}</p>
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center">
+                                    <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/20">
+                                        <FaUserTimes className="h-6 w-6 text-red-600" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون غير النشطين</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.inactiveUsers}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center">
-                                <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/20">
-                                    <FaCrown className="h-6 w-6 text-purple-600" />
-                                </div>
-                                <div className="mr-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المديرون</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.adminUsers}</p>
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center">
+                                    <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
+                                        <FaCrown className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المديرون</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.adminUsers}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center">
-                                <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
-                                    <FaUser className="h-6 w-6 text-indigo-600" />
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center">
+                                    <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/20">
+                                        <FaUserSecret className="h-6 w-6 text-red-600" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المديرون المميزون</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.superAdminUsers || 0}</p>
+                                    </div>
                                 </div>
-                                <div className="mr-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الطلاب</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.regularUsers}</p>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center">
+                                    <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
+                                        <FaUser className="h-6 w-6 text-indigo-600" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الطلاب</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.regularUsers}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Tabs */}
                     <div className="flex space-x-4 space-x-reverse mb-6">
@@ -523,7 +589,7 @@ export default function AdminUserDashboard() {
                             onClick={() => setActiveTab("admins")}
                             className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                                 activeTab === "admins"
-                                    ? "bg-purple-600 text-white"
+                                    ? "bg-blue-600 text-white"
                                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                             }`}
                         >
@@ -558,7 +624,7 @@ export default function AdminUserDashboard() {
                             <button
                                 onClick={() => setShowResetCodesConfirm(true)}
                                 disabled={actionLoading}
-                                className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors duration-200 shadow-lg hover:shadow-xl"
+                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors duration-200 shadow-lg hover:shadow-xl"
                                 title="حذف جميع رموز الشحن"
                             >
                                 <FaTrash />
@@ -574,17 +640,32 @@ export default function AdminUserDashboard() {
                         </button>
                     </div>
 
+                    {/* Quick Code Search */}
+                    <div className="mb-6 p-3 sm:p-4 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
+                        <h3 className="text-base sm:text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2 sm:mb-3 flex items-center">
+                            <FaSearch className="mr-2 text-sm sm:text-base" />
+                            البحث السريع بالرمز التعريفي
+                        </h3>
+                        <p className="text-xs sm:text-sm text-indigo-700 dark:text-indigo-300 mb-3 sm:mb-4">
+                            ابحث عن مستخدم بسرعة باستخدام الرمز التعريفي الخاص به
+                        </p>
+                        <CodeSearch 
+                            onUserSelect={handleCodeSearchUserSelect}
+                            className="w-full max-w-md"
+                        />
+                    </div>
+
                     {/* Tab Content */}
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
                         {activeTab === "users" && (
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                            <div className="p-3 sm:p-6">
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
                                     جميع المستخدمين
                                 </h3>
 
                                 {/* Filters */}
-                                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                <div className="mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 البحث
@@ -596,6 +677,15 @@ export default function AdminUserDashboard() {
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                 placeholder="البحث بالاسم أو البريد الإلكتروني"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث بالرمز
+                                            </label>
+                                            <CodeSearch 
+                                                onUserSelect={handleCodeSearchUserSelect}
+                                                className="w-full"
                                             />
                                         </div>
                                         {activeTab === "all" && (
@@ -692,19 +782,23 @@ export default function AdminUserDashboard() {
                                                                 {user.fullName}
                                                             </h4>
                                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                                                                {user.role}
+                                                                {user.role === 'SUPER_ADMIN' ? 'مدير مميز' : user.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
                                                             </span>
                                                         </div>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             {user.email}
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                            المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
-                                                            {user.stage && user.stage.name && (
-                                                                <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                            {user.role !== 'SUPER_ADMIN' && (
+                                                                <>
+                                                                    المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                                    {user.stage && user.stage.name && (
+                                                                        <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                                    )}
+                                                                </>
                                                             )}
-                                                            {user.category && user.category.name && (
-                                                                <span className="ml-2">• الفئة: {user.category.name}</span>
+                                                            {user.role === 'SUPER_ADMIN' && user.stage && user.stage.name && (
+                                                                <span>المرحلة: {user.stage.name}</span>
                                                             )}
                                                         </p>
                                                     </div>
@@ -719,36 +813,40 @@ export default function AdminUserDashboard() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleStatus(user.id, user.isActive)}
-                                                        className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                                                         title={user.isActive ? "إلغاء التفعيل" : "تفعيل"}
                                                     >
                                                         {user.isActive ? <FaToggleOn /> : <FaToggleOff />}
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
-                                                        className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
-                                                        title="تغيير الدور"
-                                                    >
-                                                        <FaUserCog />
-                                                    </button>
+                                                    {canChangeRoleToAdmin && (
+                                                        <button
+                                                            onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                                            className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                                                            title="تغيير الدور"
+                                                        >
+                                                            <FaUserCog />
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleResetUserWallet(user.id, user.fullName)}
-                                                        className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                                                         title="إعادة تعيين المحفظة"
                                                     >
                                                         <FaWallet />
                                                     </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setUserToDelete(user.id);
-                                                            setUserToDeleteInfo(user);
-                                                            setShowDeleteConfirm(true);
-                                                        }}
-                                                        className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                                                        title="حذف المستخدم"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
+                                                    {(user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' || canDeleteAdmin) && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setUserToDelete(user.id);
+                                                                setUserToDeleteInfo(user);
+                                                                setShowDeleteConfirm(true);
+                                                            }}
+                                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                            title="حذف المستخدم"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -783,14 +881,14 @@ export default function AdminUserDashboard() {
                         )}
 
                         {activeTab === "admins" && (
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                            <div className="p-3 sm:p-6">
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
                                     المديرون
                                 </h3>
 
                                 {/* Filters */}
-                                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 البحث
@@ -802,6 +900,15 @@ export default function AdminUserDashboard() {
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                 placeholder="البحث بالاسم أو البريد الإلكتروني"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث بالرمز
+                                            </label>
+                                            <CodeSearch 
+                                                onUserSelect={handleCodeSearchUserSelect}
+                                                className="w-full"
                                             />
                                         </div>
                                         <div>
@@ -825,7 +932,7 @@ export default function AdminUserDashboard() {
                                                     console.log('Filter button clicked (admins)!');
                                                     handleApplyFilters();
                                                 }}
-                                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                                                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
                                                 تطبيق المرشحات
@@ -837,7 +944,7 @@ export default function AdminUserDashboard() {
                                 {/* Admins List */}
                                 {loading ? (
                                     <div className="flex justify-center items-center py-8">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                                     </div>
                                 ) : users.length === 0 ? (
                                     <div className="text-center py-8">
@@ -863,14 +970,24 @@ export default function AdminUserDashboard() {
                                                                 {user.fullName}
                                                             </h4>
                                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                                                                {user.role}
+                                                                {user.role === 'SUPER_ADMIN' ? 'مدير مميز' : user.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
                                                             </span>
                                                         </div>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             {user.email}
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                            المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                            {user.role !== 'SUPER_ADMIN' && (
+                                                                <>
+                                                                    المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                                    {user.stage && user.stage.name && (
+                                                                        <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                            {user.role === 'SUPER_ADMIN' && user.stage && user.stage.name && (
+                                                                <span>المرحلة: {user.stage.name}</span>
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -884,25 +1001,40 @@ export default function AdminUserDashboard() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleStatus(user.id, user.isActive)}
-                                                        className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                                                         title={user.isActive ? "إلغاء التفعيل" : "تفعيل"}
                                                     >
                                                         {user.isActive ? <FaToggleOn /> : <FaToggleOff />}
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
-                                                        className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
-                                                        title="تغيير الدور"
-                                                    >
-                                                        <FaUserCog />
-                                                    </button>
+                                                    {canChangeRoleToAdmin && (
+                                                        <button
+                                                            onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                                            className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                                                            title="تغيير الدور"
+                                                        >
+                                                            <FaUserCog />
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleResetUserWallet(user.id, user.fullName)}
-                                                        className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                                                         title="إعادة تعيين المحفظة"
                                                     >
                                                         <FaWallet />
                                                     </button>
+                                                    {(user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' || canDeleteAdmin) && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setUserToDelete(user.id);
+                                                                setUserToDeleteInfo(user);
+                                                                setShowDeleteConfirm(true);
+                                                            }}
+                                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                            title="حذف المستخدم"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -912,14 +1044,14 @@ export default function AdminUserDashboard() {
                         )}
 
                         {activeTab === "all" && (
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                            <div className="p-3 sm:p-6">
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
                                     جميع المستخدمين
                                 </h3>
 
                                 {/* Filters */}
-                                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                <div className="mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 البحث
@@ -931,6 +1063,15 @@ export default function AdminUserDashboard() {
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                 placeholder="البحث بالاسم أو البريد الإلكتروني"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث بالرمز
+                                            </label>
+                                            <CodeSearch 
+                                                onUserSelect={handleCodeSearchUserSelect}
+                                                className="w-full"
                                             />
                                         </div>
                                         <div>
@@ -956,7 +1097,7 @@ export default function AdminUserDashboard() {
                                                 name="status"
                                                 value={filters.status}
                                                 onChange={handleFilterChange}
-                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             >
                                                 <option value="">جميع الحالات</option>
                                                 <option value="active">نشط</option>
@@ -1023,19 +1164,23 @@ export default function AdminUserDashboard() {
                                                                 {user.fullName}
                                                             </h4>
                                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                                                                {user.role}
+                                                                {user.role === 'SUPER_ADMIN' ? 'مدير مميز' : user.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
                                                             </span>
                                                         </div>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             {user.email}
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                            المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
-                                                            {user.stage && user.stage.name && (
-                                                                <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                            {user.role !== 'SUPER_ADMIN' && (
+                                                                <>
+                                                                    المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                                    {user.stage && user.stage.name && (
+                                                                        <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                                    )}
+                                                                </>
                                                             )}
-                                                            {user.category && user.category.name && (
-                                                                <span className="ml-2">• الفئة: {user.category.name}</span>
+                                                            {user.role === 'SUPER_ADMIN' && user.stage && user.stage.name && (
+                                                                <span>المرحلة: {user.stage.name}</span>
                                                             )}
                                                         </p>
                                                     </div>
@@ -1050,36 +1195,40 @@ export default function AdminUserDashboard() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleStatus(user.id, user.isActive)}
-                                                        className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                                                         title={user.isActive ? "إلغاء التفعيل" : "تفعيل"}
                                                     >
                                                         {user.isActive ? <FaToggleOn /> : <FaToggleOff />}
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
-                                                        className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
-                                                        title="تغيير الدور"
-                                                    >
-                                                        <FaUserCog />
-                                                    </button>
+                                                    {canChangeRoleToAdmin && (
+                                                        <button
+                                                            onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                                            className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                                                            title="تغيير الدور"
+                                                        >
+                                                            <FaUserCog />
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleResetUserWallet(user.id, user.fullName)}
-                                                        className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                                                         title="إعادة تعيين المحفظة"
                                                     >
                                                         <FaWallet />
                                                     </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setUserToDelete(user.id);
-                                                            setUserToDeleteInfo(user);
-                                                            setShowDeleteConfirm(true);
-                                                        }}
-                                                        className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                                                        title="حذف المستخدم"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
+                                                    {(user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' || canDeleteAdmin) && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setUserToDelete(user.id);
+                                                                setUserToDeleteInfo(user);
+                                                                setShowDeleteConfirm(true);
+                                                            }}
+                                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                            title="حذف المستخدم"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -1148,20 +1297,23 @@ export default function AdminUserDashboard() {
                                                 onChange={(e) => setCreateUserForm({...createUserForm, role: e.target.value})}
                                                 className="ml-2"
                                             />
-                                            طالب (USER)
+                                                طالب
                                         </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                name="role"
-                                                value="ADMIN"
-                                                checked={createUserForm.role === 'ADMIN'}
-                                                onChange={(e) => setCreateUserForm({...createUserForm, role: e.target.value})}
-                                                className="ml-2"
-                                            />
-                                            مدير (ADMIN)
-                                        </label>
+                                        {canCreateAdmin && (
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    value="ADMIN"
+                                                    checked={createUserForm.role === 'ADMIN'}
+                                                    onChange={(e) => setCreateUserForm({...createUserForm, role: e.target.value})}
+                                                    className="ml-2"
+                                                />
+                                                    مدير
+                                            </label>
+                                        )}
                                     </div>
+                               
                                 </div>
 
                                 {/* Basic Information */}
@@ -1259,7 +1411,7 @@ export default function AdminUserDashboard() {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    المحافظة *
+                                                    المدينة *
                                                 </label>
                                                 <select
                                                     required
@@ -1267,8 +1419,8 @@ export default function AdminUserDashboard() {
                                                     onChange={(e) => setCreateUserForm({...createUserForm, governorate: e.target.value})}
                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                                 >
-                                                    <option value="">اختر المحافظة</option>
-                                                    {egyptianGovernorates.map((gov) => (
+                                                    <option value="">اختر المدينة</option>
+                                                    {egyptianCities.map((gov) => (
                                                         <option key={gov.value} value={gov.value}>
                                                             {gov.label}
                                                         </option>
@@ -1366,19 +1518,26 @@ export default function AdminUserDashboard() {
                                             {userToDeleteInfo.email}
                                         </p>
                                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            الدور: {userToDeleteInfo.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                            الدور: {userToDeleteInfo.role === 'SUPER_ADMIN' ? 'مدير مميز' : userToDeleteInfo.role === 'ADMIN' ? 'مدير' : 'طالب'}
                                         </p>
                                     </div>
                                 )}
                                 <p className="text-gray-600 dark:text-gray-300">
-                                    {userToDeleteInfo?.role === 'ADMIN' 
+                                    {userToDeleteInfo?.role === 'SUPER_ADMIN' 
+                                        ? 'هل أنت متأكد من حذف هذا المدير المميز؟ هذا الإجراء لا يمكن التراجع عنه.'
+                                        : userToDeleteInfo?.role === 'ADMIN' 
                                         ? 'هل أنت متأكد من حذف هذا المدير؟ هذا الإجراء لا يمكن التراجع عنه.'
                                         : 'هل أنت متأكد من حذف هذا المستخدم؟ هذا الإجراء لا يمكن التراجع عنه.'
                                     }
                                 </p>
                                 {userToDeleteInfo?.role === 'ADMIN' && (
-                                    <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                                    <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
                                         ⚠️ تحذير: حذف مدير قد يؤثر على إدارة النظام
+                                    </p>
+                                )}
+                                {userToDeleteInfo?.role === 'SUPER_ADMIN' && (
+                                    <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                                        🚨 تحذير خطير: حذف مدير مميز قد يؤثر بشكل كبير على إدارة النظام
                                     </p>
                                 )}
                             </div>
@@ -1411,7 +1570,7 @@ export default function AdminUserDashboard() {
                             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                                        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-600 rounded-full flex items-center justify-center">
                                             <span className="text-white text-2xl font-bold">
                                                 {selectedUser.fullName?.charAt(0)?.toUpperCase() || "U"}
                                             </span>
@@ -1425,7 +1584,7 @@ export default function AdminUserDashboard() {
                                             </p>
                                             <div className="flex items-center space-x-2 mt-2">
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
-                                                    {selectedUser.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                                    {selectedUser.role === 'SUPER_ADMIN' ? 'مدير مميز' : selectedUser.role === 'ADMIN' ? 'مدير' : 'طالب'}
                                                 </span>
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedUser.isActive)}`}>
                                                     {selectedUser.isActive ? 'نشط' : 'غير نشط'}
@@ -1505,23 +1664,23 @@ export default function AdminUserDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
                                             <div className="flex items-center space-x-3">
-                                                <FaGraduationCap className="text-purple-600 text-xl" />
+                                                <FaGraduationCap className="text-blue-600 text-xl" />
                                                 <div>
-                                                    <p className="text-sm text-purple-600 dark:text-purple-400">الكورسات المشتراة</p>
-                                                    <p className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                                                    <p className="text-sm text-blue-600 dark:text-blue-400">الكورسات المشتراة</p>
+                                                    <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
                                                         {userStats.purchasedCourses || 0}
                                                     </p>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-200 dark:border-orange-800">
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
                                             <div className="flex items-center space-x-3">
-                                                <FaCalendarAlt className="text-orange-600 text-xl" />
+                                                <FaCalendarAlt className="text-blue-600 text-xl" />
                                                 <div>
-                                                    <p className="text-sm text-orange-600 dark:text-orange-400">تاريخ التسجيل</p>
-                                                    <p className="text-lg font-bold text-orange-900 dark:text-orange-100">
+                                                    <p className="text-sm text-blue-600 dark:text-blue-400">تاريخ التسجيل</p>
+                                                    <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
                                                         {formatDate(selectedUser.createdAt)}
                                                     </p>
                                                 </div>
@@ -1603,15 +1762,15 @@ export default function AdminUserDashboard() {
                                             )}
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المحافظة</label>
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المدينة</label>
                                             {isEditing ? (
                                                 <select
                                                     value={editForm.governorate}
                                                     onChange={(e) => setEditForm({...editForm, governorate: e.target.value})}
                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                                 >
-                                                    <option value="">اختر المحافظة</option>
-                                                    {egyptianGovernorates.map((gov) => (
+                                                    <option value="">اختر المدينة</option>
+                                                    {egyptianCities.map((gov) => (
                                                         <option key={gov.value} value={gov.value}>
                                                             {gov.label}
                                                         </option>
@@ -1659,30 +1818,52 @@ export default function AdminUserDashboard() {
                                                 </p>
                                             )}
                                         </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">الرمز التعريفي</label>
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={editForm.code || ""}
+                                                    onChange={(e) => setEditForm({...editForm, code: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="أدخل الرمز التعريفي"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">
+                                                    {selectedUser.code || 'غير محدد'}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Account Information */}
                                 <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
                                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
-                                        <FaIdCard className="text-purple-600" />
+                                        <FaIdCard className="text-blue-600" />
                                         <span>معلومات الحساب</span>
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">نوع الحساب</label>
                                             {isEditing ? (
-                                                <select
-                                                    value={editForm.role}
-                                                    onChange={(e) => setEditForm({...editForm, role: e.target.value})}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                                >
-                                                    <option value="USER">مستخدم</option>
-                                                    <option value="ADMIN">مدير</option>
-                                                </select>
+                                                canChangeRoleToAdmin ? (
+                                                    <select
+                                                        value={editForm.role}
+                                                        onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    >
+                                                        <option value="USER">طالب</option>
+                                                        <option value="ADMIN">مدير</option>
+                                                    </select>
+                                                ) : (
+                                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
+                                                        {selectedUser.role === 'SUPER_ADMIN' ? 'مدير مميز' : selectedUser.role === 'ADMIN' ? 'مدير' : 'طالب'}
+                                                    </span>
+                                                )
                                             ) : (
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
-                                                    {selectedUser.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                                                    {selectedUser.role === 'SUPER_ADMIN' ? 'مدير مميز' : selectedUser.role === 'ADMIN' ? 'مدير' : 'طالب'}
                                                 </span>
                                             )}
                                         </div>
@@ -1741,6 +1922,14 @@ export default function AdminUserDashboard() {
                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                                             minLength="6"
                                                         />
+                                                        <div className="mt-1 flex items-center space-x-2 space-x-reverse">
+                                                            <span className={`text-xs ${getPasswordStrength(passwordForm.newPassword).color}`}>
+                                                                {getPasswordStrength(passwordForm.newPassword).text}
+                                                            </span>
+                                                            {passwordForm.newPassword.length >= 6 && (
+                                                                <span className="text-xs text-green-500">✓</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1754,6 +1943,17 @@ export default function AdminUserDashboard() {
                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                                             minLength="6"
                                                         />
+                                                        <div className="mt-1 flex items-center space-x-2 space-x-reverse">
+                                                            {passwordForm.confirmPassword && (
+                                                                <>
+                                                                    {passwordForm.newPassword === passwordForm.confirmPassword ? (
+                                                                        <span className="text-xs text-green-500">✓ كلمات المرور متطابقة</span>
+                                                                    ) : (
+                                                                        <span className="text-xs text-red-500">✗ كلمات المرور غير متطابقة</span>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex justify-end space-x-3 space-x-reverse">
@@ -1768,7 +1968,10 @@ export default function AdminUserDashboard() {
                                                     </button>
                                                     <button
                                                         onClick={handlePasswordChange}
-                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                                        disabled={!passwordForm.newPassword || 
+                                                                 passwordForm.newPassword.length < 6 || 
+                                                                 passwordForm.newPassword !== passwordForm.confirmPassword}
+                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         تغيير كلمة المرور
                                                     </button>
@@ -1781,7 +1984,7 @@ export default function AdminUserDashboard() {
                                 {/* Reset Wallet Section */}
                                 <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
                                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
-                                        <FaWallet className="text-orange-600" />
+                                        <FaWallet className="text-blue-600" />
                                         <span>إعادة تعيين المحفظة</span>
                                     </h4>
                                     <div className="text-center">
@@ -1790,7 +1993,7 @@ export default function AdminUserDashboard() {
                                         </p>
                                         <button
                                             onClick={() => handleResetUserWallet(selectedUser.id, selectedUser.fullName)}
-                                            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                                         >
                                             إعادة تعيين المحفظة
                                         </button>
@@ -1837,29 +2040,33 @@ export default function AdminUserDashboard() {
                                         onClick={() => handleToggleStatus(selectedUser.id, selectedUser.isActive)}
                                         className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                                             selectedUser.isActive
-                                                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
                                                 : 'bg-green-600 hover:bg-green-700 text-white'
                                         }`}
                                     >
                                         {selectedUser.isActive ? 'إلغاء التفعيل' : 'تفعيل'}
                                     </button>
-                                    <button
-                                        onClick={() => handleUpdateRole(selectedUser.id, selectedUser.role === 'ADMIN' ? 'USER' : 'ADMIN')}
-                                        className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-                                    >
-                                        تغيير الدور
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setUserToDelete(selectedUser.id);
-                                            setUserToDeleteInfo(selectedUser);
-                                            setShowDeleteConfirm(true);
-                                            setShowUserDetails(false);
-                                        }}
-                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-                                    >
-                                        حذف المستخدم
-                                    </button>
+                                    {canChangeRoleToAdmin && (
+                                        <button
+                                            onClick={() => handleUpdateRole(selectedUser.id, selectedUser.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            تغيير الدور
+                                        </button>
+                                    )}
+                                    {(user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' || canDeleteAdmin) && (
+                                        <button
+                                            onClick={() => {
+                                                setUserToDelete(selectedUser.id);
+                                                setUserToDeleteInfo(selectedUser);
+                                                setShowDeleteConfirm(true);
+                                                setShowUserDetails(false);
+                                            }}
+                                            className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            حذف المستخدم
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1910,7 +2117,7 @@ export default function AdminUserDashboard() {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
                             <div className="flex items-center space-x-3 mb-4">
-                                <FaExclamationTriangle className="h-8 w-8 text-orange-500" />
+                                <FaExclamationTriangle className="h-8 w-8 text-blue-500" />
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                     حذف جميع رموز الشحن
                                 </h3>
@@ -1935,7 +2142,7 @@ export default function AdminUserDashboard() {
                                 <button
                                     onClick={handleResetAllCodes}
                                     disabled={actionLoading}
-                                    className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {actionLoading ? 'جاري التنفيذ...' : 'تأكيد'}
                                 </button>

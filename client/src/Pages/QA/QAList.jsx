@@ -94,9 +94,9 @@ export default function QAList() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'featured': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'featured': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'answered': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
@@ -106,8 +106,8 @@ export default function QAList() {
       'General': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       'Technical': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
       'Course Related': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      'Payment': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      'Account': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      'Payment': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      'Account': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       'Other': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
     };
     return colors[category] || colors['Other'];
@@ -205,18 +205,18 @@ export default function QAList() {
               <div className="text-sm text-green-600 dark:text-green-400">تم الرد</div>
             </div>
             {isAdmin && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {qas.filter(qa => qa.status === 'pending').length}
                 </div>
-                <div className="text-sm text-yellow-600 dark:text-yellow-400">في الانتظار</div>
+                <div className="text-sm text-blue-600 dark:text-blue-400">في الانتظار</div>
               </div>
             )}
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {qas.filter(qa => qa.status === 'featured').length}
               </div>
-              <div className="text-sm text-purple-600 dark:text-purple-400">مميز</div>
+              <div className="text-sm text-blue-600 dark:text-blue-400">مميز</div>
             </div>
           </div>
 
@@ -255,12 +255,12 @@ export default function QAList() {
                           {qa.answer}
                         </p>
                       ) : isAdmin && (
-                        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                          <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                          <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
                             <FaClock className="text-sm" />
                             <span className="text-sm font-medium">في انتظار الإجابة</span>
                           </div>
-                          <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
+                          <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">
                             هذا السؤال في انتظار أن يقدم المدير إجابة.
                           </p>
                         </div>
@@ -330,7 +330,7 @@ export default function QAList() {
                               </button>
                               <button
                                 onClick={() => handleEditQA(qa._id)}
-                                className="flex items-center gap-1 px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm transition-colors"
+                                className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
                                 title="Edit Question"
                               >
                                 <FaEdit />

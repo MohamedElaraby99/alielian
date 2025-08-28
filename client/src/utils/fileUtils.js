@@ -6,12 +6,30 @@
  * Get the base API URL from environment variables
  */
 const getBaseApiUrl = () => {
-  // Check if we're in production
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return 'https://lms.alielian.online/api/v1';
+  // Debug logging
+  console.log('🔧 FileUtils API URL Configuration:', {
+    isDev: import.meta.env.DEV,
+    hostname: window.location.hostname,
+    port: window.location.port,
+    href: window.location.href,
+    NODE_ENV: import.meta.env.MODE
+  });
+
+  // For development, always use localhost
+  if (import.meta.env.DEV || 
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port === '5173' ||
+      window.location.port === '5190') {
+    const devUrl = 'http://localhost:4007/api/v1';
+    console.log('✅ FileUtils using development API URL:', devUrl);
+    return devUrl;
   }
-  // Development fallback
-  return import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:4001/api/v1';
+  
+  // Production fallback
+  const prodUrl = 'https://lms.alielian.online/api/v1';
+  console.log('🌐 FileUtils using production API URL:', prodUrl);
+  return prodUrl;
 };
 
 /**

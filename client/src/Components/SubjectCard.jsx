@@ -1,101 +1,94 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaStar, FaUsers, FaClock, FaTrash, FaPlay, FaGraduationCap } from "react-icons/fa";
+import { FaStar, FaUsers, FaClock, FaTag, FaPlay, FaGraduationCap } from "react-icons/fa";
 import { generateImageUrl } from "../utils/fileUtils";
 import { placeholderImages } from "../utils/placeholderImages";
 
-const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleFeatured, onUpdateStatus }) => {
-  const getLevelColor = (level) => {
-    switch (level) {
-      case 'Beginner': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'Intermediate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'Advanced': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'inactive': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'featured': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
+const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleFeatured }) => {
 
   return (
-    <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 overflow-hidden border border-gray-200 dark:border-gray-600" dir="rtl">
-      {/* Image Section */}
-      <div className="relative h-56 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" dir="rtl">
+      <div className="relative h-48 overflow-hidden">
         <img
           src={generateImageUrl(subject.image?.secure_url)}
-          alt={subject.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          alt={subject.name}
+          className="w-full h-32 object-cover rounded-t-lg"
           onError={(e) => {
             e.target.src = placeholderImages.course;
           }}
         />
-        
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        
         {/* Featured Badge */}
         {subject.featured && (
-          <div className="absolute top-4 right-4">
-            <span className="px-3 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-bold shadow-lg">
-              ⭐ مميز
-            </span>
+          <div className="absolute top-2 right-2">
+            <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">مميز</span>
           </div>
         )}
-        
-        {/* Status Badge */}
-        {showActions && (
-          <div className="absolute top-4 left-4">
-            <span className={`px-3 py-2 rounded-full text-sm font-semibold shadow-lg ${getStatusColor(subject.status)}`}>
-              {subject.status === 'active' ? 'نشط' : subject.status === 'inactive' ? 'غير نشط' : 'مميز'}
-            </span>
+        {/* Play Button Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+          <div className="bg-white bg-opacity-90 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-300">
+            <FaPlay className="text-gray-800" />
           </div>
-        )}
+        </div>
       </div>
+      {/* Content */}
+      <div className="p-6">
+        {/* Instructor Badge */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <FaGraduationCap className="inline ml-1" />
+            {subject.instructor?.name || 'المدرس غير محدد'}
+          </span>
+        </div>
 
-      {/* Content Section */}
-      <div className="p-8">
         {/* Title */}
-        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 text-right">
           {subject.title}
         </h3>
-        
         {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 line-clamp-3">
+        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 text-right">
           {subject.description}
         </p>
 
+        {/* Instructor */}
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 text-right">
+          بواسطة {subject.instructor?.name || 'فريق التدريس المتخصص'}
+        </p>
+
+        {/* Meta Info */}
+        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">   
+          {/* Rating */}
+          <div className="flex items-center gap-1">
+            <FaStar className="text-blue-500" />
+            <span>{(subject.rating || 5).toFixed(1)}</span>
+          </div>
+        </div>
+        {/* Price and Actions */}
         {showActions && (
-          <div className="flex items-center justify-between gap-3 pt-2">
+          <div className="flex items-center justify-between">        
             <div className="flex gap-2">
               <button
-                onClick={() => onEdit && onEdit(subject)}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all duration-300"
+                onClick={() => onEdit(subject)}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
               >
                 تعديل
               </button>
               <button
                 onClick={() => onToggleFeatured && onToggleFeatured(subject._id)}
-                className={`${subject.featured ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-4 py-2 rounded-xl font-semibold transition-all duration-300`}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  subject.featured ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'
+                }`}
               >
                 {subject.featured ? 'إلغاء التميز' : 'تمييز'}
               </button>
+              <button
+                onClick={() => onDelete(subject._id)}
+                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+              >
+                حذف
+              </button>
             </div>
-            <button
-              onClick={() => onDelete && onDelete(subject._id)}
-              className="w-12 h-12 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-xl transition-all duration-300 flex items-center justify-center"
-              aria-label="حذف"
-            >
-              <FaTrash />
-            </button>
           </div>
         )}
-
       </div>
     </div>
   );

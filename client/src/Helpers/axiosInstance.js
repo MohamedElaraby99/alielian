@@ -2,15 +2,43 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseUrl = () => {
-  // Check if we're in production
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return 'https://lms.alielian.online/api/v1';
+  // Debug logging
+  console.log('🔧 API URL Configuration:', {
+    isDev: import.meta.env.DEV,
+    hostname: window.location.hostname,
+    port: window.location.port,
+    href: window.location.href,
+    NODE_ENV: import.meta.env.MODE,
+    envApiUrl: import.meta.env.VITE_REACT_APP_API_URL
+  });
+
+  // Check for environment variable first
+  if (import.meta.env.VITE_REACT_APP_API_URL) {
+    const envUrl = import.meta.env.VITE_REACT_APP_API_URL;
+    console.log('✅ Using environment API URL:', envUrl);
+    return envUrl;
   }
-  // Development fallback
-  return import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:4001/api/v1';
+
+  // For development, always use localhost
+  if (import.meta.env.DEV || 
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port === '5173' ||
+      window.location.port === '5190') {
+    const devUrl = 'http://localhost:4007/api/v1';
+    console.log('✅ Using development API URL:', devUrl);
+    return devUrl;
+  }
+  
+  // Production fallback
+  const prodUrl = 'https://lms.alielian.online/api/v1';
+  console.log('🌐 Using production API URL:', prodUrl);
+  return prodUrl;
 };
 
 const BASE_URL = getBaseUrl();
+
+console.log('🚀 Axios Instance Created with BASE_URL:', BASE_URL);
 
 // Create axios instance with proper CORS configuration
 export const axiosInstance = axios.create({
@@ -18,6 +46,7 @@ export const axiosInstance = axios.create({
     withCredentials: true, // Keep this for authentication
     timeout: 30000, // 30 second timeout
     headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
 });
@@ -25,22 +54,8 @@ export const axiosInstance = axios.create({
 // Add request interceptor to include device info in headers for cross-domain requests
 axiosInstance.interceptors.request.use(
     (config) => {
-        // Ensure correct headers for FormData uploads
-        const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
-        if (isFormData) {
-            if (config.headers) {
-                delete config.headers['Content-Type'];
-                delete config.headers['content-type'];
-            }
-        } else {
-            // Default to JSON for non-FormData requests
-            if (config.headers && !config.headers['Content-Type'] && !config.headers['content-type']) {
-                config.headers['Content-Type'] = 'application/json';
-            }
-        }
-
         // Add device info to headers for cross-domain requests
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        if (!import.meta.env.DEV && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             try {
                 // Generate basic device info for cross-domain requests
                 const deviceInfo = {

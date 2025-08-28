@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '../../Helpers/axiosInstance';
 import Layout from '../../Layout/Layout';
-import { getArabicGovernorate } from "../../utils/governorateMapping";
+import { getArabicCity } from "../../utils/governorateMapping";
 import { 
   FaUsers, 
   FaPlay, 
@@ -135,7 +135,7 @@ const UserProgressDashboard = () => {
   const getProgressColor = (percentage) => {
     if (percentage >= 80) return 'bg-green-500';
     if (percentage >= 60) return 'bg-blue-500';
-    if (percentage >= 40) return 'bg-yellow-500';
+    if (percentage >= 40) return 'bg-blue-500';
     return 'bg-red-500';
   };
 
@@ -169,7 +169,7 @@ const UserProgressDashboard = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8" dir="rtl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -229,9 +229,9 @@ const UserProgressDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الفيديوهات المكتملة</p>
-                  <p className="text-3xl font-bold text-purple-600">{summary.totalCompletedVideos || 0}</p>
+                  <p className="text-3xl font-bold text-blue-600">{summary.totalCompletedVideos || 0}</p>
                 </div>
-                <FaCheckCircle className="text-4xl text-purple-600 opacity-80" />
+                <FaCheckCircle className="text-4xl text-blue-600 opacity-80" />
               </div>
             </div>
 
@@ -239,9 +239,9 @@ const UserProgressDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">معدل الإنجاز العام</p>
-                  <p className="text-3xl font-bold text-orange-600">{summary.overallCompletionRate || 0}%</p>
+                  <p className="text-3xl font-bold text-blue-600">{summary.overallCompletionRate || 0}%</p>
                 </div>
-                <FaTrophy className="text-4xl text-orange-600 opacity-80" />
+                <FaTrophy className="text-4xl text-blue-600 opacity-80" />
               </div>
             </div>
           </div>
@@ -411,7 +411,7 @@ const UserProgressDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         <div className="flex items-center">
-                          <FaClock className="text-orange-500 ml-2" />
+                          <FaClock className="text-blue-500 ml-2" />
                           {userProgress.stats.totalWatchTimeHours}س
                         </div>
                       </td>
@@ -542,7 +542,7 @@ const UserProgressDashboard = () => {
                         <p><strong>رقم الهاتف:</strong> {selectedUser.user.phoneNumber}</p>
                       )}
                       {selectedUser.user.governorate && (
-                        <p><strong>المحافظة:</strong> {getArabicGovernorate(selectedUser.user.governorate)}</p>
+                        <p><strong>المدينة:</strong> {getArabicCity(selectedUser.user.governorate)}</p>
                       )}
                     </div>
                   </div>
@@ -576,7 +576,7 @@ const UserProgressDashboard = () => {
                         </div>
                         <div className="text-left">
                           <div className="flex items-center gap-2 mb-1">
-                            <div className={`w-3 h-3 rounded-full ${activity.isCompleted ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <div className={`w-3 h-3 rounded-full ${activity.isCompleted ? 'bg-green-500' : 'bg-blue-500'}`}></div>
                             <span className="text-sm font-medium">
                               {activity.progress}%
                             </span>

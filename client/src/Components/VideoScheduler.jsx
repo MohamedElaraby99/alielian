@@ -75,8 +75,8 @@ const VideoScheduler = ({
       <div className="flex items-center gap-2">
         {isScheduled ? (
           <div className="flex items-center gap-2 text-sm">
-            <FaClock className="text-orange-500" />
-            <span className="text-orange-600 font-medium">
+            <FaClock className="text-blue-500" />
+            <span className="text-blue-600 font-medium">
               {isPublished() ? 'Published' : 'Scheduled'}
             </span>
             {scheduledPublishDate && (

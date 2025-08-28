@@ -9,7 +9,8 @@ import {
   FaGraduationCap, 
   FaLinkedin, 
   FaTwitter, 
-  FaGlobe,
+  FaFacebook,
+  FaWhatsapp,
   FaArrowLeft,
   FaEnvelope,
   FaCalendarAlt,
@@ -36,7 +37,7 @@ export default function InstructorDetail() {
         <FaStar
           key={i}
           className={`w-5 h-5 ${
-            i <= rating ? 'text-yellow-400' : 'text-gray-300'
+            i <= rating ? 'text-blue-400' : 'text-gray-300'
           }`}
         />
       );
@@ -47,7 +48,7 @@ export default function InstructorDetail() {
   if (loading) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
           <div className="container mx-auto px-4 py-16">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -61,7 +62,7 @@ export default function InstructorDetail() {
   if (!instructor) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
           <div className="container mx-auto px-4 py-16">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
@@ -82,7 +83,7 @@ export default function InstructorDetail() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         <div className="container mx-auto px-4 py-8">
           {/* Back Button */}
           <button
@@ -97,7 +98,7 @@ export default function InstructorDetail() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
             <div className="relative">
               {/* Background Image */}
-              <div className="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+              <div className="w-full h-48 bg-gradient-to-r from-blue-500 to-blue-600"></div>
               
               {/* Profile Image */}
               <div className="absolute -bottom-16 right-8">
@@ -116,7 +117,7 @@ export default function InstructorDetail() {
 
               {/* Featured Badge */}
               {instructor.featured && (
-                <div className="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-sm font-semibold">
+                <div className="absolute top-4 left-4 bg-blue-400 text-blue-900 px-4 py-2 rounded-full text-sm font-semibold">
                   مميز
                 </div>
               )}
@@ -154,8 +155,8 @@ export default function InstructorDetail() {
                   <div className="text-sm text-gray-600 dark:text-gray-400">طالب</div>
                 </div>
                 
-                <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <FaGraduationCap className="w-8 h-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <FaGraduationCap className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {instructor.courses?.length || 0}
                   </div>
@@ -192,7 +193,7 @@ export default function InstructorDetail() {
               {instructor.education && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                   <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-right">
-                    <FaGraduationCap className="text-purple-600" />
+                    <FaGraduationCap className="text-blue-600" />
                     المؤهلات التعليمية
                   </h2>
                   <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-right">
@@ -237,47 +238,70 @@ export default function InstructorDetail() {
                 )}
 
                 {/* Social Links */}
-                {(instructor.socialLinks?.linkedin || instructor.socialLinks?.twitter || instructor.socialLinks?.website) && (
-                  <div className="space-y-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">روابط التواصل الاجتماعي</div>
-                    
-                    {instructor.socialLinks?.linkedin && (
-                      <a
-                        href={instructor.socialLinks.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                      >
-                        <FaLinkedin />
-                        LinkedIn
-                      </a>
-                    )}
-                    
-                    {instructor.socialLinks?.twitter && (
-                      <a
-                        href={instructor.socialLinks.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-blue-400 hover:text-blue-500 dark:text-blue-300 dark:hover:text-blue-200 transition-colors"
-                      >
-                        <FaTwitter />
-                        Twitter
-                      </a>
-                    )}
-                    
-                    {instructor.socialLinks?.website && (
-                      <a
-                        href={instructor.socialLinks.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-                      >
-                        <FaGlobe />
-                        الموقع الشخصي
-                      </a>
-                    )}
-                  </div>
-                )}
+                {(() => {
+                                     const hasSocialLinks = (
+                     (instructor.socialLinks?.linkedin && instructor.socialLinks.linkedin.trim() !== '') ||
+                     (instructor.socialLinks?.twitter && instructor.socialLinks.twitter.trim() !== '') ||
+                     (instructor.socialLinks?.facebook && instructor.socialLinks.facebook.trim() !== '') ||
+                     (instructor.socialLinks?.whatsapp && instructor.socialLinks.whatsapp.trim() !== '')
+                   );
+                  
+                  if (!hasSocialLinks) return null;
+                  
+                  return (
+                    <div className="space-y-3">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">روابط التواصل الاجتماعي</div>
+                      
+                      {instructor.socialLinks?.linkedin && instructor.socialLinks.linkedin.trim() !== '' && (
+                        <a
+                          href={instructor.socialLinks.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        >
+                          <FaLinkedin />
+                          LinkedIn
+                        </a>
+                      )}
+                      
+                      {instructor.socialLinks?.twitter && instructor.socialLinks.twitter.trim() !== '' && (
+                        <a
+                          href={instructor.socialLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-blue-400 hover:text-blue-500 dark:text-blue-300 dark:hover:text-blue-200 transition-colors"
+                        >
+                          <FaTwitter />
+                          Twitter
+                        </a>
+                      )}
+                      
+                                             {instructor.socialLinks?.facebook && instructor.socialLinks.facebook.trim() !== '' && (
+                         <a
+                           href={instructor.socialLinks.facebook}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                         >
+                           <FaFacebook />
+                           Facebook
+                         </a>
+                       )}
+                      
+                      {instructor.socialLinks?.whatsapp && instructor.socialLinks.whatsapp.trim() !== '' && (
+                        <a
+                          href={`https://wa.me/${instructor.socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                        >
+                          <FaWhatsapp />
+                          WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Status */}

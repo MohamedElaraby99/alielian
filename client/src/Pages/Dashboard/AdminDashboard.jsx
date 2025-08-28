@@ -44,6 +44,7 @@ import {
   FaStar,
   FaFilePdf,
   FaClipboardCheck,
+  FaClipboardList,
   FaChalkboardTeacher,
   FaServer,
   FaList,
@@ -82,12 +83,19 @@ export default function AdminDashboard() {
     monthlySalesData 
   } = useSelector((state) => state.stat);
 
+  // Get user role from auth state
+  const { role } = useSelector((state) => state.auth);
+
   // Add state for stages data
   const [stages, setStages] = useState([]);
   const [stagesLoading, setStagesLoading] = useState(true);
-  
+   
   // Dark mode detection
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Hero entrance animation state
+  const [heroVisible, setHeroVisible] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
 
   // Check for dark mode
   useEffect(() => {
@@ -289,9 +297,18 @@ export default function AdminDashboard() {
       console.log('🎯 All real data loaded - no fake data should be displayed');
     })();
 
+    // Hero entrance animation
+    const timer = setTimeout(() => {
+      setHeroVisible(true);
+      setTimeout(() => {
+        setHeroLoaded(true);
+      }, 300);
+    }, 100);
+
     // Cleanup
     return () => {
       console.error = originalError;
+      clearTimeout(timer);
     };
   }, []);
 
@@ -321,9 +338,9 @@ export default function AdminDashboard() {
       title: "إجمالي الأكواد المستخدمة",
       value: rechargeCodesStats.totalUsed,
       icon: FaQrcode,
-      color: "from-purple-500 to-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-900/20",
-      textColor: "text-purple-600 dark:text-purple-400",
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      textColor: "text-blue-600 dark:text-blue-400",
       change: "+15%",
       changeType: "increase"
     },
@@ -366,7 +383,7 @@ export default function AdminDashboard() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         {/* Hero Section */}
         <section className="relative py-16 px-4 overflow-hidden">
           {/* Background Pattern */}
@@ -374,85 +391,195 @@ export default function AdminDashboard() {
           
           {/* Floating Elements */}
           <div className="absolute top-20 left-10 w-20 h-20 bg-blue-200 dark:bg-blue-800 rounded-full opacity-20 animate-bounce"></div>
-          <div className="absolute top-40 right-20 w-16 h-16 bg-purple-200 dark:bg-purple-800 rounded-full opacity-20 animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-16 h-16 bg-blue-200 dark:bg-blue-800 rounded-full opacity-20 animate-pulse"></div>
           
           <div className="relative z-10 container mx-auto">
             {/* Header */}
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
+            <div className={`text-center mb-12 transition-all duration-1000 ease-out ${
+              heroVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}>
+              <h1 className={`text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 dark:from-blue-400 dark:via-blue-400 dark:to-indigo-400 mb-4 transition-all duration-700 delay-200 ${
+                heroLoaded 
+                  ? 'opacity-100 scale-100' 
+                  : 'opacity-0 scale-95'
+              }`}>
                 لوحة تحكم الإدارة
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <p className={`text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed transition-all duration-700 delay-400 ${
+                heroLoaded 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-4'
+              }`}>
                 مرحباً بعودتك! إليك نظرة عامة على أداء منصة التعلم والمقاييس الرئيسية.
               </p>
             </div>
 
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
-              {statsCards.map((card, index) => (
-                <div key={index} className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="flex items-center justify-between mb-3 lg:mb-4">
-                    <div className={`p-2 lg:p-3 rounded-lg lg:rounded-xl ${card.bgColor}`}>
-                      <card.icon className={`text-lg lg:text-2xl ${card.textColor}`} />
+            {/* Statistics Cards - Only visible to SUPER_ADMIN */}
+            {role === "SUPER_ADMIN" && (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
+                {statsCards.map((card, index) => (
+                  <div 
+                    key={index} 
+                    className={`bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 hover:shadow-xl transition-all duration-500 ease-out transform hover:-translate-y-1 ${
+                      heroLoaded 
+                        ? 'opacity-100 translate-y-0 scale-100' 
+                        : 'opacity-0 translate-y-8 scale-95'
+                    }`}
+                    style={{ 
+                      transitionDelay: `${500 + (index * 100)}ms`,
+                      transitionProperty: 'opacity, transform, scale'
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-3 lg:mb-4">
+                      <div className={`p-2 lg:p-3 rounded-lg lg:rounded-xl ${card.bgColor}`}>
+                        <card.icon className={`text-lg lg:text-2xl ${card.textColor}`} />
+                      </div>
+                      <div className="flex items-center gap-1 text-xs lg:text-sm">
+                        {card.changeType === "increase" ? (
+                          <FaArrowUp className="text-green-500" />
+                        ) : (
+                          <FaArrowDown className="text-red-500" />
+                        )}
+                        <span className={card.changeType === "increase" ? "text-green-500" : "text-red-500"}>
+                          {card.change}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-xs lg:text-sm">
-                      {card.changeType === "increase" ? (
-                        <FaArrowUp className="text-green-500" />
-                      ) : (
-                        <FaArrowDown className="text-red-500" />
-                      )}
-                      <span className={card.changeType === "increase" ? "text-green-500" : "text-red-500"}>
-                        {card.change}
-                      </span>
-                    </div>
+                    <h3 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mb-1 text-right">
+                      {card.value}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs lg:text-sm text-right">
+                      {card.title}
+                    </p>
                   </div>
-                  <h3 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mb-1 text-right">
-                    {card.value}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs lg:text-sm text-right">
-                    {card.title}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-12">
-              {/* Course Categories Chart */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 lg:p-6">
-                <div className="flex items-center gap-3 mb-4 lg:mb-6">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                    <FaChartLine className="text-blue-600 dark:text-blue-400 text-lg lg:text-xl" />
-                  </div>
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white text-right">
-                    المراحل الدراسية
-                  </h3>
-                </div>
-                <div className="relative h-48 sm:h-56 lg:h-64 w-full">
-                  {stagesLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                      <span className="mr-2 text-gray-600 dark:text-gray-300">جاري تحميل بيانات المراحل...</span>
+            {/* Charts Section - Only visible to SUPER_ADMIN */}
+            {role === "SUPER_ADMIN" && (
+              <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-12 transition-all duration-700 ease-out ${
+                heroLoaded 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: '800ms' }}>
+                {/* Course Categories Chart */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex items-center gap-3 mb-4 lg:mb-6">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <FaChartLine className="text-blue-600 dark:text-blue-400 text-lg lg:text-xl" />
                     </div>
-                  ) : (
-                    <Pie
-                      data={stagesChartData}
+                    <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white text-right">
+                      المراحل الدراسية
+                    </h3>
+                  </div>
+                  <div className="relative h-48 sm:h-56 lg:h-64 w-full">
+                    {stagesLoading ? (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        <span className="mr-2 text-gray-600 dark:text-gray-300">جاري تحميل بيانات المراحل...</span>
+                      </div>
+                    ) : (
+                      <Pie
+                        data={stagesChartData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: {
+                                color: isDarkMode ? '#ffffff' : '#374151', // Dynamic color based on dark mode
+                                font: { 
+                                  size: window.innerWidth < 768 ? 10 : 12,
+                                  family: 'system-ui, -apple-system, sans-serif'
+                                },
+                                padding: window.innerWidth < 768 ? 10 : 20,
+                                boxWidth: window.innerWidth < 768 ? 12 : 16,
+                                boxHeight: window.innerWidth < 768 ? 8 : 12,
+                                usePointStyle: true
+                              }
+                            },
+                            tooltip: {
+                              backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                              titleColor: 'white',
+                              bodyColor: 'white',
+                              borderColor: 'rgba(255, 255, 255, 0.1)',
+                              borderWidth: 1,
+                              cornerRadius: 8,
+                              callbacks: {
+                                label: function(context) {
+                                  if (stages.length === 0) {
+                                    return 'لا توجد بيانات للمراحل الدراسية';
+                                  }
+                                  const stage = stages[context.dataIndex];
+                                  return [
+                                    `${context.label}: ${context.parsed} طالب`,
+                                    `المواد: ${stage?.subjectsCount || 0}`
+                                  ];
+                                }
+                              }
+                            }
+                          },
+                          layout: {
+                            padding: {
+                              top: 10,
+                              bottom: 10,
+                              left: 10,
+                              right: 10
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                    
+                    {/* Show reload button overlay for empty data */}
+                    {!stagesLoading && stages.length === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-80 dark:bg-opacity-80 rounded-lg">
+                        <div className="text-center">
+                          <div className="text-4xl mb-4">📊</div>
+                          <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+                            لا توجد بيانات للمراحل الدراسية
+                          </p>
+                          <button 
+                            onClick={fetchStagesData}
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
+                          >
+                            إعادة التحميل
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Platform Growth Chart */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex items-center gap-3 mb-4 lg:mb-6">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <FaRocket className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
+                    </div>
+                    <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white text-right">
+                      نمو المنصة
+                    </h3>
+                  </div>
+                  <div className="h-48 sm:h-56 lg:h-64 w-full">
+                    <Bar
+                      data={platformGrowthData}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                           legend: {
-                            position: 'bottom',
                             labels: {
                               color: isDarkMode ? '#ffffff' : '#374151', // Dynamic color based on dark mode
                               font: { 
                                 size: window.innerWidth < 768 ? 10 : 12,
                                 family: 'system-ui, -apple-system, sans-serif'
-                              },
-                              padding: window.innerWidth < 768 ? 10 : 20,
-                              boxWidth: window.innerWidth < 768 ? 12 : 16,
-                              boxHeight: window.innerWidth < 768 ? 8 : 12,
-                              usePointStyle: true
+                              }
                             }
                           },
                           tooltip: {
@@ -461,127 +588,54 @@ export default function AdminDashboard() {
                             bodyColor: 'white',
                             borderColor: 'rgba(255, 255, 255, 0.1)',
                             borderWidth: 1,
-                            cornerRadius: 8,
-                            callbacks: {
-                              label: function(context) {
-                                if (stages.length === 0) {
-                                  return 'لا توجد بيانات للمراحل الدراسية';
-                                }
-                                const stage = stages[context.dataIndex];
-                                return [
-                                  `${context.label}: ${context.parsed} طالب`,
-                                  `المواد: ${stage?.subjectsCount || 0}`
-                                ];
-                              }
-                            }
+                            cornerRadius: 8
                           }
                         },
-                        layout: {
-                          padding: {
-                            top: 10,
-                            bottom: 10,
-                            left: 10,
-                            right: 10
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            ticks: {
+                              color: isDarkMode ? '#D1D5DB' : '#6B7280', // Light gray for dark mode, neutral gray for light mode
+                              font: { 
+                                size: window.innerWidth < 768 ? 10 : 12,
+                                family: 'system-ui, -apple-system, sans-serif'
+                              }
+                            },
+                            grid: {
+                              color: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(156, 163, 175, 0.2)', // Different grid colors for dark/light mode
+                              borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.4)' : 'rgba(156, 163, 175, 0.3)'
+                            }
+                          },
+                          x: {
+                            ticks: {
+                              color: isDarkMode ? '#D1D5DB' : '#6B7280', // Light gray for dark mode, neutral gray for light mode
+                              font: { 
+                                size: window.innerWidth < 768 ? 10 : 12,
+                                family: 'system-ui, -apple-system, sans-serif'
+                              },
+                              maxRotation: window.innerWidth < 768 ? 45 : 0,
+                              minRotation: window.innerWidth < 768 ? 45 : 0
+                            },
+                            grid: {
+                              color: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(156, 163, 175, 0.2)', // Different grid colors for dark/light mode
+                              borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.4)' : 'rgba(156, 163, 175, 0.3)'
+                            }
                           }
                         }
                       }}
                     />
-                  )}
-                  
-                  {/* Show reload button overlay for empty data */}
-                  {!stagesLoading && stages.length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-80 dark:bg-opacity-80 rounded-lg">
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">📊</div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-                          لا توجد بيانات للمراحل الدراسية
-                        </p>
-                        <button 
-                          onClick={fetchStagesData}
-                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
-                        >
-                          إعادة التحميل
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Platform Growth Chart */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 lg:p-6">
-                <div className="flex items-center gap-3 mb-4 lg:mb-6">
-                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                    <FaRocket className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
                   </div>
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white text-right">
-                    نمو المنصة
-                  </h3>
-                </div>
-                <div className="h-48 sm:h-56 lg:h-64 w-full">
-                  <Bar
-                    data={platformGrowthData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          labels: {
-                            color: isDarkMode ? '#ffffff' : '#374151', // Dynamic color based on dark mode
-                            font: { 
-                              size: window.innerWidth < 768 ? 10 : 12,
-                              family: 'system-ui, -apple-system, sans-serif'
-                            }
-                          }
-                        },
-                        tooltip: {
-                          backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)',
-                          titleColor: 'white',
-                          bodyColor: 'white',
-                          borderColor: 'rgba(255, 255, 255, 0.1)',
-                          borderWidth: 1,
-                          cornerRadius: 8
-                        }
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                          ticks: {
-                            color: isDarkMode ? '#D1D5DB' : '#6B7280', // Light gray for dark mode, neutral gray for light mode
-                            font: { 
-                              size: window.innerWidth < 768 ? 10 : 12,
-                              family: 'system-ui, -apple-system, sans-serif'
-                            }
-                          },
-                          grid: {
-                            color: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(156, 163, 175, 0.2)', // Different grid colors for dark/light mode
-                            borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.4)' : 'rgba(156, 163, 175, 0.3)'
-                          }
-                        },
-                        x: {
-                          ticks: {
-                            color: isDarkMode ? '#D1D5DB' : '#6B7280', // Light gray for dark mode, neutral gray for light mode
-                            font: { 
-                              size: window.innerWidth < 768 ? 10 : 12,
-                              family: 'system-ui, -apple-system, sans-serif'
-                            },
-                            maxRotation: window.innerWidth < 768 ? 45 : 0,
-                            minRotation: window.innerWidth < 768 ? 45 : 0
-                          },
-                          grid: {
-                            color: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(156, 163, 175, 0.2)', // Different grid colors for dark/light mode
-                            borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.4)' : 'rgba(156, 163, 175, 0.3)'
-                          }
-                        }
-                      }
-                    }}
-                  />
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 mb-8 lg:mb-12">
+            <div className={`bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 mb-8 lg:mb-12 transition-all duration-700 ease-out ${
+              heroLoaded 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}
+            style={{ transitionDelay: '900ms' }}>
               <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6 flex items-center gap-3 text-right">
                 <FaCog className="text-blue-500" />
                 الإجراءات السريعة
@@ -597,7 +651,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => navigate("/admin/qa-dashboard")}
-                  className="group p-3 lg:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg lg:rounded-xl text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-200 transform hover:scale-105"
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg lg:rounded-xl text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaQuestionCircle className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs lg:text-sm font-medium">لوحة الأسئلة والأجوبة</span>
@@ -625,7 +679,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => navigate("/admin/course-content")}
-                  className="group p-3 lg:p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg lg:rounded-xl text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg lg:rounded-xl text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaClipboardCheck className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs lg:text-sm font-medium">إدارة محتوى الدورات</span>
@@ -637,14 +691,28 @@ export default function AdminDashboard() {
                   <FaChartLine className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs lg:text-sm font-medium">تقدم الطلاب</span>
                 </button>
+                <button
+                  onClick={() => navigate("/admin/exam-search")}
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg lg:rounded-xl text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
+                >
+                  <FaClipboardList className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="text-xs lg:text-sm font-medium">نتائج الطلاب</span>
+                </button>
 
+                <button
+                onClick={()=> navigate("/admin/essay-exams")}
+                className="group p-3 lg:p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg lg:rounded-xl text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
+              >
+                  <FaBook className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="text-xs lg:text-sm font-medium">الامتحانات المقالية</span>
+                </button>
               </div>
             </div>
 
             {/* Admin Management Sections */}
             <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 mb-8 lg:mb-12">
               <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6 flex items-center gap-3 text-right">
-                <FaShieldAlt className="text-purple-500" />
+                <FaShieldAlt className="text-blue-500" />
                 إدارة النظام
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -678,30 +746,30 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* إدارة الأجهزة */}
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 lg:p-6 text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/device-management")}>
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 lg:p-6 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/device-management")}>
                   <div className="flex items-center justify-between mb-3">
-                    <FaServer className="text-2xl lg:text-3xl text-orange-200" />
-                    <div className="w-3 h-3 bg-orange-200 rounded-full animate-pulse"></div>
+                    <FaServer className="text-2xl lg:text-3xl text-blue-200" />
+                    <div className="w-3 h-3 bg-blue-200 rounded-full animate-pulse"></div>
                   </div>
                   <h4 className="text-lg lg:text-xl font-bold mb-2">إدارة الأجهزة</h4>
-                  <p className="text-orange-100 text-sm lg:text-base opacity-90">مراقبة وإدارة الأجهزة المتصلة</p>
+                  <p className="text-blue-100 text-sm lg:text-base opacity-90">مراقبة وإدارة الأجهزة المتصلة</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs text-orange-200">إدارة كاملة</span>
-                    <FaArrowUp className="text-orange-200 transform rotate-45" />
+                    <span className="text-xs text-blue-200">إدارة كاملة</span>
+                    <FaArrowUp className="text-blue-200 transform rotate-45" />
                   </div>
                 </div>
 
                 {/* إدارة المراحل */}
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 lg:p-6 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/stages")}>
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 lg:p-6 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/stages")}>
                   <div className="flex items-center justify-between mb-3">
-                    <FaGraduationCap className="text-2xl lg:text-3xl text-purple-200" />
-                    <div className="w-3 h-3 bg-purple-200 rounded-full animate-pulse"></div>
+                    <FaGraduationCap className="text-2xl lg:text-3xl text-blue-200" />
+                    <div className="w-3 h-3 bg-blue-200 rounded-full animate-pulse"></div>
                   </div>
                   <h4 className="text-lg lg:text-xl font-bold mb-2">إدارة المراحل</h4>
-                  <p className="text-purple-100 text-sm lg:text-base opacity-90">إدارة المراحل الدراسية والفئات</p>
+                  <p className="text-blue-100 text-sm lg:text-base opacity-90">إدارة المراحل الدراسية</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs text-purple-200">إدارة كاملة</span>
-                    <FaArrowUp className="text-purple-200 transform rotate-45" />
+                    <span className="text-xs text-blue-200">إدارة كاملة</span>
+                    <FaArrowUp className="text-blue-200 transform rotate-45" />
                   </div>
                 </div>
 
@@ -730,31 +798,33 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* فئات المراحل */}
-                <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl p-4 lg:p-6 text-white hover:from-pink-600 hover:to-pink-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/stage-categories")}>
+                {/* أكواد فتح الكورس المؤقتة */}
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 lg:p-6 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/course-access-codes")}>
                   <div className="flex items-center justify-between mb-3">
-                    <FaList className="text-2xl lg:text-3xl text-pink-200" />
-                    <div className="w-3 h-3 bg-pink-200 rounded-full animate-pulse"></div>
+                    <FaTicketAlt className="text-2xl lg:text-3xl text-blue-200" />
+                    <div className="w-3 h-3 bg-blue-200 rounded-full animate-pulse"></div>
                   </div>
-                  <h4 className="text-lg lg:text-xl font-bold mb-2">فئات المراحل</h4>
-                  <p className="text-pink-100 text-sm lg:text-base opacity-90">إدارة فئات المراحل الدراسية</p>
+                  <h4 className="text-lg lg:text-xl font-bold mb-2">أكواد فتح الكورس</h4>
+                  <p className="text-blue-100 text-sm lg:text-base opacity-90">توليد أكواد وصول مؤقتة لكورس محدد</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs text-pink-200">إدارة كاملة</span>
-                    <FaArrowUp className="text-pink-200 transform rotate-45" />
+                    <span className="text-xs text-blue-200">توليد وإدارة</span>
+                    <FaArrowUp className="text-blue-200 transform rotate-45" />
                   </div>
                 </div>
 
+
+
                 {/* الجلسات المباشرة */}
-                <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 lg:p-6 text-white hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/live-meetings")}>
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 lg:p-6 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl" onClick={() => navigate("/admin/live-meetings")}>
                   <div className="flex items-center justify-between mb-3">
-                    <FaVideo className="text-2xl lg:text-3xl text-yellow-200" />
-                    <div className="w-3 h-3 bg-yellow-200 rounded-full animate-pulse"></div>
+                    <FaVideo className="text-2xl lg:text-3xl text-blue-200" />
+                    <div className="w-3 h-3 bg-blue-200 rounded-full animate-pulse"></div>
                   </div>
                   <h4 className="text-lg lg:text-xl font-bold mb-2">الجلسات المباشرة</h4>
-                  <p className="text-yellow-100 text-sm lg:text-base opacity-90">إدارة الجلسات المباشرة</p>
+                  <p className="text-blue-100 text-sm lg:text-base opacity-90">إدارة الجلسات المباشرة</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs text-yellow-200">إدارة كاملة</span>
-                    <FaArrowUp className="text-yellow-200 transform rotate-45" />
+                    <span className="text-xs text-blue-200">إدارة كاملة</span>
+                    <FaArrowUp className="text-blue-200 transform rotate-45" />
                   </div>
                 </div>
 

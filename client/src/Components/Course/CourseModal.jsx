@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createCourse, updateCourse } from '../../Redux/Slices/CourseSlice';
 import { getAllInstructors } from '../../Redux/Slices/InstructorSlice';
-import { getAllStages, fetchStageCategories } from '../../Redux/Slices/StageSlice';
+import { getAllStages } from '../../Redux/Slices/StageSlice';
 import { getAllSubjects } from '../../Redux/Slices/SubjectSlice';
 import { FaTimes } from 'react-icons/fa';
 
@@ -10,7 +10,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
   const dispatch = useDispatch();
   const { createLoading, updateLoading } = useSelector((state) => state.course);
   const { instructors = [] } = useSelector((state) => state.instructor);
-  const { stages = [], categories = [] } = useSelector((state) => state.stage);
+  const { stages = [] } = useSelector((state) => state.stage);
   const { subjects = [] } = useSelector((state) => state.subject);
 
   const [formData, setFormData] = useState({
@@ -18,11 +18,10 @@ const CourseModal = ({ course, onClose, isOpen }) => {
     description: '',
     instructor: '',
     stage: '',
-    subject: '',
-    category: ''
+    subject: ''
   });
 
-  const [filteredStages, setFilteredStages] = useState([]);
+
   const [thumbnail, setThumbnail] = useState(null);
 
   useEffect(() => {
@@ -32,8 +31,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
         description: course.description || '',
         instructor: course.instructor?._id || course.instructor || '',
         stage: course.stage?._id || course.stage || '',
-        subject: course.subject?._id || course.subject || '',
-        category: course.category?._id || course.category || ''
+        subject: course.subject?._id || course.subject || ''
       });
     } else {
       setFormData({
@@ -41,8 +39,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
         description: '',
         instructor: '',
         stage: '',
-        subject: '',
-        category: ''
+        subject: ''
       });
     }
     setThumbnail(null);
@@ -52,30 +49,11 @@ const CourseModal = ({ course, onClose, isOpen }) => {
     dispatch(getAllInstructors());
     dispatch(getAllStages());
     dispatch(getAllSubjects());
-    dispatch(fetchStageCategories());
   }, [dispatch]);
 
 
 
-  // Filter stages based on selected category
-  useEffect(() => {
-    if (formData.category && categories.length > 0) {
-      const selectedCategory = categories.find(cat => cat._id === formData.category);
-      if (selectedCategory && selectedCategory.stages) {
-        setFilteredStages(selectedCategory.stages);
-        // Clear stage selection if current stage is not in the selected category
-        if (formData.stage && !selectedCategory.stages.some(stage => stage._id === formData.stage)) {
-          setFormData(prev => ({ ...prev, stage: '' }));
-        }
-      } else {
-        setFilteredStages([]);
-        setFormData(prev => ({ ...prev, stage: '' }));
-      }
-    } else {
-      setFilteredStages([]);
-      setFormData(prev => ({ ...prev, stage: '' }));
-    }
-  }, [formData.category, categories]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -95,7 +73,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title.trim() || !formData.instructor || !formData.stage || !formData.subject || !formData.category) {
+    if (!formData.title.trim() || !formData.instructor || !formData.stage || !formData.subject) {
       alert('يرجى ملء جميع الحقول المطلوبة');
       return;
     }
@@ -106,8 +84,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
         description: formData.description.trim(),
         instructor: formData.instructor,
         stage: formData.stage,
-        subject: formData.subject,
-        category: formData.category
+        subject: formData.subject
       };
 
 
@@ -191,23 +168,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">فئة المرحلة *</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md"
-              required
-            >
-              <option value="">اختر فئة المرحلة</option>
-              {categories?.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
+
 
           <div>
             <label className="block text-sm font-medium mb-1">المرحلة *</label>
@@ -215,25 +176,16 @@ const CourseModal = ({ course, onClose, isOpen }) => {
               name="stage"
               value={formData.stage}
               onChange={handleInputChange}
-              className={`w-full p-2 border border-gray-300 rounded-md ${!formData.category ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              className="w-full p-2 border border-gray-300 rounded-md"
               required
-              disabled={!formData.category}
             >
-              <option value="">
-                {!formData.category ? 'اختر فئة المرحلة أولاً' : 'اختر المرحلة'}
-              </option>
-              {filteredStages?.map((stage) => (
+              <option value="">اختر المرحلة</option>
+              {stages?.map((stage) => (
                 <option key={stage._id} value={stage._id}>
                   {stage.name}
                 </option>
               ))}
             </select>
-            {!formData.category && (
-              <p className="text-xs text-gray-500 mt-1">يرجى اختيار فئة المرحلة أولاً لعرض المراحل المتاحة</p>
-            )}
-            {formData.category && filteredStages.length === 0 && (
-              <p className="text-xs text-orange-500 mt-1">لا توجد مراحل متاحة في هذه الفئة</p>
-            )}
           </div>
 
           <div>

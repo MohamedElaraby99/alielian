@@ -94,11 +94,11 @@ const ModernAlert = ({
     },
     warning: {
       icon: <FaExclamationTriangle />,
-      bgColor: 'bg-gradient-to-r from-yellow-500 to-orange-600',
-      borderColor: 'border-yellow-200 dark:border-yellow-800',
-      textColor: 'text-yellow-800 dark:text-yellow-200',
-      bgLight: 'bg-yellow-50 dark:bg-yellow-900/20',
-      progressColor: 'bg-yellow-500'
+      bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+      borderColor: 'border-blue-200 dark:border-blue-800',
+      textColor: 'text-blue-800 dark:text-blue-200',
+      bgLight: 'bg-blue-50 dark:bg-blue-900/20',
+      progressColor: 'bg-blue-500'
     },
     info: {
       icon: <FaInfoCircle />,

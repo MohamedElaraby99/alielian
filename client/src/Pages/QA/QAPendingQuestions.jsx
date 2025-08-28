@@ -58,8 +58,8 @@ export default function QAPendingQuestions() {
       'General': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       'Technical': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
       'Course Related': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      'Payment': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      'Account': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      'Payment': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      'Account': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       'Other': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
     };
     return colors[category] || colors['Other'];

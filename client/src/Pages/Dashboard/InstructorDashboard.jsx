@@ -18,7 +18,7 @@ import {
   FaGraduationCap,
   FaLinkedin,
   FaTwitter,
-  FaGlobe,
+  FaFacebook,
   FaSearch,
   FaFilter,
   FaTimes,
@@ -51,7 +51,8 @@ const InstructorDashboard = () => {
     socialLinks: {
       linkedin: '',
       twitter: '',
-      website: ''
+      facebook: '',
+      whatsapp: ''
     },
     featured: false,
     photo: null
@@ -115,7 +116,8 @@ const InstructorDashboard = () => {
       socialLinks: instructor.socialLinks || {
         linkedin: '',
         twitter: '',
-        website: ''
+        facebook: '',
+        whatsapp: ''
       },
       featured: instructor.featured
     });
@@ -146,7 +148,8 @@ const InstructorDashboard = () => {
       socialLinks: {
         linkedin: '',
         twitter: '',
-        website: ''
+        facebook: '',
+        whatsapp: ''
       },
       featured: false,
       photo: null
@@ -168,16 +171,16 @@ const InstructorDashboard = () => {
       stars.push(
         <FaStar
           key={i}
-          className={`text-sm ${i <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+          className={`text-sm ${i <= rating ? 'text-blue-400' : 'text-gray-300'}`}
         />
       );
     }
     return stars;
   };
 
-  if (role !== 'ADMIN') {
+  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
             غير مصرح لك بالوصول إلى هذه الصفحة
@@ -192,7 +195,7 @@ const InstructorDashboard = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -254,7 +257,7 @@ const InstructorDashboard = () => {
               className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
             >
               {/* Instructor Header */}
-              <div className="relative p-6 bg-gradient-to-r from-blue-500 to-purple-600">
+              <div className="relative p-6 bg-gradient-to-r from-blue-500 to-blue-600">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     {instructor.profileImage?.secure_url ? (
@@ -274,7 +277,7 @@ const InstructorDashboard = () => {
                     </div>
                   </div>
                   {instructor.featured && (
-                    <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
+                    <span className="bg-blue-400 text-blue-900 px-2 py-1 rounded-full text-xs font-semibold">
                       مميز
                     </span>
                   )}
@@ -331,16 +334,16 @@ const InstructorDashboard = () => {
                         <FaTwitter />
                       </a>
                     )}
-                    {instructor.socialLinks?.website && (
-                      <a
-                        href={instructor.socialLinks.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-600 hover:text-gray-700 transition-colors"
-                      >
-                        <FaGlobe />
-                      </a>
-                    )}
+                                         {instructor.socialLinks?.facebook && (
+                       <a
+                         href={instructor.socialLinks.facebook}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="text-blue-600 hover:text-blue-700 transition-colors"
+                       >
+                         <FaFacebook />
+                       </a>
+                     )}
                   </div>
                 )}
 
@@ -545,7 +548,7 @@ const InstructorDashboard = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                     روابط التواصل الاجتماعي
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="url"
                       placeholder="LinkedIn"
@@ -566,13 +569,23 @@ const InstructorDashboard = () => {
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
                     />
+                                         <input
+                       type="url"
+                       placeholder="Facebook"
+                       value={formData.socialLinks.facebook}
+                       onChange={(e) => setFormData({
+                         ...formData,
+                         socialLinks: { ...formData.socialLinks, facebook: e.target.value }
+                       })}
+                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                     />
                     <input
-                      type="url"
-                      placeholder="Website"
-                      value={formData.socialLinks.website}
+                      type="text"
+                      placeholder="WhatsApp (e.g., +201234567890)"
+                      value={formData.socialLinks.whatsapp}
                       onChange={(e) => setFormData({
                         ...formData,
-                        socialLinks: { ...formData.socialLinks, website: e.target.value }
+                        socialLinks: { ...formData.socialLinks, whatsapp: e.target.value }
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
                     />

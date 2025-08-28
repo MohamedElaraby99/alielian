@@ -1333,7 +1333,7 @@ const CustomVideoPlayer = ({
         )}
 
         {/* All Users Progress Component (Admin Only) */}
-        {showProgress && courseId && getCleanVideoId(video) && role === 'ADMIN' && (
+        {showProgress && courseId && getCleanVideoId(video) && (role === 'ADMIN' || role === 'SUPER_ADMIN') && (
           <div className="w-full max-w-6xl mt-6 flex-shrink-0">
             <VideoUserProgress
               videoId={getCleanVideoId(video)}

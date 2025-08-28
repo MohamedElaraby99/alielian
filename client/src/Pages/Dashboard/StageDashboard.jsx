@@ -67,6 +67,9 @@ export default function StageDashboard() {
       await dispatch(createStage(formData)).unwrap();
       setShowCreateModal(false);
       resetForm();
+      // Refresh the stages list to show the newly created stage
+      dispatch(getAllStagesAdmin({ page: 1, limit: 100 }));
+      dispatch(getAllStagesWithStats());
     } catch (error) {
       console.error('Error creating stage:', error);
     }
@@ -85,6 +88,9 @@ export default function StageDashboard() {
       setShowEditModal(false);
       setSelectedStage(null);
       resetForm();
+      // Refresh the stages list to show the updated stage
+      dispatch(getAllStagesAdmin({ page: 1, limit: 100 }));
+      dispatch(getAllStagesWithStats());
     } catch (error) {
       console.error('Error updating stage:', error);
     }
@@ -94,6 +100,9 @@ export default function StageDashboard() {
     if (window.confirm('هل أنت متأكد من حذف هذه المرحلة؟')) {
       try {
         await dispatch(deleteStage(stageId)).unwrap();
+        // Refresh the stages list after deletion
+        dispatch(getAllStagesAdmin({ page: 1, limit: 100 }));
+        dispatch(getAllStagesWithStats());
       } catch (error) {
         console.error('Error deleting stage:', error);
       }
@@ -103,6 +112,9 @@ export default function StageDashboard() {
   const handleToggleStatus = async (stageId) => {
     try {
       await dispatch(toggleStageStatus(stageId)).unwrap();
+      // Refresh the stages list after status toggle
+      dispatch(getAllStagesAdmin({ page: 1, limit: 100 }));
+      dispatch(getAllStagesWithStats());
     } catch (error) {
       console.error('Error toggling stage status:', error);
     }
@@ -158,7 +170,7 @@ export default function StageDashboard() {
 
   return (
     <Layout>
-      <section className="min-h-screen py-8 px-4 lg:px-20">
+      <section className="min-h-screen py-8 px-4 lg:px-20" dir="rtl">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -209,12 +221,12 @@ export default function StageDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي المواد</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-2xl font-bold text-blue-600">
                     {stagesWithStats.reduce((sum, stage) => sum + (stage.subjectsCount || 0), 0)}
                   </p>
                 </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-                  <FaBook className="text-purple-600 dark:text-purple-400" size={20} />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <FaBook className="text-blue-600 dark:text-blue-400" size={20} />
                 </div>
               </div>
             </div>
@@ -223,12 +235,12 @@ export default function StageDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي الطلاب</p>
-                  <p className="text-2xl font-bold text-orange-600">
+                  <p className="text-2xl font-bold text-blue-600">
                     {stagesWithStats.reduce((sum, stage) => sum + (stage.studentsCount || 0), 0)}
                   </p>
                 </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-                  <FaUsers className="text-orange-600 dark:text-orange-400" size={20} />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <FaUsers className="text-blue-600 dark:text-blue-400" size={20} />
                 </div>
               </div>
             </div>
@@ -309,11 +321,11 @@ export default function StageDashboard() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-4 space-x-reverse">
                             <div className="flex items-center text-sm text-gray-900 dark:text-white">
-                              <FaBook className="mr-1 text-purple-500" />
+                              <FaBook className="mr-1 text-blue-500" />
                               {stagesWithStats.find(s => s._id === stage._id)?.subjectsCount || 0}
                             </div>
                             <div className="flex items-center text-sm text-gray-900 dark:text-white">
-                              <FaUsers className="mr-1 text-orange-500" />
+                              <FaUsers className="mr-1 text-blue-500" />
                               {stagesWithStats.find(s => s._id === stage._id)?.studentsCount || 0}
                             </div>
                           </div>

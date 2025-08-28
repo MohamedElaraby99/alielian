@@ -9,7 +9,8 @@ import {
   FaGraduationCap, 
   FaLinkedin, 
   FaTwitter, 
-  FaGlobe,
+  FaFacebook,
+  FaWhatsapp,
   FaSearch,
   FaFilter,
   FaEye
@@ -29,6 +30,8 @@ export default function Instructors() {
     dispatch(getFeaturedInstructors());
   }, [dispatch]);
 
+
+
   const filteredInstructors = instructors.filter(instructor => {
     const matchesSearch = instructor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          instructor.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +48,7 @@ export default function Instructors() {
         <FaStar
           key={i}
           className={`w-4 h-4 ${
-            i <= rating ? 'text-yellow-400' : 'text-gray-300'
+            i <= rating ? 'text-blue-400' : 'text-gray-300'
           }`}
         />
       );
@@ -61,7 +64,7 @@ export default function Instructors() {
   if (loading) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
           <div className="container mx-auto px-4 py-16">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -74,7 +77,7 @@ export default function Instructors() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         {/* Hero Section */}
         <section className="py-16">
           <div className="container mx-auto px-4">
@@ -113,7 +116,7 @@ export default function Instructors() {
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
                 >
                   {/* Instructor Header */}
-                  <div className="relative p-6 bg-gradient-to-r from-blue-500 to-purple-600">
+                  <div className="relative p-6 bg-gradient-to-r from-blue-500 to-blue-600">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         {instructor.profileImage?.secure_url ? (
@@ -133,7 +136,7 @@ export default function Instructors() {
                         </div>
                       </div>
                       {instructor.featured && (
-                        <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
+                        <span className="bg-blue-400 text-blue-900 px-2 py-1 rounded-full text-xs font-semibold">
                           مميز
                         </span>
                       )}
@@ -170,40 +173,61 @@ export default function Instructors() {
                     )}
 
                     {/* Social Links */}
-                    {(instructor.socialLinks?.linkedin || instructor.socialLinks?.twitter || instructor.socialLinks?.website) && (
-                      <div className="flex items-center gap-2 mb-4 justify-center">
-                        {instructor.socialLinks?.linkedin && (
-                          <a
-                            href={instructor.socialLinks.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                          >
-                            <FaLinkedin size={16} />
-                          </a>
-                        )}
-                        {instructor.socialLinks?.twitter && (
-                          <a
-                            href={instructor.socialLinks.twitter}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
-                          >
-                            <FaTwitter size={16} />
-                          </a>
-                        )}
-                        {instructor.socialLinks?.website && (
-                          <a
-                            href={instructor.socialLinks.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                          >
-                            <FaGlobe size={16} />
-                          </a>
-                        )}
-                      </div>
-                    )}
+                    {(() => {
+                                             const hasSocialLinks = (
+                         (instructor.socialLinks?.linkedin && instructor.socialLinks.linkedin.trim() !== '') ||
+                         (instructor.socialLinks?.twitter && instructor.socialLinks.twitter.trim() !== '') ||
+                         (instructor.socialLinks?.facebook && instructor.socialLinks.facebook.trim() !== '') ||
+                         (instructor.socialLinks?.whatsapp && instructor.socialLinks.whatsapp.trim() !== '')
+                       );
+                      
+                      if (!hasSocialLinks) return null;
+                      
+                      return (
+                        <div className="flex items-center gap-2 mb-4 justify-center">
+                          {instructor.socialLinks?.linkedin && instructor.socialLinks.linkedin.trim() !== '' && (
+                            <a
+                              href={instructor.socialLinks.linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              <FaLinkedin size={16} />
+                            </a>
+                          )}
+                          {instructor.socialLinks?.twitter && instructor.socialLinks.twitter.trim() !== '' && (
+                            <a
+                              href={instructor.socialLinks.twitter}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
+                            >
+                              <FaTwitter size={16} />
+                            </a>
+                          )}
+                                                     {instructor.socialLinks?.facebook && instructor.socialLinks.facebook.trim() !== '' && (
+                             <a
+                               href={instructor.socialLinks.facebook}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                             >
+                               <FaFacebook size={16} />
+                             </a>
+                           )}
+                          {instructor.socialLinks?.whatsapp && instructor.socialLinks.whatsapp.trim() !== '' && (
+                            <a
+                              href={`https://wa.me/${instructor.socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                            >
+                              <FaWhatsapp size={16} />
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     <div className="flex justify-center">
                       <button
@@ -327,46 +351,67 @@ export default function Instructors() {
 
                       </div>
 
-                      {/* Social Links */}
-                      {(selectedInstructor.socialLinks?.linkedin || selectedInstructor.socialLinks?.twitter || selectedInstructor.socialLinks?.website) && (
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
-                            روابط التواصل
-                          </h3>
-                          <div className="flex items-center gap-4 justify-end">
-                            {selectedInstructor.socialLinks?.linkedin && (
-                              <a
-                                href={selectedInstructor.socialLinks.linkedin}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                              >
-                                <FaLinkedin size={20} />
-                              </a>
-                            )}
-                            {selectedInstructor.socialLinks?.twitter && (
-                              <a
-                                href={selectedInstructor.socialLinks.twitter}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
-                              >
-                                <FaTwitter size={20} />
-                              </a>
-                            )}
-                            {selectedInstructor.socialLinks?.website && (
-                              <a
-                                href={selectedInstructor.socialLinks.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                              >
-                                <FaGlobe size={20} />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                                                                    {/* Social Links */}
+                       {(() => {
+                                                   const hasSocialLinks = (
+                            (selectedInstructor.socialLinks?.linkedin && selectedInstructor.socialLinks.linkedin.trim() !== '') ||
+                            (selectedInstructor.socialLinks?.twitter && selectedInstructor.socialLinks.twitter.trim() !== '') ||
+                            (selectedInstructor.socialLinks?.facebook && selectedInstructor.socialLinks.facebook.trim() !== '') ||
+                            (selectedInstructor.socialLinks?.whatsapp && selectedInstructor.socialLinks.whatsapp.trim() !== '')
+                          );
+                         
+                         if (!hasSocialLinks) return null;
+                         
+                         return (
+                           <div>
+                             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
+                               روابط التواصل
+                             </h3>
+                             <div className="flex items-center gap-4 justify-end">
+                               {selectedInstructor.socialLinks?.linkedin && selectedInstructor.socialLinks.linkedin.trim() !== '' && (
+                                 <a
+                                   href={selectedInstructor.socialLinks.linkedin}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                 >
+                                   <FaLinkedin size={20} />
+                                 </a>
+                               )}
+                               {selectedInstructor.socialLinks?.twitter && selectedInstructor.socialLinks.twitter.trim() !== '' && (
+                                 <a
+                                   href={selectedInstructor.socialLinks.twitter}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
+                                 >
+                                   <FaTwitter size={20} />
+                                 </a>
+                               )}
+                                                               {selectedInstructor.socialLinks?.facebook && selectedInstructor.socialLinks.facebook.trim() !== '' && (
+                                  <a
+                                    href={selectedInstructor.socialLinks.facebook}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                                  >
+                                    <FaFacebook size={20} />
+                                  </a>
+                                )}
+                               {selectedInstructor.socialLinks?.whatsapp && selectedInstructor.socialLinks.whatsapp.trim() !== '' && (
+                                 <a
+                                   href={`https://wa.me/${selectedInstructor.socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                                 >
+                                   <FaWhatsapp size={20} />
+                                 </a>
+                               )}
+                             </div>
+                           </div>
+                         );
+                       })()}
                     </div>
                   </div>
                 </div>

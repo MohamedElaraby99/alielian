@@ -5,11 +5,11 @@ import { FaShieldAlt, FaDatabase, FaEye, FaLock, FaUserSecret, FaInfoCircle, FaC
 export default function PrivacyPolicy() {
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="mx-auto h-16 w-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
               <FaShieldAlt className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -30,11 +30,11 @@ export default function PrivacyPolicy() {
               {/* Introduction */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaInfoCircle className="ml-3 text-purple-600" />
+                  <FaInfoCircle className="ml-3 text-blue-600" />
                   مقدمة
                 </h2>
                 <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  شركة المنصة الدولية ("نحن" أو "لنا" أو "لنا") ملتزمة بحماية خصوصيتك. 
+                  منصة  almongezz يهم ملتزمة بحماية خصوصيتك. 
                   تشرح سياسة الخصوصية هذه كيف نجمع ونستخدم ونكشف ونحمي معلوماتك 
                   عند استخدام منصة إدارة التعلم الخاصة بنا.
                 </p>
@@ -85,9 +85,9 @@ export default function PrivacyPolicy() {
                       </ul>
                     </div>
                     
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
-                      <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">ما يعتبر انتهاكاً:</h4>
-                      <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">ما يعتبر انتهاكاً:</h4>
+                      <ul className="space-y-1 text-blue-700 dark:text-blue-300 text-sm">
                         <li>• تسجيل شاشة الفيديوهات التعليمية</li>
                         <li>• مشاركة روابط المحتوى مع أشخاص آخرين</li>
                         <li>• نشر المحتوى على وسائل التواصل الاجتماعي</li>
@@ -125,7 +125,7 @@ export default function PrivacyPolicy() {
                         </li>
                         <li className="flex items-start">
                           <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
-                          <span>الموقع الجغرافي (المحافظة)</span>
+                          <span>الموقع الجغرافي (المدينة)</span>
                         </li>
                         <li className="flex items-start">
                           <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
@@ -201,7 +201,7 @@ export default function PrivacyPolicy() {
               {/* Information Sharing */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaUserSecret className="ml-3 text-purple-600" />
+                  <FaUserSecret className="ml-3 text-blue-600" />
                   مشاركة المعلومات
                 </h2>
                 <div className="space-y-4">
@@ -211,19 +211,19 @@ export default function PrivacyPolicy() {
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <FaExclamationTriangle className="text-blue-500 mt-1 ml-3 flex-shrink-0" />
                         <span>بموافقتك الصريحة</span>
                       </li>
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <FaExclamationTriangle className="text-blue-500 mt-1 ml-3 flex-shrink-0" />
                         <span>لتقديم الخدمات المطلوبة (مثل معالجة الدفع)</span>
                       </li>
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <FaExclamationTriangle className="text-blue-500 mt-1 ml-3 flex-shrink-0" />
                         <span>للامتثال للقوانين والأنظمة</span>
                       </li>
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <FaExclamationTriangle className="text-blue-500 mt-1 ml-3 flex-shrink-0" />
                         <span>لحماية حقوقنا وممتلكاتنا</span>
                       </li>
                     </ul>

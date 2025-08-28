@@ -30,10 +30,14 @@ import {
   FaLock,
   FaUnlock,
   FaWallet,
-  FaTimes
+  FaTimes,
+  FaClipboardList
 } from 'react-icons/fa';
 import { generateImageUrl } from '../../utils/fileUtils';
 import { placeholderImages } from '../../utils/placeholderImages';
+import { checkCourseAccess, redeemCourseAccessCode } from '../../Redux/Slices/CourseAccessSlice';
+import { axiosInstance } from '../../Helpers/axiosInstance';
+import RemainingDaysLabel from '../../Components/RemainingDaysLabel';
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -42,6 +46,14 @@ export default function CourseDetail() {
   const { currentCourse, loading } = useSelector((state) => state.course);
   const { walletBalance, purchaseStatus, loading: paymentLoading } = useSelector((state) => state.payment);
   const { data: user, isLoggedIn } = useSelector((state) => state.auth);
+  const courseAccessState = useSelector((state) => state.courseAccess.byCourseId[id]);
+  const [accessAlertShown, setAccessAlertShown] = useState(false);
+  const hidePrices = !!courseAccessState?.hasAccess && courseAccessState?.source === 'code';
+  const hasAnyPurchase = (() => {
+    if (!currentCourse || !purchaseStatus) return false;
+    const prefix = `${currentCourse._id}-`;
+    return Object.keys(purchaseStatus).some(k => k.startsWith(prefix) && purchaseStatus[k]);
+  })();
 
   const [expandedUnits, setExpandedUnits] = useState(new Set());
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -53,6 +65,7 @@ export default function CourseDetail() {
   const [previewItem, setPreviewItem] = useState(null);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [redeemCode, setRedeemCode] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -60,9 +73,40 @@ export default function CourseDetail() {
     }
   }, [dispatch, id]);
 
+  // Check timed-access via code
+  useEffect(() => {
+    if (id && user && isLoggedIn) {
+      dispatch(checkCourseAccess(id));
+    }
+  }, [dispatch, id, user, isLoggedIn]);
+
+  // Periodic check for access expiration (every minute)
+  useEffect(() => {
+    if (!courseAccessState?.hasAccess || !courseAccessState?.accessEndAt) return;
+    
+    const interval = setInterval(() => {
+      const now = new Date();
+      const endDate = new Date(courseAccessState.accessEndAt);
+      
+      if (endDate <= now) {
+        // Access has expired, refresh status
+        dispatch(checkCourseAccess(id));
+        
+        // Show immediate notification that access has expired
+        if (!accessAlertShown) {
+          setAlertMessage('انتهت صلاحية الوصول عبر الكود. يرجى إعادة تفعيل كود جديد أو شراء المحتوى.');
+          setShowErrorAlert(true);
+          setAccessAlertShown(true);
+        }
+      }
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, [courseAccessState?.hasAccess, courseAccessState?.accessEndAt, dispatch, id, accessAlertShown]);
+
   // Fetch wallet balance only when user is logged in
   useEffect(() => {
-    if (user && isLoggedIn && user.role !== 'ADMIN') {
+    if (user && isLoggedIn && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       dispatch(getWalletBalance());
     }
   }, [dispatch, user, isLoggedIn]);
@@ -160,12 +204,56 @@ export default function CourseDetail() {
 
   const isItemPurchased = (purchaseType, itemId) => {
     // Admin users have access to all content
-    if (user?.role === 'ADMIN') {
+    if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
       return true;
     }
+    
+    // Check if code-based access has expired
+    if (courseAccessState?.source === 'code' && courseAccessState?.accessEndAt) {
+      const now = new Date();
+      const endDate = new Date(courseAccessState.accessEndAt);
+      const isExpired = endDate <= now;
+      
+      // If access has expired, block access
+      if (isExpired) {
+        return false;
+      }
+    }
+    
+    // If user has active course access via code, allow viewing
+    if (courseAccessState?.hasAccess) {
+      return true;
+    }
+    
     const key = `${currentCourse._id}-${purchaseType}-${itemId}`;
     return purchaseStatus[key] || false;
   };
+
+  // Block access if code-based access expired (only for code access, not purchased)
+  useEffect(() => {
+    if (!user || user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') return;
+    if (!currentCourse) return;
+    
+    // Check if access has expired
+    const hasCodeSource = courseAccessState?.source === 'code';
+    const hasActive = !!courseAccessState?.hasAccess;
+    const accessEndAt = courseAccessState?.accessEndAt;
+    
+    if (hasCodeSource && accessEndAt) {
+      const now = new Date();
+      const endDate = new Date(accessEndAt);
+      const isExpired = endDate <= now;
+      
+      if (isExpired && !hasAnyPurchase && !accessAlertShown) {
+        setAlertMessage('انتهت صلاحية الوصول عبر الكود. يرجى إعادة تفعيل كود جديد أو شراء المحتوى.');
+        setShowErrorAlert(true);
+        setAccessAlertShown(true);
+        
+        // Force refresh access status to clear expired access
+        dispatch(checkCourseAccess(currentCourse._id));
+      }
+    }
+  }, [user, currentCourse, courseAccessState, hasAnyPurchase, accessAlertShown, dispatch]);
 
   const handlePurchaseClick = (item, purchaseType) => {
     if (!user || !isLoggedIn) {
@@ -178,7 +266,7 @@ export default function CourseDetail() {
     }
     
     // Admin users have access to all content, no need to purchase
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
       setAlertMessage('أنت مدير النظام - لديك صلاحية الوصول لجميع المحتوى');
       setShowSuccessAlert(true);
       return;
@@ -190,12 +278,68 @@ export default function CourseDetail() {
       return;
     }
 
+    // Check if code-based access has expired
+    if (courseAccessState?.source === 'code' && courseAccessState?.accessEndAt) {
+      const now = new Date();
+      const endDate = new Date(courseAccessState.accessEndAt);
+      const isExpired = endDate <= now;
+      
+      if (isExpired) {
+        setAlertMessage('انتهت صلاحية الوصول عبر الكود. يرجى إعادة تفعيل كود جديد أو شراء المحتوى.');
+        setShowErrorAlert(true);
+        return;
+      }
+    }
+
     setSelectedItem({ ...item, purchaseType });
     setShowPurchaseModal(true);
   };
 
+  const handleRedeemCode = async (e) => {
+    e.preventDefault();
+    if (!redeemCode.trim()) return;
+    try {
+      await dispatch(redeemCourseAccessCode({ 
+        code: redeemCode.trim(),
+        courseId: currentCourse._id 
+      })).unwrap();
+      setRedeemCode('');
+      setAlertMessage('تم تفعيل الوصول للكورس بنجاح لوقت محدد');
+      setShowSuccessAlert(true);
+      
+      // Clear the access alert since access is restored
+      setAccessAlertShown(false);
+      
+      // Refresh course access status
+      dispatch(checkCourseAccess(currentCourse._id));
+    } catch (err) {
+      setAlertMessage(err?.message || 'تعذر تفعيل الكود');
+      setShowErrorAlert(true);
+    }
+  };
+
   const handlePreviewClick = (item, purchaseType) => {
+    // Check if code-based access has expired
+    if (courseAccessState?.source === 'code' && courseAccessState?.accessEndAt) {
+      const now = new Date();
+      const endDate = new Date(courseAccessState.accessEndAt);
+      const isExpired = endDate <= now;
+      
+      if (isExpired) {
+        setAlertMessage('انتهت صلاحية الوصول عبر الكود. يرجى إعادة تفعيل كود جديد أو شراء المحتوى.');
+        setShowErrorAlert(true);
+        return;
+      }
+    }
+    
     // Allow preview for all users (logged in or not)
+    console.log('Preview item data:', item);
+    console.log('Content counts:', {
+      videos: item.videosCount,
+      pdfs: item.pdfsCount,
+      exams: item.examsCount,
+      trainings: item.trainingsCount
+    });
     setPreviewItem({ ...item, purchaseType });
     setShowPreviewModal(true);
   };
@@ -220,7 +364,22 @@ export default function CourseDetail() {
     }
   };
 
-  const handleWatchClick = (item, purchaseType, unitId = null) => {
+
+
+  const handleWatchClick = async (item, purchaseType, unitId = null) => {
+    // Check if code-based access has expired
+    if (courseAccessState?.source === 'code' && courseAccessState?.accessEndAt) {
+      const now = new Date();
+      const endDate = new Date(courseAccessState.accessEndAt);
+      const isExpired = endDate <= now;
+      
+      if (isExpired) {
+        setAlertMessage('انتهت صلاحية الوصول عبر الكود. يرجى إعادة تفعيل كود جديد أو شراء المحتوى.');
+        setShowErrorAlert(true);
+        return;
+      }
+    }
+
     // Store lesson info including unit context for the optimized modal
     const lessonInfo = {
       lessonId: item._id,
@@ -280,7 +439,7 @@ export default function CourseDetail() {
       <div className="flex items-center gap-2">
         <button 
           onClick={() => handlePreviewClick(item, purchaseType)}
-          className="text-purple-600 hover:text-purple-700 flex items-center gap-1"
+          className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
         >
           <FaEye />
           <span>معاينة</span>
@@ -368,7 +527,7 @@ export default function CourseDetail() {
                 </>
               ) : (
                 <>
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
                   <div className="absolute inset-0 bg-black bg-opacity-30"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <FaBookOpen className="text-8xl text-white opacity-80" />
@@ -377,7 +536,7 @@ export default function CourseDetail() {
               )}
               
               {/* Fallback gradient for broken images */}
-              <div className="hidden w-full h-full bg-gradient-to-br from-blue-500 to-purple-600">
+              <div className="hidden w-full h-full bg-gradient-to-br from-blue-500 to-blue-600">
                 <div className="absolute inset-0 bg-black bg-opacity-30"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <FaBookOpen className="text-8xl text-white opacity-80" />
@@ -413,13 +572,13 @@ export default function CourseDetail() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">درس</div>
                     </div>
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
                         {currentCourse.units?.length || 0}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">وحدة</div>
                     </div>
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="text-2xl font-bold text-yellow-600 mb-1">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
                         {currentCourse.directLessons?.length || 0}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">مقدمة</div>
@@ -443,18 +602,29 @@ export default function CourseDetail() {
                 {/* Sidebar */}
                 <div className="lg:col-span-1">
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 sticky top-6">
-                                         {/* Wallet Balance */}
-                     {user && isLoggedIn && user.role !== 'ADMIN' && (
-                       <div className="text-center mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                         <div className="flex items-center justify-center gap-2 mb-2">
-                           <FaWallet className="text-green-600" />
-                           <span className="text-sm text-gray-600 dark:text-gray-400">رصيد المحفظة</span>
+                                                               {/* Wallet Balance */}
+                      {user && isLoggedIn && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
+                        <div className="text-center mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="flex items-center justify-center gap-2 mb-2">
+                            <FaWallet className="text-green-600" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">رصيد المحفظة</span>
+                          </div>
+                          <div className="text-2xl font-bold text-green-600">
+                            {walletBalance} جنيه
+                          </div>
+                        </div>
+                      )}
+
+                                             {/* Remaining Days Label */}
+                       {courseAccessState?.source === 'code' && courseAccessState?.accessEndAt && (
+                         <div className="mb-6">
+                           <RemainingDaysLabel 
+                             accessEndAt={courseAccessState.accessEndAt}
+                             className="w-full justify-center"
+                             showExpiredMessage={!courseAccessState?.hasAccess}
+                           />
                          </div>
-                         <div className="text-2xl font-bold text-green-600">
-                           {walletBalance} جنيه
-                         </div>
-                       </div>
-                     )}
+                       )}
 
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -466,14 +636,88 @@ export default function CourseDetail() {
                         <span>المرحلة: {currentCourse.stage?.name || 'غير محدد'}</span>
                       </div>
                     </div>
+
+                                         {/* Redeem Access Code */}
+                     {user && isLoggedIn && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
+                       <div className="space-y-3">
+                         {/* Show expired access warning */}
+                         {courseAccessState?.source === 'code' && !courseAccessState?.hasAccess && courseAccessState?.accessEndAt && (
+                           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                             <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                               <FaExclamationTriangle className="text-red-600" />
+                               <span className="text-sm font-medium">انتهت صلاحية الوصول</span>
+                             </div>
+                             <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                               يرجى إدخال كود جديد لاستعادة الوصول للكورس
+                             </p>
+                           </div>
+                         )}
+                         
+                         <form onSubmit={handleRedeemCode} className="space-y-3">
+                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                             {courseAccessState?.source === 'code' && !courseAccessState?.hasAccess 
+                               ? 'أدخل كود جديد لفتح الكورس' 
+                               : 'لديك كود لفتح الكورس؟'
+                             }
+                           </label>
+                           <div className="flex gap-2">
+                             <input
+                               type="text"
+                               value={redeemCode}
+                               onChange={(e) => setRedeemCode(e.target.value)}
+                               placeholder="أدخل الكود هنا"
+                               className="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+                               required
+                             />
+                             <button
+                               type="submit"
+                               className={`px-4 py-2 text-white rounded-lg ${
+                                 courseAccessState?.source === 'code' && !courseAccessState?.hasAccess
+                                   ? 'bg-red-600 hover:bg-red-700'
+                                   : 'bg-green-600 hover:bg-green-700'
+                               }`}
+                             >
+                               {courseAccessState?.source === 'code' && !courseAccessState?.hasAccess ? 'إعادة التفعيل' : 'تفعيل'}
+                             </button>
+                           </div>
+                           <p className="text-xs text-gray-500 dark:text-gray-400">
+                             يمنحك الكود وصولاً كاملاً للكورس لمدة محددة.
+                           </p>
+                         </form>
+                       </div>
+                     )}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+                     </div>
+         </div>
 
-        {/* هيكل الدورة */}
+         {/* Remaining Days Banner */}
+         {courseAccessState?.source === 'code' && courseAccessState?.accessEndAt && (
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+             <div className={`border rounded-xl p-4 ${
+               courseAccessState?.hasAccess 
+                 ? 'bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-700'
+                 : 'bg-gradient-to-r from-red-50 to-blue-50 dark:from-red-900/20 dark:to-blue-900/20 border-red-200 dark:border-red-700'
+             }`}>
+               <div className="flex items-center justify-center gap-3">
+                 {courseAccessState?.hasAccess ? (
+                   <FaClock className="text-blue-600 text-xl" />
+                 ) : (
+                   <FaExclamationTriangle className="text-red-600 text-xl" />
+                 )}
+                 <RemainingDaysLabel 
+                   accessEndAt={courseAccessState.accessEndAt}
+                   className="text-lg font-semibold"
+                   showExpiredMessage={!courseAccessState?.hasAccess}
+                 />
+               </div>
+             </div>
+           </div>
+         )}
+ 
+         {/* هيكل الدورة */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -510,7 +754,7 @@ export default function CourseDetail() {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          {lesson.price > 0 && (
+                          {!hidePrices && lesson.price > 0 && (
                             <span className="text-sm font-medium text-green-600">
                               {lesson.price} جنيه
                             </span>
@@ -541,7 +785,7 @@ export default function CourseDetail() {
                           onClick={() => toggleUnit(unit._id || unitIndex)}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                               <FaBookOpen className="text-white text-sm" />
                             </div>
                             <div>
@@ -590,7 +834,7 @@ export default function CourseDetail() {
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4">
-                                    {lesson.price > 0 && (
+                                    {!hidePrices && lesson.price > 0 && (
                                       <span className="text-sm font-medium text-green-600">
                                         {lesson.price} جنيه
                                       </span>
@@ -704,19 +948,30 @@ export default function CourseDetail() {
                  </button>
                </div>
                
-               <div className="mb-6">
-                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                   {previewItem.title}
-                 </h4>
-                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                   {previewItem.description}
-                 </p>
-                 
-                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
-                   <span className="text-gray-600 dark:text-gray-300">السعر:</span>
-                   <span className="font-semibold text-green-600">{previewItem.price} جنيه</span>
-                 </div>
-               </div>
+                               <div className="mb-6">
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    {previewItem.title}
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    {previewItem.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+                    <span className="text-gray-600 dark:text-gray-300">السعر:</span>
+                    <span className="font-semibold text-green-600">{previewItem.price} جنيه</span>
+                  </div>
+
+                                     {/* Show remaining days if user has code-based access */}
+                   {courseAccessState?.source === 'code' && courseAccessState?.accessEndAt && (
+                     <div className="mb-4">
+                       <RemainingDaysLabel 
+                         accessEndAt={courseAccessState.accessEndAt}
+                         className="w-full justify-center"
+                         showExpiredMessage={!courseAccessState?.hasAccess}
+                       />
+                     </div>
+                   )}
+                </div>
 
                {/* Preview Content */}
                <div className="mb-6">
@@ -725,7 +980,7 @@ export default function CourseDetail() {
                  </h5>
                  
                  {/* Videos Preview */}
-                 {(previewItem.videos && previewItem.videos.length > 0) ? (
+                 {previewItem.videos && previewItem.videos.length > 0 && (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">الفيديوهات ({previewItem.videos.length})</h6>
                      <div className="space-y-2">
@@ -744,15 +999,10 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 ) : (previewItem.videosCount > 0 && (
-                   <div className="mb-4">
-                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الفيديوهات ({previewItem.videosCount})</h6>
-                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل الفيديوهات بعد الشراء.</p>
-                   </div>
-                 ))}
+                 )}
 
                  {/* PDFs Preview */}
-                 {(previewItem.pdfs && previewItem.pdfs.length > 0) ? (
+                 {previewItem.pdfs && previewItem.pdfs.length > 0 && (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">الملفات PDF ({previewItem.pdfs.length})</h6>
                      <div className="space-y-2">
@@ -771,22 +1021,17 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 ) : (previewItem.pdfsCount > 0 && (
-                   <div className="mb-4">
-                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الملفات PDF ({previewItem.pdfsCount})</h6>
-                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل الملفات بعد الشراء.</p>
-                   </div>
-                 ))}
+                 )}
 
                  {/* Exams Preview */}
-                 {(previewItem.exams && previewItem.exams.length > 0) ? (
+                 {previewItem.exams && previewItem.exams.length > 0 && (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">الاختبارات ({previewItem.exams.length})</h6>
                      <div className="space-y-2">
                        {previewItem.exams.slice(0, 2).map((exam, index) => (
                          <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                            <div className="flex items-center gap-2">
-                             <FaGraduationCap className="text-yellow-600" />
+                             <FaGraduationCap className="text-blue-600" />
                              <span className="text-sm text-gray-700 dark:text-gray-300">{exam.title}</span>
                            </div>
                          </div>
@@ -798,15 +1043,10 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 ) : (previewItem.examsCount > 0 && (
-                   <div className="mb-4">
-                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الاختبارات ({previewItem.examsCount})</h6>
-                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل الاختبارات بعد الشراء.</p>
-                   </div>
-                 ))}
+                 )}
 
                  {/* Trainings Preview */}
-                 {(previewItem.trainings && previewItem.trainings.length > 0) ? (
+                 {previewItem.trainings && previewItem.trainings.length > 0 && (
                    <div className="mb-4">
                      <h6 className="font-medium text-gray-900 dark:text-white mb-2">التدريبات ({previewItem.trainings.length})</h6>
                      <div className="space-y-2">
@@ -825,27 +1065,38 @@ export default function CourseDetail() {
                        )}
                      </div>
                    </div>
-                 ) : (previewItem.trainingsCount > 0 && (
-                   <div className="mb-4">
-                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">التدريبات ({previewItem.trainingsCount})</h6>
-                     <p className="text-sm text-gray-600 dark:text-gray-400">هذا عرض مختصر. سيتم إظهار تفاصيل التدريبات بعد الشراء.</p>
-                   </div>
-                 ))}
-
-                 {/* Empty State */}
-                 {(!previewItem.videos || previewItem.videos.length === 0) &&
-                  (!previewItem.pdfs || previewItem.pdfs.length === 0) &&
-                  (!previewItem.exams || previewItem.exams.length === 0) &&
-                  (!previewItem.trainings || previewItem.trainings.length === 0) &&
-                  (previewItem.videosCount || 0) === 0 &&
-                  (previewItem.pdfsCount || 0) === 0 &&
-                  (previewItem.examsCount || 0) === 0 &&
-                  (previewItem.trainingsCount || 0) === 0 && (
-                   <div className="text-center py-8">
-                     <div className="text-4xl mb-2">📚</div>
-                     <p className="text-gray-500 dark:text-gray-400">سيتم إضافة المحتوى قريباً</p>
-                   </div>
                  )}
+
+                 {/* Show content summary instead of "Content will be added soon" */}
+                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-4">
+                   <h6 className="font-medium text-blue-900 dark:text-blue-100 mb-3">ملخص المحتوى</h6>
+                   <div className="grid grid-cols-2 gap-3 text-sm">
+                     <div className="flex items-center gap-2">
+                       <FaPlay className="text-blue-600" />
+                       <span className="text-blue-700 dark:text-blue-300">
+                         {previewItem.videosCount || 0} فيديو
+                       </span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                       <FaBookOpen className="text-red-600" />
+                       <span className="text-blue-700 dark:text-blue-300">
+                         {previewItem.pdfsCount || 0} ملف PDF
+                       </span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                       <FaClipboardList className="text-blue-600" />
+                       <span className="text-blue-700 dark:text-blue-300">
+                         {previewItem.examsCount || 0} اختبار
+                       </span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                       <FaStar className="text-green-600" />
+                       <span className="text-blue-700 dark:text-blue-300">
+                         {previewItem.trainingsCount || 0} تدريب
+                       </span>
+                     </div>
+                   </div>
+                 </div>
                </div>
                
                                <div className="flex gap-3">
@@ -886,20 +1137,21 @@ export default function CourseDetail() {
            </div>
          )}
 
-         {/* Lesson Content Modal */}
-         {selectedLesson && (
-           <OptimizedLessonContentModal
-             isOpen={showLessonModal}
-             onClose={() => {
-               setShowLessonModal(false);
-               setSelectedLesson(null);
-             }}
-             courseId={selectedLesson.courseId}
-             lessonId={selectedLesson.lessonId}
-             unitId={selectedLesson.unitId}
-             lessonTitle={selectedLesson.title}
-           />
-         )}
+                   {/* Lesson Content Modal */}
+          {selectedLesson && (
+            <OptimizedLessonContentModal
+              isOpen={showLessonModal}
+              onClose={() => {
+                setShowLessonModal(false);
+                setSelectedLesson(null);
+              }}
+              courseId={selectedLesson.courseId}
+              lessonId={selectedLesson.lessonId}
+              unitId={selectedLesson.unitId}
+              lessonTitle={selectedLesson.title}
+              courseAccessState={courseAccessState}
+            />
+          )}
 
          {/* Modern Alerts */}
          <PaymentSuccessAlert

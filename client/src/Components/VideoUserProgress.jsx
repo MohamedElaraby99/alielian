@@ -40,8 +40,8 @@ const VideoUserProgress = ({ videoId, courseId }) => {
 
   const getProgressColor = (progress) => {
     if (progress >= 90) return 'text-green-500';
-    if (progress >= 70) return 'text-yellow-500';
-    if (progress >= 50) return 'text-orange-500';
+    if (progress >= 70) return 'text-blue-500';
+    if (progress >= 50) return 'text-blue-500';
     return 'text-red-500';
   };
 
@@ -225,14 +225,14 @@ const VideoUserProgress = ({ videoId, courseId }) => {
             </div>
             <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Completed</div>
           </div>
-          <div className="text-center bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
-            <div className="text-lg sm:text-2xl font-bold text-yellow-500">
+          <div className="text-center bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+            <div className="text-lg sm:text-2xl font-bold text-blue-500">
               {Math.round(sortedUsers.reduce((sum, u) => sum + (u.progress || 0), 0) / sortedUsers.length)}%
             </div>
             <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Avg Progress</div>
           </div>
-          <div className="text-center bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
-            <div className="text-lg sm:text-2xl font-bold text-purple-500">
+          <div className="text-center bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+            <div className="text-lg sm:text-2xl font-bold text-blue-500">
               {formatTime(Math.round(sortedUsers.reduce((sum, u) => sum + (u.totalWatchTime || 0), 0) / sortedUsers.length))}
             </div>
             <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Avg Watch Time</div>
