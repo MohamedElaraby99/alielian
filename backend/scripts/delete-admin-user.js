@@ -37,7 +37,7 @@ const connectToDb = async () => {
 };
 
 const deleteAdminUser = async () => {
-    console.log("🗑️ LMS Admin User Deletion Tool");
+    console.log("🗑️ api Admin User Deletion Tool");
     console.log("===============================\n");
     
     try {

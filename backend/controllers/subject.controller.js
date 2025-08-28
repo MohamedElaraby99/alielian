@@ -27,7 +27,6 @@ export const getAllSubjects = async (req, res, next) => {
         
         const subjects = await subjectModel.find(query)
             .populate('instructor', 'name specialization')
-            .populate('stage', 'name description')
             .sort({ featured: -1, createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -54,8 +53,7 @@ export const getSubjectById = async (req, res, next) => {
         const { id } = req.params;
         
         const subject = await subjectModel.findById(id)
-            .populate('instructor', 'name specialization bio')
-            .populate('stage', 'name description');
+            .populate('instructor', 'name specialization bio');
         
         if (!subject) {
             return next(new AppError('Subject not found', 404));
@@ -74,62 +72,50 @@ export const getSubjectById = async (req, res, next) => {
 // Create new subject
 export const createSubject = async (req, res, next) => {
     try {
-        const { 
-            title, 
-            description, 
-            instructor, 
-            stage,
-            featured,
-            grade
-        } = req.body;
+        const { title, description, instructor, featured } = req.body;
         
         if (!title || !description || !instructor) {
             return next(new AppError('Title, description and instructor are required', 400));
         }
         
-        if (!req.file) {
-            return next(new AppError('Subject image is required', 400));
+        const subjectData = { title, description, instructor };
+        if (typeof featured !== 'undefined') {
+            subjectData.featured = featured === 'true' || featured === true;
         }
         
-        const subjectData = {
-            title,
-            description,
-            instructor,
-            featured: featured === 'true',
-            grade: grade || null
-        };
-        if (stage) subjectData.stage = stage; // optional
-        
-        // Handle image upload (required)
-        try {
-            const result = await cloudinary.uploader.upload(req.file.path, {
-                folder: 'subjects',
-                width: 300,
-                height: 200,
-                crop: 'fill'
-            });
-            
-            subjectData.image = {
-                public_id: result.public_id,
-                secure_url: result.secure_url
-            };
-            
-            // Remove file from uploads folder
-            fs.rmSync(req.file.path);
-        } catch (error) {
-            console.error('Cloudinary upload error:', error);
-            // If Cloudinary fails, use local file
-            subjectData.image = {
-                public_id: req.file.filename,
-                secure_url: `/uploads/${req.file.filename}`
-            };
+        // Handle image upload (optional)
+        if (req.file) {
+            try {
+                const result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: 'subjects',
+                    width: 300,
+                    height: 200,
+                    crop: 'fill'
+                });
+                
+                subjectData.image = {
+                    public_id: result.public_id,
+                    secure_url: result.secure_url
+                };
+                
+                // Remove file from uploads folder
+                fs.rmSync(req.file.path);
+            } catch (error) {
+                console.error('Cloudinary upload error:', error);
+                // If Cloudinary fails, fall back to local file path
+                if (req.file?.filename) {
+                    subjectData.image = {
+                        public_id: req.file.filename,
+                        secure_url: `/uploads/${req.file.filename}`
+                    };
+                }
+            }
         }
         
         const subject = await subjectModel.create(subjectData);
         
-        // Populate instructor and stage data (stage only if exists)
+        // Populate instructor only
         await subject.populate('instructor', 'name specialization');
-        if (subject.stage) await subject.populate('stage', 'name description');
         
         res.status(201).json({
             success: true,
@@ -145,16 +131,7 @@ export const createSubject = async (req, res, next) => {
 export const updateSubject = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { 
-            title, 
-            description, 
-            category, 
-            instructor, 
-            stage,
-            featured,
-            status,
-            grade
-        } = req.body;
+        const { title, description, instructor, featured } = req.body;
         
         const subject = await subjectModel.findById(id);
         
@@ -163,16 +140,10 @@ export const updateSubject = async (req, res, next) => {
         }
         
         const updateData = {};
-        
         if (title) updateData.title = title;
         if (description) updateData.description = description;
-        if (category) updateData.category = category;
         if (instructor) updateData.instructor = instructor;
-        // stage optional: only set when provided; allow clearing with empty string
-        if (stage !== undefined) updateData.stage = stage || null;
-        if (featured !== undefined) updateData.featured = featured === 'true';
-        if (status) updateData.status = status;
-        if (grade !== undefined) updateData.grade = grade;
+        if (typeof featured !== 'undefined') updateData.featured = featured === 'true' || featured === true;
         
         // Handle image upload
         if (req.file) {
@@ -193,11 +164,12 @@ export const updateSubject = async (req, res, next) => {
                 fs.rmSync(req.file.path);
             } catch (error) {
                 console.error('Cloudinary upload error:', error);
-                // If Cloudinary fails, use local file
-                updateData.image = {
-                    public_id: req.file.filename,
-                    secure_url: `/uploads/${req.file.filename}`
-                };
+                if (req.file?.filename) {
+                    updateData.image = {
+                        public_id: req.file.filename,
+                        secure_url: `/uploads/${req.file.filename}`
+                    };
+                }
             }
         }
         
@@ -254,12 +226,11 @@ export const getFeaturedSubjects = async (req, res, next) => {
         }
         
         console.log('Querying featured subjects...');
-        const featuredSubjects = await subjectModel.find({ 
-            featured: true, 
-            status: 'active' 
-        })
-        .sort({ createdAt: -1 })
-        .limit(6);
+        const featuredSubjects = await subjectModel
+          .find({ featured: true })
+          .populate('instructor', 'name specialization')
+          .sort({ createdAt: -1 })
+          .limit(6);
         
         console.log(`Found ${featuredSubjects.length} featured subjects`);
         

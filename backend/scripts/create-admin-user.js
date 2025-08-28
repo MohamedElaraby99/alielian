@@ -32,7 +32,7 @@ const createAdminUser = async () => {
     const adminUser1 = {
       username: 'adminn',
       fullName: 'System Administrator',
-      email: 'adminn@lms.com',
+      email: 'adminn@api.com',
       password: '1234567', // Will be hashed by the pre-save middleware
       role: 'ADMIN',
       isActive: true
@@ -51,7 +51,7 @@ const createAdminUser = async () => {
 
     
     console.log('✅ Admin user created successfully!');
-    console.log('📧 Email: adminn@lms.com');
+    console.log('📧 Email: adminn@api.com');
     console.log('👤 Username: adminn');
     console.log('🔐 Password: 123456');
     console.log('👑 Role: ADMIN');

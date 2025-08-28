@@ -24,22 +24,31 @@ const userSchema = new Schema({
     },
     email: {
         type: String,
-        required: [true, 'email is required'],
+        required: function() {
+            return ['ADMIN', 'SUPER_ADMIN'].includes(this.role);
+        },
         lowercase: true,
         trim: true,
-        unique: true
+        unique: function() {
+            return this.email; // Only unique if email is provided
+        },
+        sparse: true
     },
     password: {
         type: String,
         required: [true, 'Password is required'],
-        minLength: [4, 'Password must be at least 4 character'],
+        minLength: [6, 'Password must be at least 6 characters'],
         select: false
     },
     phoneNumber: {
         type: String,
         required: function() {
-            return this.role !== 'ADMIN';
+            return this.role === 'USER';
         },
+        unique: function() {
+            return this.role === 'USER';
+        },
+        sparse: true,
         trim: true
     },
     fatherPhoneNumber: {
@@ -50,7 +59,7 @@ const userSchema = new Schema({
     governorate: {
         type: String,
         required: function() {
-            return this.role !== 'ADMIN';
+            return !['ADMIN', 'SUPER_ADMIN'].includes(this.role);
         },
         trim: true
     },
@@ -59,13 +68,13 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Stage',
         required: function() {
-            return this.role !== 'ADMIN';
+            return !['ADMIN', 'SUPER_ADMIN'].includes(this.role);
         }
     },
     age: {
         type: Number,
         required: function() {
-            return this.role !== 'ADMIN';
+            return !['ADMIN', 'SUPER_ADMIN'].includes(this.role);
         },
         min: [5, 'Age must be at least 5'],
         max: [100, 'Age cannot exceed 100']
@@ -81,7 +90,17 @@ const userSchema = new Schema({
     role: {
         type: String,
         default: 'USER',
-        enum: ['USER', 'ADMIN']
+        enum: ['USER', 'ADMIN', 'SUPER_ADMIN']
+    },
+    adminPermissions: {
+        type: [String],
+        default: [],
+        enum: ['CREATE_ADMIN', 'DELETE_ADMIN', 'MANAGE_USERS', 'MANAGE_COURSES', 'MANAGE_PAYMENTS', 'VIEW_ANALYTICS']
+    },
+    code: {
+        type: String,
+        trim: true,
+        default: null
     },
     isActive: {
         type: Boolean,
@@ -110,7 +129,7 @@ const userSchema = new Schema({
         transactions: [{
             type: {
                 type: String,
-                enum: ['recharge', 'purchase', 'refund'],
+                enum: ['recharge', 'purchase', 'refund', 'access_code'],
                 required: true
             },
             amount: {
@@ -152,8 +171,21 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods = {
     generateJWTToken: function () {
+        const payload = {
+            id: this._id,
+            role: this.role
+        };
+        
+        // Include email for ADMIN/SUPER_ADMIN, phone number for USER
+        if (this.role === 'USER') {
+            payload.phoneNumber = this.phoneNumber;
+            if (this.email) payload.email = this.email; // Include email if available
+        } else {
+            payload.email = this.email;
+        }
+        
         return jwt.sign(
-            { id: this._id, email: this.email, role: this.role },
+            payload,
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRE }
         )

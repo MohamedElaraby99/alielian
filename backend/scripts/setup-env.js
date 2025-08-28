@@ -20,7 +20,7 @@ const askQuestion = (question) => {
 };
 
 const setupEnvironment = async () => {
-    console.log("🔧 LMS Environment Setup");
+    console.log("🔧 api Environment Setup");
     console.log("========================\n");
     
     try {
@@ -80,7 +80,7 @@ const setupEnvironment = async () => {
         const port = await askQuestion("\nEnter server port (default: 4001): ") || "4001";
         
         // JWT secret
-        const jwtSecret = await askQuestion("\nEnter JWT secret (default: lms_jwt_secret_2024): ") || "lms_jwt_secret_2024";
+        const jwtSecret = await askQuestion("\nEnter JWT secret (default: api_jwt_secret_2024): ") || "api_jwt_secret_2024";
         
         // Client URL
         const clientUrl = await askQuestion("\nEnter client URL (default: http://localhost:5173): ") || "http://localhost:5173";

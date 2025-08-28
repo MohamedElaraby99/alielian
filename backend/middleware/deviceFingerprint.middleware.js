@@ -5,42 +5,33 @@ import { ApiError } from "../utils/ApiError.js";
  * This helps prevent unauthorized access and ensures proper device tracking
  */
 export const requireDeviceFingerprint = (req, res, next) => {
+    console.log('=== DEVICE FINGERPRINT MIDDLEWARE DEBUG ===');
+    console.log('Request body keys:', Object.keys(req.body));
+    console.log('Request body type:', typeof req.body);
+    console.log('Full request body:', req.body);
+    console.log('Device info from body:', req.body.deviceInfo);
+    console.log('Device info type:', typeof req.body.deviceInfo);
+    console.log('=== END DEBUG ===');
+    
     const { deviceInfo } = req.body;
-
+    
     if (!deviceInfo) {
         return next(new ApiError(
-            400,
+            400, 
             "Device information is required for security purposes. Please enable JavaScript and try again.",
             "DEVICE_INFO_MISSING"
         ));
     }
-
-    // Support both object and stringified JSON (from multipart/form-data via multer)
-    let parsedDeviceInfo = deviceInfo;
-    if (typeof parsedDeviceInfo === 'string') {
-        try {
-            parsedDeviceInfo = JSON.parse(parsedDeviceInfo);
-        } catch (e) {
-            return next(new ApiError(
-                400,
-                "Invalid device information format. Please refresh the page and try again.",
-                "INVALID_DEVICE_INFO"
-            ));
-        }
-    }
-
+    
     // Validate basic device info structure
-    if (!parsedDeviceInfo.platform || !parsedDeviceInfo.screenResolution || !parsedDeviceInfo.timezone) {
+    if (!deviceInfo.platform || !deviceInfo.screenResolution || !deviceInfo.timezone) {
         return next(new ApiError(
-            400,
+            400, 
             "Invalid device information format. Please refresh the page and try again.",
             "INVALID_DEVICE_INFO"
         ));
     }
-
-    // Normalize back into req.body for downstream handlers
-    req.body.deviceInfo = parsedDeviceInfo;
-
+    
     next();
 };
 
@@ -49,19 +40,19 @@ export const requireDeviceFingerprint = (req, res, next) => {
  */
 export const logDeviceFingerprint = (req, res, next) => {
     const { deviceInfo } = req.body;
-
+    
     if (deviceInfo) {
         console.log('=== DEVICE FINGERPRINT LOG ===');
         console.log('Endpoint:', req.originalUrl);
         console.log('Method:', req.method);
         console.log('User Agent:', req.get('User-Agent'));
         console.log('IP Address:', req.ip);
-        console.log('Device Platform:', typeof deviceInfo === 'object' ? deviceInfo.platform : deviceInfo);
-        console.log('Screen Resolution:', typeof deviceInfo === 'object' ? deviceInfo.screenResolution : 'unknown');
-        console.log('Timezone:', typeof deviceInfo === 'object' ? deviceInfo.timezone : 'unknown');
+        console.log('Device Platform:', deviceInfo.platform);
+        console.log('Screen Resolution:', deviceInfo.screenResolution);
+        console.log('Timezone:', deviceInfo.timezone);
         console.log('Timestamp:', new Date().toISOString());
         console.log('================================');
     }
-
+    
     next();
 };

@@ -323,7 +323,7 @@ export default function Navbar() {
                     انضم إلينا الآن
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    ابدأ رحلة التعلم مع منصة  almongezz
+                    ابدأ رحلة التعلم مع منصة  الدولية
                   </p>
                 </div>
                 

@@ -940,7 +940,7 @@ export default function HomePage() {
                           <img src={logo} alt="logo" className="w-12 h-12" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-lg text-gray-900">تطبيق Al Mongez</h3>
+                          <h3 className="font-bold text-lg text-gray-900">تطبيقالمنصة الدولية</h3>
                           <p className="text-sm text-gray-600">منصة التعلم الذكية</p>
                         </div>
                       </div>

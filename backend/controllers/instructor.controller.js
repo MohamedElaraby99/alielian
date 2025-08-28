@@ -66,6 +66,17 @@ const createInstructor = async (req, res, next) => {
       }
     }
 
+    // Parse socialLinks if it's a JSON string
+    let parsedSocialLinks = {};
+    if (socialLinks) {
+      try {
+        parsedSocialLinks = typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks;
+      } catch (error) {
+        console.error('Error parsing socialLinks:', error);
+        parsedSocialLinks = {};
+      }
+    }
+
     const instructor = new Instructor({
       name: name.trim(),
       email: email.toLowerCase().trim(),
@@ -73,7 +84,7 @@ const createInstructor = async (req, res, next) => {
       specialization: specialization?.trim() || '',
       experience: experience || 0,
       education: education?.trim() || '',
-      socialLinks: socialLinks || {},
+      socialLinks: parsedSocialLinks,
       profileImage,
       featured: featured || false
     });

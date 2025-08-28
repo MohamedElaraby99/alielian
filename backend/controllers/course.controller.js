@@ -8,9 +8,9 @@ import jwt from 'jsonwebtoken';
 // Create a new course
 export const createCourse = async (req, res, next) => {
   try {
-    const { title, description, instructor, stage, subject, category } = req.body;
-    if (!title || !instructor || !stage || !subject || !category) {
-      return res.status(400).json({ success: false, message: 'Title, instructor, stage, subject, and category are required' });
+    const { title, description, instructor, stage, subject } = req.body;
+    if (!title || !instructor || !stage || !subject) {
+      return res.status(400).json({ success: false, message: 'Title, instructor, stage, and subject are required' });
     }
 
     // Prepare course data
@@ -20,7 +20,6 @@ export const createCourse = async (req, res, next) => {
       instructor,
             stage,
       subject,
-      category,
       units: [],
       directLessons: []
     };
@@ -110,8 +109,7 @@ export const getAdminCourses = async (req, res, next) => {
     const courses = await Course.find(query)
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'title')
-      .populate('category', 'name');
+      .populate('subject', 'title');
 
     return res.status(200).json({ success: true, data: { courses } });
   } catch (error) {
@@ -136,17 +134,8 @@ export const getAllCourses = async (req, res, next) => {
       query.stage = req.user.stage;
       console.log('🎯 Filtering courses by user stage:', req.user.stage, '(' + req.user.stageName + ')');
       
-      // Also filter by the stage's category
-      try {
-        const Stage = (await import('../models/stage.model.js')).default;
-        const userStage = await Stage.findById(req.user.stage).populate('category');
-        if (userStage && userStage.category) {
-          query.category = userStage.category._id;
-          console.log('🎯 Also filtering courses by user stage category:', userStage.category.name);
-        }
-      } catch (error) {
-        console.log('⚠️ Could not fetch user stage category for filtering:', error.message);
-      }
+      // Stage filtering only (category field removed)
+      console.log('🎯 Filtering courses by user stage only');
     } else {
       console.log('⚠️ No stage filtering applied - showing all courses');
       if (req.user && !req.user.stage) {
@@ -158,20 +147,17 @@ export const getAllCourses = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
-      .populate('category', 'name')
       .select('-units.lessons.exams.questions.correctAnswer -units.lessons.trainings.questions.correctAnswer -directLessons.exams.questions.correctAnswer -directLessons.trainings.questions.correctAnswer -units.lessons.exams.userAttempts -units.lessons.trainings.userAttempts -directLessons.exams.userAttempts -directLessons.trainings.userAttempts');
 
     console.log('📊 Raw courses before processing:', courses.map(c => ({
       id: c._id,
       title: c.title,
       stage: c.stage?.name,
-      category: c.category?.name,
-      stageId: c.stage?._id,
-      categoryId: c.category?._id
+      stageId: c.stage?._id
     })));
     
     console.log('🎯 Final query used for filtering:', JSON.stringify(query, null, 2));
-    console.log(`📚 Found ${courses.length} courses matching user's stage + category criteria`);
+    console.log(`📚 Found ${courses.length} courses matching user's stage criteria`);
 
     // Check if any courses have invalid stage references
     const coursesWithMissingStages = courses.filter(c => !c.stage || !c.stage.name);
@@ -294,17 +280,8 @@ export const getFeaturedCourses = async (req, res, next) => {
           query.stage = user.stage._id;
           console.log('🎯 Filtering featured courses by user stage:', user.stage.name);
           
-          // Also filter by the stage's category
-          try {
-            const Stage = (await import('../models/stage.model.js')).default;
-            const userStage = await Stage.findById(user.stage._id).populate('category');
-            if (userStage && userStage.category) {
-              query.category = userStage.category._id;
-              console.log('🎯 Also filtering featured courses by user stage category:', userStage.category.name);
-            }
-          } catch (error) {
-            console.log('⚠️ Could not fetch user stage category for filtering:', error.message);
-          }
+          // Stage filtering only (category field removed)
+          console.log('🎯 Filtering featured courses by user stage only');
         }
       } catch (error) {
         console.log('Optional auth failed for featured courses, showing all');
@@ -316,7 +293,6 @@ export const getFeaturedCourses = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
-      .populate('category', 'name')
       .limit(6);
       
     console.log('🎯 Featured courses query used for filtering:', JSON.stringify(query, null, 2));
@@ -325,7 +301,7 @@ export const getFeaturedCourses = async (req, res, next) => {
       id: c._id,
       title: c.title,
       stage: c.stage?.name,
-      category: c.category?.name
+
     })));
 
     // Create secure versions without sensitive data
@@ -387,8 +363,7 @@ export const getCourseById = async (req, res, next) => {
     const course = await Course.findById(id)
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'title')
-      .populate('category', 'name');
+      .populate('subject', 'title');
         
     if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
@@ -399,9 +374,43 @@ export const getCourseById = async (req, res, next) => {
     
     // Clean up units and lessons
     if (courseObj.units) {
-      courseObj.units = courseObj.units.map(unit => ({
-        ...unit,
-        lessons: unit.lessons?.map(lesson => ({
+      console.log('🔍 Processing units:', courseObj.units.length);
+      courseObj.units = courseObj.units.map(unit => {
+        console.log(`📚 Unit "${unit.title}":`, {
+          lessonsCount: unit.lessons?.length || 0
+        });
+        return {
+          ...unit,
+          lessons: unit.lessons?.map(lesson => {
+            const lessonData = {
+              _id: lesson._id,
+              title: lesson.title,
+              description: lesson.description,
+              price: lesson.price,
+              content: lesson.content,
+              videosCount: lesson.videos?.length || 0,
+              pdfsCount: lesson.pdfs?.length || 0,
+              examsCount: lesson.exams?.length || 0,
+              trainingsCount: lesson.trainings?.length || 0
+              // Exclude actual videos, pdfs, exams, trainings for security
+            };
+            console.log(`  📚 Lesson "${lesson.title}":`, {
+              videos: lesson.videos?.length || 0,
+              pdfs: lesson.pdfs?.length || 0,
+              exams: lesson.exams?.length || 0,
+              trainings: lesson.trainings?.length || 0
+            });
+            return lessonData;
+          }) || []
+        };
+      });
+    }
+    
+    // Clean up direct lessons
+    if (courseObj.directLessons) {
+      console.log('🔍 Processing direct lessons:', courseObj.directLessons.length);
+      courseObj.directLessons = courseObj.directLessons.map(lesson => {
+        const lessonData = {
           _id: lesson._id,
           title: lesson.title,
           description: lesson.description,
@@ -412,24 +421,15 @@ export const getCourseById = async (req, res, next) => {
           examsCount: lesson.exams?.length || 0,
           trainingsCount: lesson.trainings?.length || 0
           // Exclude actual videos, pdfs, exams, trainings for security
-        })) || []
-      }));
-    }
-    
-    // Clean up direct lessons
-    if (courseObj.directLessons) {
-      courseObj.directLessons = courseObj.directLessons.map(lesson => ({
-        _id: lesson._id,
-        title: lesson.title,
-        description: lesson.description,
-        price: lesson.price,
-        content: lesson.content,
-        videosCount: lesson.videos?.length || 0,
-        pdfsCount: lesson.pdfs?.length || 0,
-        examsCount: lesson.exams?.length || 0,
-        trainingsCount: lesson.trainings?.length || 0
-        // Exclude actual videos, pdfs, exams, trainings for security
-      }));
+        };
+        console.log(`📚 Lesson "${lesson.title}":`, {
+          videos: lesson.videos?.length || 0,
+          pdfs: lesson.pdfs?.length || 0,
+          exams: lesson.exams?.length || 0,
+          trainings: lesson.trainings?.length || 0
+        });
+        return lessonData;
+      });
     }
 
     return res.status(200).json({ success: true, data: { course: courseObj } });
@@ -469,6 +469,19 @@ export const getLessonById = async (req, res, next) => {
         attempt.userId.toString() === userId.toString()
       ) : null;
 
+      // Check exam availability based on dates
+      const now = new Date();
+      let examStatus = 'available';
+      let statusMessage = '';
+      
+      if (exam.openDate && now < new Date(exam.openDate)) {
+        examStatus = 'not_open';
+        statusMessage = `الامتحان غير متاح بعد`;
+      } else if (exam.closeDate && now > new Date(exam.closeDate)) {
+        examStatus = 'closed';
+        statusMessage = `الامتحان مغلق`;
+      }
+
       return {
         _id: exam._id,
         title: exam.title,
@@ -476,6 +489,8 @@ export const getLessonById = async (req, res, next) => {
         timeLimit: exam.timeLimit,
         openDate: exam.openDate,
         closeDate: exam.closeDate,
+        examStatus,
+        statusMessage,
         questionsCount: exam.questions.length,
         questions: exam.questions.map(q => ({
           _id: q._id,
@@ -500,12 +515,24 @@ export const getLessonById = async (req, res, next) => {
         attempt.userId.toString() === userId.toString()
       ) : [];
 
+      // Check training availability based on dates
+      const now = new Date();
+      let trainingStatus = 'available';
+      let statusMessage = '';
+      
+      if (training.openDate && now < new Date(training.openDate)) {
+        trainingStatus = 'not_open';
+        statusMessage = `Training opens on ${new Date(training.openDate).toLocaleDateString()}`;
+      }
+
       return {
         _id: training._id,
         title: training.title,
         description: training.description,
         timeLimit: training.timeLimit,
         openDate: training.openDate,
+        trainingStatus,
+        statusMessage,
         questionsCount: training.questions.length,
         questions: training.questions.map(q => ({
           _id: q._id,
@@ -526,23 +553,66 @@ export const getLessonById = async (req, res, next) => {
     });
 
     // Optimized lesson response with only necessary data
+    const now = new Date();
+    console.log('🔍 Current time for filtering:', now.toISOString());
+    console.log('🔍 Current time local:', now.toString());
+    console.log('🔍 Current timezone offset:', now.getTimezoneOffset());
+    
+    const filteredVideos = lesson.videos.filter(video => {
+      if (!video.publishDate) {
+        console.log(`✅ Video ${video.title || video._id}: No publishDate - showing`);
+        return true;
+      }
+      const publishDate = new Date(video.publishDate);
+      // Normalize both dates to UTC for comparison
+      const nowUTC = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
+      const publishDateUTC = new Date(publishDate.getTime() - (publishDate.getTimezoneOffset() * 60000));
+      const shouldShow = nowUTC >= publishDateUTC;
+      console.log(`🔍 Video ${video.title || video._id}: publishDate=${publishDate.toISOString()}, publishDate local=${publishDate.toString()}, shouldShow=${shouldShow}`);
+      console.log(`🔍 Video timezone comparison: nowUTC=${nowUTC.toISOString()}, publishDateUTC=${publishDateUTC.toISOString()}`);
+      return shouldShow;
+    });
+    
+    const filteredPdfs = lesson.pdfs.filter(pdf => {
+      if (!pdf.publishDate) {
+        console.log(`✅ PDF ${pdf.title || pdf._id}: No publishDate - showing`);
+        return true;
+      }
+      const publishDate = new Date(pdf.publishDate);
+      // Normalize both dates to UTC for comparison
+      const nowUTC = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
+      const publishDateUTC = new Date(publishDate.getTime() - (publishDate.getTimezoneOffset() * 60000));
+      const shouldShow = nowUTC >= publishDateUTC;
+      console.log(`🔍 PDF ${pdf.title || pdf._id}: publishDate=${publishDate.toISOString()}, publishDate local=${publishDate.toString()}, shouldShow=${shouldShow}`);
+      console.log(`🔍 PDF timezone comparison: nowUTC=${nowUTC.toISOString()}, publishDateUTC=${publishDateUTC.toISOString()}`);
+      return shouldShow;
+    });
+    
+    console.log(`📊 Filtering results: ${lesson.videos.length} total videos -> ${filteredVideos.length} visible, ${lesson.pdfs.length} total PDFs -> ${filteredPdfs.length} visible`);
+    console.log(`📊 Raw lesson data:`, {
+      videos: lesson.videos.map(v => ({ id: v._id, title: v.title, publishDate: v.publishDate })),
+      pdfs: lesson.pdfs.map(p => ({ id: p._id, title: p.title, publishDate: p.publishDate }))
+    });
+    
     const optimizedLesson = {
       _id: lesson._id,
       title: lesson.title,
       description: lesson.description,
       price: lesson.price,
       content: lesson.content,
-      videos: lesson.videos.map(video => ({
+      videos: filteredVideos.map(video => ({
         _id: video._id,
         url: video.url,
         title: video.title,
-        description: video.description
+        description: video.description,
+        publishDate: video.publishDate
       })),
-      pdfs: lesson.pdfs.map(pdf => ({
+      pdfs: filteredPdfs.map(pdf => ({
         _id: pdf._id,
         url: pdf.url,
         title: pdf.title,
-        fileName: pdf.fileName
+        fileName: pdf.fileName,
+        publishDate: pdf.publishDate
       })),
       exams: processedExams,
       trainings: processedTrainings
@@ -567,9 +637,9 @@ export const getLessonById = async (req, res, next) => {
 export const updateCourse = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, description, instructor, stage, subject, category } = req.body;
+            const { title, description, instructor, stage, subject } = req.body;
 
-    console.log('🔄 Updating course:', { id, title, description, instructor, stage, subject, category });
+          console.log('🔄 Updating course:', { id, title, description, instructor, stage, subject });
     console.log('📁 File uploaded:', req.file ? 'Yes' : 'No');
 
     // Find the existing course
@@ -585,7 +655,7 @@ export const updateCourse = async (req, res, next) => {
     });
 
     // Prepare update data
-    const updateData = { title, description, instructor, stage, subject, category };
+            const updateData = { title, description, instructor, stage, subject };
 
     // Handle image upload if provided
     if (req.file) {
@@ -656,7 +726,7 @@ export const updateCourse = async (req, res, next) => {
     if (updateData.instructor) existingCourse.instructor = updateData.instructor;
     if (updateData.stage) existingCourse.stage = updateData.stage;
     if (updateData.subject) existingCourse.subject = updateData.subject;
-    if (updateData.category) existingCourse.category = updateData.category;
+    
     
     // Save the updated course
     await existingCourse.save();
@@ -666,8 +736,8 @@ export const updateCourse = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
-      .populate('category', 'name')
-      .select('title description instructor stage subject category image createdAt updatedAt');
+
+      .select('title description instructor stage subject image createdAt updatedAt');
     
     console.log('✅ Course updated successfully');
     console.log('📊 Final course data:', JSON.stringify(course, null, 2));

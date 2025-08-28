@@ -4,7 +4,7 @@ import AppError from "../utils/error.utils.js";
 // Get all users with pagination and filters
 const getAllUsers = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, status, search, stage } = req.query;
+        const { page = 1, limit = 20, role, status, search, stage, codeSearch } = req.query;
         const skip = (page - 1) * limit;
 
         let query = {};
@@ -24,12 +24,18 @@ const getAllUsers = async (req, res, next) => {
             query.stage = stage;
         }
 
-        // Search by name or email
+        // Search by name, email, or phone number
         if (search) {
             query.$or = [
                 { fullName: { $regex: search, $options: 'i' } },
-                { email: { $regex: search, $options: 'i' } }
+                { email: { $regex: search, $options: 'i' } },
+                { phoneNumber: { $regex: search, $options: 'i' } }
             ];
+        }
+
+        // Search by code
+        if (codeSearch) {
+            query.code = { $regex: codeSearch, $options: 'i' };
         }
 
         console.log('Query:', query);
@@ -39,11 +45,7 @@ const getAllUsers = async (req, res, next) => {
             .select('-password -forgotPasswordToken -forgotPasswordExpiry')
             .populate({
                 path: 'stage',
-                select: 'name',
-                populate: {
-                    path: 'category',
-                    select: 'name'
-                }
+                select: 'name'
             })
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -63,6 +65,7 @@ const getAllUsers = async (req, res, next) => {
                     activeUsers: { $sum: { $cond: ['$isActive', 1, 0] } },
                     inactiveUsers: { $sum: { $cond: ['$isActive', 0, 1] } },
                     adminUsers: { $sum: { $cond: [{ $eq: ['$role', 'ADMIN'] }, 1, 0] } },
+                    superAdminUsers: { $sum: { $cond: [{ $eq: ['$role', 'SUPER_ADMIN'] }, 1, 0] } },
                     regularUsers: { $sum: { $cond: [{ $eq: ['$role', 'USER'] }, 1, 0] } }
                 }
             }
@@ -75,15 +78,16 @@ const getAllUsers = async (req, res, next) => {
                 users: users.map(user => ({
                     id: user._id,
                     fullName: user.fullName,
+                    username: user.username,
                     email: user.email,
                     phoneNumber: user.phoneNumber,
                     role: user.role,
+                    adminPermissions: user.adminPermissions || [],
                     isActive: user.isActive !== false, // Default to true if not set
                     governorate: user.governorate,
-                    grade: user.grade,
                     stage: user.stage,
-                    category: user.stage?.category,
                     age: user.age,
+                    code: user.code,
                     walletBalance: user.wallet?.balance || 0,
                     totalTransactions: user.wallet?.transactions?.length || 0,
                     subscriptionStatus: user.subscription?.status || 'inactive',
@@ -101,6 +105,7 @@ const getAllUsers = async (req, res, next) => {
                     activeUsers: 0,
                     inactiveUsers: 0,
                     adminUsers: 0,
+                    superAdminUsers: 0,
                     regularUsers: 0
                 }
             }
@@ -127,8 +132,8 @@ const createUser = async (req, res, next) => {
         } = req.body;
 
         // Validate required fields
-        if (!fullName || !username || !email || !password || !role) {
-            return next(new AppError("Full name, username, email, password, and role are required", 400));
+        if (!fullName || !username || !password || !role) {
+            return next(new AppError("Full name, username, password, and role are required", 400));
         }
 
         // Validate role
@@ -136,24 +141,59 @@ const createUser = async (req, res, next) => {
             return next(new AppError("Role must be either USER or ADMIN", 400));
         }
 
-        // For USER role, require additional fields (fatherPhoneNumber optional)
-        if (role === 'USER') {
-            if (!phoneNumber || !governorate || !stage || !age) {
-                return next(new AppError("Phone number, governorate, stage, and age are required for regular users", 400));
+        // Check if current admin can create admin users
+        if (role === 'ADMIN') {
+            const currentUser = await userModel.findById(req.user.id);
+            if (!currentUser) {
+                return next(new AppError("Current user not found", 404));
+            }
+            
+            // Only SUPER_ADMIN can create ADMIN users
+            if (currentUser.role !== 'SUPER_ADMIN') {
+                return next(new AppError("You don't have permission to create admin users. Only super admins can create admin accounts.", 403));
             }
         }
 
-        // Check if user already exists
-        const existingUser = await userModel.findOne({ 
-            $or: [{ email }, { username }] 
-        });
-
-        if (existingUser) {
-            if (existingUser.email === email) {
-                return next(new AppError("Email already exists", 400));
+        // Role-specific field validation
+        if (role === 'USER') {
+            // For USER role: phone number is required, email is optional
+            if (!phoneNumber || !governorate || !stage || !age) {
+                return next(new AppError("Phone number, governorate, stage, and age are required for regular users", 400));
             }
-            if (existingUser.username === username) {
-                return next(new AppError("Username already exists", 400));
+        } else if (role === 'ADMIN') {
+            // For ADMIN role: email is required
+            if (!email) {
+                return next(new AppError("Email is required for admin users", 400));
+            }
+        }
+
+        // Check if user already exists based on role
+        let existingUser;
+        if (role === 'USER') {
+            // For USER role: check phone number and username
+            existingUser = await userModel.findOne({ 
+                $or: [{ phoneNumber }, { username }] 
+            });
+            if (existingUser) {
+                if (existingUser.phoneNumber === phoneNumber) {
+                    return next(new AppError("Phone number already exists", 400));
+                }
+                if (existingUser.username === username) {
+                    return next(new AppError("Username already exists", 400));
+                }
+            }
+        } else {
+            // For ADMIN role: check email and username
+            existingUser = await userModel.findOne({ 
+                $or: [{ email }, { username }] 
+            });
+            if (existingUser) {
+                if (existingUser.email === email) {
+                    return next(new AppError("Email already exists", 400));
+                }
+                if (existingUser.username === username) {
+                    return next(new AppError("Username already exists", 400));
+                }
             }
         }
 
@@ -161,23 +201,25 @@ const createUser = async (req, res, next) => {
         const userData = {
             fullName,
             username: username.toLowerCase(),
-            email: email.toLowerCase(),
             password,
             role,
             isActive: true,
             avatar: {
-                public_id: email,
+                public_id: role === 'USER' ? phoneNumber : email,
                 secure_url: "",
             }
         };
 
-        // Add optional fields for USER role
+        // Add role-specific fields
         if (role === 'USER') {
             userData.phoneNumber = phoneNumber;
+            if (email) userData.email = email; // Optional email for USER
             if (fatherPhoneNumber) userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
             userData.stage = stage;
             userData.age = parseInt(age);
+        } else if (role === 'ADMIN') {
+            userData.email = email;
         }
 
         // Create user
@@ -222,7 +264,8 @@ const getUserDetails = async (req, res, next) => {
         const { userId } = req.params;
 
         const user = await userModel.findById(userId)
-            .select('-password -forgotPasswordToken -forgotPasswordExpiry');
+            .select('-password -forgotPasswordToken -forgotPasswordExpiry')
+            .populate('stage', 'name');
 
         if (!user) {
             return next(new AppError("User not found", 404));
@@ -244,13 +287,15 @@ const getUserDetails = async (req, res, next) => {
                 user: {
                     id: user._id,
                     fullName: user.fullName,
+                    username: user.username,
                     email: user.email,
                     phoneNumber: user.phoneNumber,
                     fatherPhoneNumber: user.fatherPhoneNumber,
                     governorate: user.governorate,
-                    grade: user.grade,
+                    stage: user.stage,
                     age: user.age,
                     role: user.role,
+                    code: user.code,
                     isActive: user.isActive !== false,
                     avatar: user.avatar,
                     subscription: user.subscription,
@@ -313,8 +358,18 @@ const deleteUser = async (req, res, next) => {
             return next(new AppError("You cannot delete your own account", 400));
         }
 
-        // Allow deleting admin accounts (but not self)
-        // Note: Admin can delete other admins, but cannot delete themselves
+        // Check if current admin can delete admin users
+        if (user.role === 'ADMIN') {
+            const currentUser = await userModel.findById(req.user.id);
+            if (!currentUser) {
+                return next(new AppError("Current user not found", 404));
+            }
+            
+            // Only SUPER_ADMIN can delete ADMIN users
+            if (currentUser.role !== 'SUPER_ADMIN') {
+                return next(new AppError("You don't have permission to delete admin users. Only super admins can do this.", 403));
+            }
+        }
 
         await userModel.findByIdAndDelete(userId);
 
@@ -345,6 +400,19 @@ const updateUserRole = async (req, res, next) => {
         // Prevent admin from changing their own role
         if (user._id.toString() === req.user.id) {
             return next(new AppError("You cannot change your own role", 400));
+        }
+
+        // Check if current admin can change roles to ADMIN
+        if (role === 'ADMIN') {
+            const currentUser = await userModel.findById(req.user.id);
+            if (!currentUser) {
+                return next(new AppError("Current user not found", 404));
+            }
+            
+            // Only SUPER_ADMIN can change roles to ADMIN
+            if (currentUser.role !== 'SUPER_ADMIN') {
+                return next(new AppError("You don't have permission to change user roles to ADMIN. Only super admins can do this.", 403));
+            }
         }
 
         user.role = role;
@@ -466,7 +534,18 @@ const updateUser = async (req, res, next) => {
             }
         });
 
+        // Ensure required fields are not empty
+        if (!user.fullName || user.fullName.trim() === '') {
+            return next(new AppError("Full name is required", 400));
+        }
+        if (!user.username || user.username.trim() === '') {
+            return next(new AppError("Username is required", 400));
+        }
+
         await user.save();
+
+        // Populate stage information before sending response
+        await user.populate('stage', 'name');
 
         res.status(200).json({
             success: true,
@@ -484,6 +563,7 @@ const updateUser = async (req, res, next) => {
                     stage: user.stage,
                     age: user.age,
                     role: user.role,
+                    code: user.code,
                     isActive: user.isActive !== false,
                     createdAt: user.createdAt
                 }
@@ -498,10 +578,18 @@ const updateUser = async (req, res, next) => {
 const updateUserPassword = async (req, res, next) => {
     try {
         const { userId } = req.params;
-        const { newPassword } = req.body;
+        const { password } = req.body;
 
-        if (!newPassword || newPassword.length < 6) {
+        if (!password) {
+            return next(new AppError("Password is required", 400));
+        }
+        
+        if (password.length < 6) {
             return next(new AppError("Password must be at least 6 characters long", 400));
+        }
+        
+        if (password.trim() === '') {
+            return next(new AppError("Password cannot be empty or contain only whitespace", 400));
         }
 
         const user = await userModel.findById(userId);
@@ -510,8 +598,10 @@ const updateUserPassword = async (req, res, next) => {
         }
 
         // Hash the new password
-        user.password = newPassword;
+        user.password = password;
         await user.save();
+        
+        console.log(`Password updated successfully for user: ${user.email} (ID: ${user._id})`);
 
         res.status(200).json({
             success: true,

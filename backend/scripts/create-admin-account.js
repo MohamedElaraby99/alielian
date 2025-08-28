@@ -56,7 +56,7 @@ const generateRandomPassword = (length = 12) => {
 };
 
 const createAdminAccount = async () => {
-    console.log("🚀 LMS Admin Account Creator");
+    console.log("🚀 api Admin Account Creator");
     console.log("=============================\n");
     
     // Prefer CLI overrides first
@@ -69,7 +69,7 @@ const createAdminAccount = async () => {
                     process.env.MONGO_URI_COMMUNITY || 
                     process.env.MONGO_URI || 
                     process.env.MONGODB_URI ||
-                    'mongodb://localhost:27017/alielian';
+                    'mongodb://localhost:27017/alielian
         
         const dbType = process.env.DB_TYPE || 'atlas';
         console.log(`📊 Database Type: ${dbType.toUpperCase()}`);
@@ -134,7 +134,7 @@ const createQuickAdmin = async ({ clientUrl }) => {
     console.log("==================\n");
     
     const username = findArg('username') || 'admin';
-    const email = findArg('email') || 'admin@lms.com';
+    const email = findArg('email') || 'admin@api.com';
     const passwordArg = findArg('password');
 
     const adminData = {

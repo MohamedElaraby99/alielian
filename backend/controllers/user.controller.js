@@ -22,7 +22,18 @@ const cookieOptions = {
 // Register  
 const register = async (req, res, next) => {
     try {
-        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, stage, age, adminCode } = req.body;
+        // Handle FormData requests where data comes as JSON string
+        let requestBody = req.body;
+        if (req.body.data && typeof req.body.data === 'string') {
+            try {
+                requestBody = JSON.parse(req.body.data);
+            } catch (e) {
+                console.log('Failed to parse FormData JSON:', e.message);
+                return next(new AppError("Invalid request format", 400));
+            }
+        }
+
+        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, stage, age, adminCode, deviceInfo } = requestBody;
 
         // Determine user role based on admin code
         let userRole = 'USER';
@@ -31,27 +42,53 @@ const register = async (req, res, next) => {
         }
 
         // Check required fields based on role
-        if (!fullName || !username || !email || !password) {
-            return next(new AppError("Name, username, email, and password are required", 400));
+        if (!fullName || !username || !password) {
+            return next(new AppError("Name, username, and password are required", 400));
         }
 
-        // For regular users, check all required fields (fatherPhoneNumber is now optional)
+        // Role-specific field validation
         if (userRole === 'USER') {
-            if (!phoneNumber || !governorate || !stage || !age) {
-                return next(new AppError("Phone number, governorate, stage, and age are required for regular users", 400));
+            // For USER role: phone number is required, email is optional
+            if (!phoneNumber) {
+                return next(new AppError("Phone number is required for regular users", 400));
+            }
+            if (!governorate || !stage || !age) {
+                return next(new AppError("Governorate, stage, and age are required for regular users", 400));
+            }
+        } else if (userRole === 'ADMIN') {
+            // For ADMIN role: email is required
+            if (!email) {
+                return next(new AppError("Email is required for admin users", 400));
             }
         }
 
-        // Check if the user already exists
-        const userExist = await userModel.findOne({ 
-            $or: [{ email }, { username }] 
-        });
-        if (userExist) {
-            if (userExist.email === email) {
-                return next(new AppError("Email already exists, please login", 400));
+        // Check if the user already exists based on role
+        let userExist;
+        if (userRole === 'USER') {
+            // For USER role: check phone number and username
+            userExist = await userModel.findOne({ 
+                $or: [{ phoneNumber }, { username }] 
+            });
+            if (userExist) {
+                if (userExist.phoneNumber === phoneNumber) {
+                    return next(new AppError("Phone number already exists, please login", 400));
+                }
+                if (userExist.username === username) {
+                    return next(new AppError("Username already exists, please choose another", 400));
+                }
             }
-            if (userExist.username === username) {
-                return next(new AppError("Username already exists, please choose another", 400));
+        } else {
+            // For ADMIN role: check email and username
+            userExist = await userModel.findOne({ 
+                $or: [{ email }, { username }] 
+            });
+            if (userExist) {
+                if (userExist.email === email) {
+                    return next(new AppError("Email already exists, please login", 400));
+                }
+                if (userExist.username === username) {
+                    return next(new AppError("Username already exists, please choose another", 400));
+                }
             }
         }
 
@@ -59,22 +96,24 @@ const register = async (req, res, next) => {
         const userData = {
             fullName,
             username,
-            email,
             password,
             role: userRole,
             avatar: {
-                public_id: email,
+                public_id: userRole === 'USER' ? phoneNumber : email,
                 secure_url: "",
             },
         };
 
-        // Add optional fields for regular users
+        // Add role-specific fields
         if (userRole === 'USER') {
             userData.phoneNumber = phoneNumber;
+            if (email) userData.email = email; // Optional email for USER
             if (fatherPhoneNumber) userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
             userData.stage = stage;
             userData.age = parseInt(age);
+        } else if (userRole === 'ADMIN') {
+            userData.email = email;
         }
 
         // Save user in the database and log the user in
@@ -127,68 +166,52 @@ const register = async (req, res, next) => {
 
         // Register device automatically after successful registration
         try {
-            const { deviceInfo } = req.body;
-            
-            console.log('=== DEVICE REGISTRATION DEBUG ===');
-            console.log('Raw deviceInfo from request:', deviceInfo);
-            console.log('Type of deviceInfo:', typeof deviceInfo);
-            
             if (deviceInfo) {
-                let parsedDeviceInfo = {};
-                try {
-                    // Handle both string and object formats
-                    if (typeof deviceInfo === 'string') {
+                let parsedDeviceInfo = deviceInfo;
+                
+                // If deviceInfo is a string, try to parse it as JSON
+                if (typeof deviceInfo === 'string') {
+                    try {
                         parsedDeviceInfo = JSON.parse(deviceInfo);
-                        console.log('Successfully parsed deviceInfo JSON');
-                    } else if (typeof deviceInfo === 'object') {
-                        parsedDeviceInfo = deviceInfo;
-                        console.log('DeviceInfo is already an object');
-                    } else {
-                        console.log('DeviceInfo is neither string nor object, skipping device registration');
-                        throw new Error('Invalid device info format');
+                    } catch (e) {
+                        console.log('Failed to parse deviceInfo JSON:', e.message);
+                        return next(new AppError("Invalid device information format", 400));
                     }
-                    
-                    console.log('Parsed deviceInfo:', parsedDeviceInfo);
-                    
-                    const deviceFingerprint = generateDeviceFingerprint(req, parsedDeviceInfo);
-                    const userAgent = req.get('User-Agent') || '';
-                    const baseInfo = parseDeviceInfo(userAgent);
-                    const finalDeviceInfo = {
-                        userAgent,
-                        platform: parsedDeviceInfo.platform || baseInfo.platform,
-                        browser: baseInfo.browser,
-                        os: baseInfo.os,
-                        ip: req.ip || req.connection?.remoteAddress || '',
-                        screenResolution: parsedDeviceInfo.screenResolution || '',
-                        timezone: parsedDeviceInfo.timezone || ''
-                    };
-                    const deviceName = generateDeviceName(finalDeviceInfo);
-                    
-                    console.log('Final device info:', finalDeviceInfo);
-                    console.log('Device fingerprint:', deviceFingerprint);
-                    console.log('Device name:', deviceName);
-                    
-                    // Create the first device for the user
-                    await UserDevice.create({
-                        user: user._id,
-                        deviceFingerprint,
-                        deviceName,
-                        deviceInfo: finalDeviceInfo,
-                        isActive: true,
-                        firstLogin: new Date(),
-                        lastActivity: new Date(),
-                        loginCount: 1
-                    });
-                    
-                    console.log('Device registered successfully for new user:', user._id);
-                } catch (parseError) {
-                    console.error('Failed to parse deviceInfo:', parseError.message);
-                    console.log('DeviceInfo value:', deviceInfo);
-                    // Continue without device registration
-                    console.log('Continuing registration without device tracking');
                 }
-            } else {
-                console.log('No deviceInfo provided, skipping device registration');
+                
+                // Validate required device info fields
+                if (!parsedDeviceInfo.platform || !parsedDeviceInfo.screenResolution || !parsedDeviceInfo.timezone) {
+                    return next(new AppError("Invalid device information format. Please refresh the page and try again.", 400));
+                }
+                
+                const deviceFingerprint = generateDeviceFingerprint(req, parsedDeviceInfo);
+                const deviceName = generateDeviceName(parsedDeviceInfo, req);
+                const finalDeviceInfo = parseDeviceInfo(req.get('User-Agent'));
+                
+                // Ensure all required fields are present
+                const completeDeviceInfo = {
+                    userAgent: req.get('User-Agent') || '',
+                    platform: parsedDeviceInfo?.platform || finalDeviceInfo.platform || 'Unknown',
+                    browser: parsedDeviceInfo?.additionalInfo?.browser || finalDeviceInfo.browser || 'Unknown',
+                    os: parsedDeviceInfo?.additionalInfo?.os || finalDeviceInfo.os || 'Unknown',
+                    ip: req.ip || req.connection.remoteAddress || '',
+                    screenResolution: parsedDeviceInfo?.screenResolution || '',
+                    timezone: parsedDeviceInfo?.timezone || ''
+                };
+                
+                // Create the first device for the user
+                await UserDevice.create({
+                    user: user._id,
+                    deviceFingerprint,
+                    deviceName,
+                    deviceInfo: completeDeviceInfo,
+                    isActive: true,
+                    firstLogin: new Date(),
+                    lastActivity: new Date(),
+                    loginCount: 1
+                });
+                
+                console.log('Device registered automatically for new user:', user._id);
             }
         } catch (deviceError) {
             console.error('Device registration error during signup:', deviceError);
@@ -197,6 +220,11 @@ const register = async (req, res, next) => {
         }
 
         const token = await user.generateJWTToken();
+
+        // Populate stage for regular users
+        if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && user.stage) {
+            await user.populate('stage', 'name');
+        }
 
         res.cookie("token", token, cookieOptions);
 
@@ -215,21 +243,36 @@ const register = async (req, res, next) => {
 // login
 const login = async (req, res, next) => {
     try {
-        const { email, password, deviceInfo } = req.body;
+        const { email, phoneNumber, password, deviceInfo } = req.body;
 
-        // check if user miss any field
-        if (!email || !password) {
-            return next(new AppError('All fields are required', 400))
+        // check if user provided either email or phone number and password
+        if ((!email && !phoneNumber) || !password) {
+            return next(new AppError('Please provide either email or phone number and password', 400))
         }
 
-        const user = await userModel.findOne({ email }).select('+password');
+        // Find user by email or phone number
+        let user;
+        if (email) {
+            user = await userModel.findOne({ email }).select('+password');
+        } else if (phoneNumber) {
+            user = await userModel.findOne({ phoneNumber }).select('+password');
+        }
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            return next(new AppError('Email or Password does not match', 400))
+            return next(new AppError('Invalid credentials', 400))
         }
 
+        console.log('=== LOGIN ATTEMPT ===');
+        console.log('User identifier:', email || phoneNumber);
+        console.log('User role:', user.role);
+        console.log('Device info provided:', !!deviceInfo);
+
         // Skip device check for admin users
-        if (user.role !== 'ADMIN') {
+        if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+            console.log('=== DEVICE REGISTRATION FOR NON-ADMIN USER ===');
+            console.log('User role:', user.role);
+            console.log('Device info received:', deviceInfo);
+            
             // Check device authorization before allowing login
             try {
                 const deviceFingerprint = generateDeviceFingerprint(req, deviceInfo || {});
@@ -270,18 +313,19 @@ const login = async (req, res, next) => {
                     }
 
                     // Register new device automatically on login
-                    const userAgent = req.get('User-Agent') || '';
-                    const baseInfo = parseDeviceInfo(userAgent);
+                    const deviceName = generateDeviceName(deviceInfo || {}, req);
+                    const parsedDeviceInfo = parseDeviceInfo(req.get('User-Agent'));
+                    
+                    // Ensure all required fields are present
                     const finalDeviceInfo = {
-                        userAgent,
-                        platform: (deviceInfo && deviceInfo.platform) || baseInfo.platform,
-                        browser: baseInfo.browser,
-                        os: baseInfo.os,
-                        ip: req.ip || req.connection?.remoteAddress || '',
-                        screenResolution: (deviceInfo && deviceInfo.screenResolution) || '',
-                        timezone: (deviceInfo && deviceInfo.timezone) || ''
+                        userAgent: req.get('User-Agent') || '',
+                        platform: deviceInfo?.platform || parsedDeviceInfo.platform || 'Unknown',
+                        browser: deviceInfo?.additionalInfo?.browser || parsedDeviceInfo.browser || 'Unknown',
+                        os: deviceInfo?.additionalInfo?.os || parsedDeviceInfo.os || 'Unknown',
+                        ip: req.ip || req.connection.remoteAddress || '',
+                        screenResolution: deviceInfo?.screenResolution || '',
+                        timezone: deviceInfo?.timezone || ''
                     };
-                    const deviceName = generateDeviceName(finalDeviceInfo);
 
                     const newDevice = await UserDevice.create({
                         user: user._id,
@@ -294,18 +338,30 @@ const login = async (req, res, next) => {
                         loginCount: 1
                     });
 
-                    console.log('New device registered automatically on login:', newDevice._id);
+                    console.log('New device registered successfully:', {
+                        deviceId: newDevice._id,
+                        deviceName: newDevice.deviceName,
+                        deviceInfo: newDevice.deviceInfo
+                    });
                 }
             } catch (deviceError) {
                 console.error('Device check error during login:', deviceError);
                 // Continue with login if device check fails (fallback)
                 console.log('Device check failed, allowing login as fallback');
             }
+        } else {
+            console.log('=== DEVICE REGISTRATION SKIPPED FOR ADMIN USER ===');
+            console.log('Admin users do not have device restrictions');
         }
 
         const token = await user.generateJWTToken();
 
         user.password = undefined;
+
+        // Populate stage for regular users
+        if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && user.stage) {
+            await user.populate('stage', 'name');
+        }
 
         res.cookie('token', token, cookieOptions)
 
@@ -341,10 +397,14 @@ const logout = async (req, res, next) => {
 
 
 // getProfile
-const getProfile = async (req, res) => {
+const getProfile = async (req, res, next) => {
     try {
         const { id } = req.user;
-        const user = await userModel.findById(id).populate('stage');
+        const user = await userModel.findById(id).populate('stage', 'name');
+
+        if (!user) {
+            return next(new AppError('User not found', 404));
+        }
 
         console.log('User profile data being sent:', {
             id: user._id,
@@ -353,7 +413,6 @@ const getProfile = async (req, res) => {
             phoneNumber: user.phoneNumber,
             fatherPhoneNumber: user.fatherPhoneNumber,
             governorate: user.governorate,
-            grade: user.grade,
             stage: user.stage,
             age: user.age,
             role: user.role

@@ -78,7 +78,7 @@ export default function Sidebar({ hideBar = false }) {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400">
-              منصة Al Mongez
+              منصةالمنصة الدولية
             </h2>
             <button onClick={closeSidebar} className="text-red-500 hover:text-red-700">
               <AiFillCloseCircle size={20} />

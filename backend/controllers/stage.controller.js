@@ -24,7 +24,6 @@ export const getAllStages = async (req, res, next) => {
         }
         
         const stages = await stageModel.find(query)
-            .populate('category', 'name status')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -129,13 +128,13 @@ export const updateStage = async (req, res, next) => {
         
         if (status) updateData.status = status;
         
-        if (category !== undefined) updateData.category = category;
+
         
         const updatedStage = await stageModel.findByIdAndUpdate(
             id,
             updateData,
             { new: true }
-        ).populate('category', 'name status');
+        );
         
         res.status(200).json({
             success: true,
@@ -275,7 +274,6 @@ export const getAllStagesAdmin = async (req, res, next) => {
         }
         
         const stages = await stageModel.find(query)
-            .populate('category', 'name status')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
