@@ -373,7 +373,7 @@ export default function Profile() {
                           : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                       }`}
                       placeholder="أدخل عمرك"
-                      min="5"
+                      min="0"
                       max="100"
                     />
                   </div>

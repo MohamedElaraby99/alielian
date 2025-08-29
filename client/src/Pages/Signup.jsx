@@ -704,7 +704,7 @@ export default function Signup() {
                       id="age"
                       name="age"
                       type="number"
-                      min="5"
+                      min="0"
                       max="100"
                       required
                       className="block w-full pr-12 pl-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-right shadow-sm hover:shadow-md"

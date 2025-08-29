@@ -667,7 +667,7 @@ const LiveMeetingDashboard = () => {
                     <input
                       type="number"
                       required
-                      min="15"
+                      min="1"
                       max="480"
                       value={formData.duration}
                       onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value)})}
@@ -866,7 +866,7 @@ const LiveMeetingDashboard = () => {
                     <input
                       type="number"
                       required
-                      min="15"
+                      min="1"
                       max="480"
                       value={formData.duration}
                       onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value)})}
