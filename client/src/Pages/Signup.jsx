@@ -390,6 +390,78 @@ export default function Signup() {
           {/* Enhanced Modern Form */}
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-blue-200/50 dark:border-blue-700/50 transform hover:scale-[1.02] transition-all duration-500">
             <form onSubmit={createNewAccount} className="space-y-6">
+              {/* Enhanced Avatar Upload - Moved to Front */}
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-right">
+                  الصورة الشخصية
+                </label>
+                <div className="flex items-center space-x-reverse space-x-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-100 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/20 flex items-center justify-center border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                      {previewImage ? (
+                        <img 
+                          src={previewImage} 
+                          alt="Profile preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <BsPersonCircle className="w-10 h-10 text-gray-400" />
+                      )}
+                    </div>
+                    {previewImage && (
+                      <div className="absolute -top-1 -left-1 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                        <FaCamera className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="image_uploads" className="cursor-pointer">
+                      <div className="flex items-center justify-center px-6 py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-400 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-md bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <FaUpload className="w-5 h-5 text-blue-500 ml-2" />
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                          {previewImage ? "تغيير الصورة" : "رفع صورة"}
+                        </span>
+                      </div>
+                    </label>
+                    <input
+                      id="image_uploads"
+                      onChange={getImage}
+                      type="file"
+                      accept=".jpg, .jpeg, .png, image/*"
+                      required
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Email Field - Moved to Front */}
+              <div className="group">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-right">
+                  البريد الإلكتروني {!isAdminRegistration && "(اختياري)"}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <FaEnvelope className="h-5 w-5 text-blue-500 group-focus-within:text-blue-600 transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required={isAdminRegistration}
+                    className="block w-full pr-12 pl-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-right shadow-sm hover:shadow-md"
+                    placeholder={isAdminRegistration ? "أدخل بريدك الإلكتروني" : "أدخل بريدك الإلكتروني (اختياري)"}
+                    value={signupData.email}
+                    onChange={handleUserInput}
+                  />
+                </div>
+                {!isAdminRegistration && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-right">
+                    يمكنك ترك هذا الحقل فارغاً إذا كنت لا تريد استخدام البريد الإلكتروني
+                  </p>
+                )}
+              </div>
+
               {/* Full Name Field */}
               <div className="group">
                 <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-right">
@@ -437,32 +509,7 @@ export default function Signup() {
                 </p>
               </div>
 
-              {/* Email Field */}
-              <div className="group">
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-right">
-                  البريد الإلكتروني {!isAdminRegistration && "(اختياري)"}
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <FaEnvelope className="h-5 w-5 text-blue-500 group-focus-within:text-blue-600 transition-colors duration-200" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required={isAdminRegistration}
-                    className="block w-full pr-12 pl-4 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-right shadow-sm hover:shadow-md"
-                    placeholder={isAdminRegistration ? "أدخل بريدك الإلكتروني" : "أدخل بريدك الإلكتروني (اختياري)"}
-                    value={signupData.email}
-                    onChange={handleUserInput}
-                  />
-                </div>
-                {!isAdminRegistration && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-right">
-                    يمكنك ترك هذا الحقل فارغاً إذا كنت لا تريد استخدام البريد الإلكتروني
-                  </p>
-                )}
-              </div>
+
 
               {/* Password Field */}
               <div className="group">
@@ -668,51 +715,6 @@ export default function Signup() {
                   </div>
                 </div>
               )}
-
-              {/* Enhanced Avatar Upload */}
-              <div className="group">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-right">
-                  الصورة الشخصية
-                </label>
-                <div className="flex items-center space-x-reverse space-x-4">
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-100 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/20 flex items-center justify-center border-2 border-gray-200 dark:border-gray-600 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                      {previewImage ? (
-                        <img 
-                          src={previewImage} 
-                          alt="Profile preview" 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <BsPersonCircle className="w-10 h-10 text-gray-400" />
-                      )}
-                    </div>
-                    {previewImage && (
-                      <div className="absolute -top-1 -left-1 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                        <FaCamera className="w-4 h-4 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <label htmlFor="image_uploads" className="cursor-pointer">
-                      <div className="flex items-center justify-center px-6 py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-400 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-md bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
-                        <FaUpload className="w-5 h-5 text-blue-500 ml-2" />
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                          {previewImage ? "تغيير الصورة" : "رفع صورة"}
-                        </span>
-                      </div>
-                    </label>
-                    <input
-                      id="image_uploads"
-                      onChange={getImage}
-                      type="file"
-                      accept=".jpg, .jpeg, .png, image/*"
-                      required
-                      className="hidden"
-                    />
-                  </div>
-                </div>
-              </div>
 
               {/* CAPTCHA Component */}
               <CaptchaComponent

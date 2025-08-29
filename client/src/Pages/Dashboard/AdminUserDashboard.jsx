@@ -57,6 +57,7 @@ import {
 import { axiosInstance } from "../../Helpers/axiosInstance";
 import { egyptianCities } from "../../utils/governorateMapping";
 import CodeSearch from "../../Components/CodeSearch";
+import { getAllStageCategories } from "../../Redux/Slices/StageCategorySlice";
 
 export default function AdminUserDashboard() {
     const dispatch = useDispatch();
@@ -73,12 +74,16 @@ export default function AdminUserDashboard() {
         actionLoading, 
         actionError 
     } = useSelector((state) => state.adminUser);
+    
+    // Get stage categories from Redux store
+    const { categories: stageCategories } = useSelector((state) => state.stageCategory);
 
     const [filters, setFilters] = useState({
         role: "",
         status: "",
         stage: "",
-        search: ""
+        search: "",
+        phoneSearch: ""
     });
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [showUserDetails, setShowUserDetails] = useState(false);
@@ -88,7 +93,9 @@ export default function AdminUserDashboard() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
-        code: ''
+        code: '',
+        stageCategory: '',
+        stage: ''
     });
     const [passwordForm, setPasswordForm] = useState({
         newPassword: '',
@@ -106,6 +113,7 @@ export default function AdminUserDashboard() {
         phoneNumber: '',
         fatherPhoneNumber: '',
         governorate: '',
+        stageCategory: '',
         stage: '',
         age: ''
     });
@@ -117,25 +125,90 @@ export default function AdminUserDashboard() {
     const canDeleteAdmin = user && (user.role === 'SUPER_ADMIN');
     const canChangeRoleToAdmin = user && (user.role === 'SUPER_ADMIN');
 
-    // Fetch stages on component mount
+    // Get filtered stages based on selected stage category
+    const getFilteredStages = () => {
+        if (!createUserForm.stageCategory) {
+            return stages; // Show all stages if no category selected
+        }
+        
+        const selectedCategory = stageCategories.find(cat => cat._id === createUserForm.stageCategory);
+        if (!selectedCategory || !selectedCategory.stages) {
+            return stages;
+        }
+        
+        // Filter stages that belong to the selected category
+        return stages.filter(stage => 
+            selectedCategory.stages.some(categoryStage => 
+                categoryStage._id === stage._id || categoryStage.toString() === stage._id
+            )
+        );
+    };
+
+    // Get filtered stages for edit form based on selected stage category
+    const getFilteredStagesForEdit = () => {
+        if (!editForm.stageCategory) {
+            return stages; // Show all stages if no category selected
+        }
+        
+        const selectedCategory = stageCategories.find(cat => cat._id === editForm.stageCategory);
+        if (!selectedCategory || !selectedCategory.stages) {
+            return stages;
+        }
+        
+        // Filter stages that belong to the selected category
+        return stages.filter(stage => 
+            selectedCategory.stages.some(categoryStage => 
+                categoryStage._id === stage._id || categoryStage.toString() === stage._id
+            )
+        );
+    };
+
+    // Fetch stages and stage categories on component mount
     useEffect(() => {
-        const fetchStages = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axiosInstance.get('/stages');
-                if (response.data.success) {
-                    setStages(response.data.data.stages);
+                // Fetch stages
+                const stagesResponse = await axiosInstance.get('/stages');
+                if (stagesResponse.data.success) {
+                    setStages(stagesResponse.data.data.stages);
                 }
+
+                // Fetch stage categories
+                dispatch(getAllStageCategories({ page: 1, limit: 100 }));
             } catch (error) {
-                console.error('Error fetching stages:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchStages();
-    }, []);
+        fetchData();
+    }, [dispatch]);
 
-    // Monitor filter changes
+    // Monitor filter changes with debounce
     useEffect(() => {
-    }, [filters]);
+        const timeoutId = setTimeout(() => {
+            if (isLoggedIn && (role === "ADMIN" || role === "SUPER_ADMIN")) {
+                let roleFilter = "";
+                if (activeTab === "users") {
+                    roleFilter = "USER";
+                } else if (activeTab === "admins") {
+                    roleFilter = "ADMIN";
+                }
+                
+                dispatch(getAllUsers({ 
+                    page: 1, 
+                    limit: 20, 
+                    role: roleFilter,
+                    status: filters.status,
+                    stage: filters.stage,
+                    search: filters.search,
+                    codeSearch: filters.codeSearch,
+                    phoneSearch: filters.phoneSearch
+                }));
+            }
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [filters, dispatch, isLoggedIn, role, activeTab]);
 
     useEffect(() => {
        
@@ -158,7 +231,8 @@ export default function AdminUserDashboard() {
                 status: filters.status,
                 stage: filters.stage,
                 search: filters.search,
-                codeSearch: filters.codeSearch
+                codeSearch: filters.codeSearch,
+                phoneSearch: filters.phoneSearch
             }));
         } else {
            
@@ -197,6 +271,8 @@ export default function AdminUserDashboard() {
             roleFilter = filters.role;
         }
         
+
+        
         dispatch(getAllUsers({ 
             page: 1, 
             limit: 20, 
@@ -204,7 +280,31 @@ export default function AdminUserDashboard() {
             status: filters.status,
             stage: filters.stage,
             search: filters.search,
-            codeSearch: filters.codeSearch 
+            codeSearch: filters.codeSearch,
+            phoneSearch: filters.phoneSearch
+        }));
+    };
+
+    const handleClearFilters = () => {
+        setFilters({
+            role: "",
+            status: "",
+            stage: "",
+            search: "",
+            phoneSearch: ""
+        });
+        
+        let roleFilter = "";
+        if (activeTab === "users") {
+            roleFilter = "USER";
+        } else if (activeTab === "admins") {
+            roleFilter = "ADMIN";
+        }
+        
+        dispatch(getAllUsers({ 
+            page: 1, 
+            limit: 20, 
+            role: roleFilter
         }));
     };
 
@@ -329,7 +429,8 @@ export default function AdminUserDashboard() {
             phoneNumber: user.phoneNumber || '',
             fatherPhoneNumber: user.fatherPhoneNumber || '',
             governorate: user.governorate || '',
-            stage: user.stage?._id || null,
+            stageCategory: user.stageCategory?._id || '',
+            stage: user.stage?._id || '',
             age: user.age || '',
             role: user.role || 'USER',
             code: user.code || '',
@@ -341,7 +442,9 @@ export default function AdminUserDashboard() {
     const handleCancelEdit = () => {
         setIsEditing(false);
         setEditForm({
-            code: ''
+            code: '',
+            stageCategory: '',
+            stage: ''
         });
     };
 
@@ -645,7 +748,7 @@ export default function AdminUserDashboard() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                البحث
+                                                البحث العام
                                             </label>
                                             <input
                                                 type="text"
@@ -658,7 +761,20 @@ export default function AdminUserDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                البحث بالرمز
+                                                البحث العام برقم الهاتف
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                name="phoneSearch"
+                                                value={filters.phoneSearch}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="أدخل رقم الهاتف للبحث"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث العام بالرمز
                                             </label>
                                             <CodeSearch 
                                                 onUserSelect={handleCodeSearchUserSelect}
@@ -715,16 +831,23 @@ export default function AdminUserDashboard() {
                                                 </select>
                                             </div>
                                         )}
-                                        <div className="flex items-end">
+                                        <div className="flex items-end space-x-2 space-x-reverse">
                                             <button
                                                 onClick={() => {
                                                     
                                                     handleApplyFilters();
                                                 }}
-                                                className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-colors"
+                                                className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
                                                 تطبيق المرشحات
+                                            </button>
+                                            <button
+                                                onClick={handleClearFilters}
+                                                className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
+                                                title="مسح جميع المرشحات"
+                                            >
+                                                <FaTimes className="inline" />
                                             </button>
                                         </div>
                                     </div>
@@ -868,7 +991,7 @@ export default function AdminUserDashboard() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                البحث
+                                                البحث العام
                                             </label>
                                             <input
                                                 type="text"
@@ -881,7 +1004,20 @@ export default function AdminUserDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                البحث بالرمز
+                                                البحث العام برقم الهاتف
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                name="phoneSearch"
+                                                value={filters.phoneSearch}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="أدخل رقم الهاتف للبحث"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث العام بالرمز
                                             </label>
                                             <CodeSearch 
                                                 onUserSelect={handleCodeSearchUserSelect}
@@ -903,16 +1039,23 @@ export default function AdminUserDashboard() {
                                                 <option value="inactive">غير نشط</option>
                                             </select>
                                         </div>
-                                        <div className="flex items-end">
+                                        <div className="flex items-end space-x-2 space-x-reverse">
                                             <button
                                                 onClick={() => {
                                                     
                                                     handleApplyFilters();
                                                 }}
-                                                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                                                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
                                                 تطبيق المرشحات
+                                            </button>
+                                            <button
+                                                onClick={handleClearFilters}
+                                                className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
+                                                title="مسح جميع المرشحات"
+                                            >
+                                                <FaTimes className="inline" />
                                             </button>
                                         </div>
                                     </div>
@@ -1031,7 +1174,7 @@ export default function AdminUserDashboard() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                البحث
+                                                البحث العام
                                             </label>
                                             <input
                                                 type="text"
@@ -1044,7 +1187,20 @@ export default function AdminUserDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                البحث بالرمز
+                                                البحث العام برقم الهاتف
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                name="phoneSearch"
+                                                value={filters.phoneSearch}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="أدخل رقم الهاتف للبحث"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث العام بالرمز
                                             </label>
                                             <CodeSearch 
                                                 onUserSelect={handleCodeSearchUserSelect}
@@ -1097,16 +1253,23 @@ export default function AdminUserDashboard() {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className="flex items-end">
+                                        <div className="flex items-end space-x-2 space-x-reverse">
                                             <button
                                                 onClick={() => {
                                                     
                                                     handleApplyFilters();
                                                 }}
-                                                className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
+                                                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
                                                 تطبيق المرشحات
+                                            </button>
+                                            <button
+                                                onClick={handleClearFilters}
+                                                className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
+                                                title="مسح جميع المرشحات"
+                                            >
+                                                <FaTimes className="inline" />
                                             </button>
                                         </div>
                                     </div>
@@ -1249,6 +1412,7 @@ export default function AdminUserDashboard() {
                                             phoneNumber: '',
                                             fatherPhoneNumber: '',
                                             governorate: '',
+                                            stageCategory: '',
                                             stage: '',
                                             age: ''
                                         });
@@ -1407,16 +1571,47 @@ export default function AdminUserDashboard() {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    فئة المرحلة الدراسية *
+                                                </label>
+                                                <select
+                                                    required
+                                                    value={createUserForm.stageCategory}
+                                                    onChange={(e) => setCreateUserForm({
+                                                        ...createUserForm, 
+                                                        stageCategory: e.target.value,
+                                                        stage: '' // Reset stage when category changes
+                                                    })}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="">اختر فئة المرحلة الدراسية</option>
+                                                    {stageCategories.map((category) => (
+                                                        <option key={category._id} value={category._id}>
+                                                            {category.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     المرحلة الدراسية *
                                                 </label>
                                                 <select
                                                     required
                                                     value={createUserForm.stage}
                                                     onChange={(e) => setCreateUserForm({...createUserForm, stage: e.target.value})}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    disabled={!createUserForm.stageCategory}
+                                                    className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                                                        !createUserForm.stageCategory ? 'opacity-50 cursor-not-allowed' : ''
+                                                    }`}
                                                 >
-                                                    <option value="">اختر المرحلة الدراسية</option>
-                                                    {stages.map((stage) => (
+                                                    <option value="">
+                                                        {!createUserForm.stageCategory 
+                                                            ? "اختر فئة المرحلة الدراسية أولاً" 
+                                                            : "اختر المرحلة الدراسية"
+                                                        }
+                                                    </option>
+                                                    {getFilteredStages().map((stage) => (
                                                         <option key={stage._id} value={stage._id}>
                                                             {stage.name}
                                                         </option>
@@ -1758,15 +1953,46 @@ export default function AdminUserDashboard() {
                                             )}
                                         </div>
                                         <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">فئة المرحلة الدراسية</label>
+                                            {isEditing ? (
+                                                <select
+                                                    value={editForm.stageCategory || ""}
+                                                    onChange={(e) => setEditForm({
+                                                        ...editForm, 
+                                                        stageCategory: e.target.value,
+                                                        stage: '' // Reset stage when category changes
+                                                    })}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="">اختر فئة المرحلة الدراسية</option>
+                                                    {stageCategories.map((category) => (
+                                                        <option key={category._id} value={category._id}>
+                                                            {category.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.stageCategory?.name || 'غير محدد'}</p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">المرحلة الدراسية</label>
                                             {isEditing ? (
                                                 <select
                                                     value={editForm.stage || ""}
                                                     onChange={(e) => setEditForm({...editForm, stage: e.target.value || null})}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    disabled={!editForm.stageCategory}
+                                                    className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                                                        !editForm.stageCategory ? 'opacity-50 cursor-not-allowed' : ''
+                                                    }`}
                                                 >
-                                                    <option value="">اختر المرحلة الدراسية</option>
-                                                    {stages.map((stage) => (
+                                                    <option value="">
+                                                        {!editForm.stageCategory 
+                                                            ? "اختر فئة المرحلة الدراسية أولاً" 
+                                                            : "اختر المرحلة الدراسية"
+                                                        }
+                                                    </option>
+                                                    {getFilteredStagesForEdit().map((stage) => (
                                                         <option key={stage._id} value={stage._id}>
                                                             {stage.name}
                                                         </option>

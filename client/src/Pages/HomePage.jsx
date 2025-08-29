@@ -126,14 +126,14 @@ export default function HomePage() {
   const handleAPKDownload = () => {
     // Create a download link for the APK file
     const link = document.createElement('a');
-    link.href = '/downloads/almongez.apk'; // Update this path to your APK file location
-    link.download = 'almongez.apk';
+    link.href = '/downloads/المنصة الدولية.apk'; // Update this path to your APK file location
+    link.download = 'المنصة الدولية.apk';
     link.target = '_blank';
     
     // Fallback for mobile browsers
     if (navigator.userAgent.toLowerCase().indexOf('android') > -1) {
       // For Android devices, open the download directly
-      window.open('/downloads/almongez.apk', '_blank');
+      window.open('/downloads/المنصة الدولية.apk', '_blank');
     } else {
       // For other devices, trigger download
       document.body.appendChild(link);
@@ -1079,7 +1079,7 @@ export default function HomePage() {
                   </span>
                 </a>
                 <a
-                  href="https://wa.me/01143982522"
+                  href="https://wa.me/+201143982522"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:text-green-500 hover:scale-105"

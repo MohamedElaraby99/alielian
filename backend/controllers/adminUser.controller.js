@@ -4,7 +4,8 @@ import AppError from "../utils/error.utils.js";
 // Get all users with pagination and filters
 const getAllUsers = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, status, search, stage, codeSearch } = req.query;
+
+        const { page = 1, limit = 20, role, status, search, stage, codeSearch, phoneSearch } = req.query;
         const skip = (page - 1) * limit;
 
         let query = {};
@@ -24,12 +25,18 @@ const getAllUsers = async (req, res, next) => {
             query.stage = stage;
         }
 
-        // Search by name, email, or phone number
-        if (search) {
+        // Search by name, email, or phone number (only if phoneSearch is not provided)
+        if (search && !phoneSearch) {
             query.$or = [
                 { fullName: { $regex: search, $options: 'i' } },
                 { email: { $regex: search, $options: 'i' } },
                 { phoneNumber: { $regex: search, $options: 'i' } }
+            ];
+        } else if (search && phoneSearch) {
+            // If both search and phoneSearch are provided, combine them
+            query.$or = [
+                { fullName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -38,7 +45,13 @@ const getAllUsers = async (req, res, next) => {
             query.code = { $regex: codeSearch, $options: 'i' };
         }
 
-        console.log('Query:', query);
+        // Search by phone number specifically
+        if (phoneSearch) {
+            query.phoneNumber = { $regex: phoneSearch, $options: 'i' };
+        }
+
+        console.log('Search parameters:', { search, phoneSearch, codeSearch });
+        console.log('Query:', JSON.stringify(query, null, 2));
         console.log('Admin requesting users. User ID:', req.user.id);
 
         const users = await userModel.find(query)
@@ -127,6 +140,7 @@ const createUser = async (req, res, next) => {
             phoneNumber,
             fatherPhoneNumber,
             governorate,
+            stageCategory,
             stage,
             age 
         } = req.body;
@@ -157,8 +171,8 @@ const createUser = async (req, res, next) => {
         // Role-specific field validation
         if (role === 'USER') {
             // For USER role: phone number is required, email is optional
-            if (!phoneNumber || !governorate || !stage || !age) {
-                return next(new AppError("Phone number, governorate, stage, and age are required for regular users", 400));
+            if (!phoneNumber || !governorate || !stageCategory || !stage || !age) {
+                return next(new AppError("Phone number, governorate, stage category, stage, and age are required for regular users", 400));
             }
         } else if (role === 'ADMIN') {
             // For ADMIN role: email is required
@@ -216,6 +230,7 @@ const createUser = async (req, res, next) => {
             if (email) userData.email = email; // Optional email for USER
             if (fatherPhoneNumber) userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
+            userData.stageCategory = stageCategory;
             userData.stage = stage;
             userData.age = parseInt(age);
         } else if (role === 'ADMIN') {
@@ -265,7 +280,10 @@ const getUserDetails = async (req, res, next) => {
 
         const user = await userModel.findById(userId)
             .select('-password -forgotPasswordToken -forgotPasswordExpiry')
-            .populate('stage', 'name');
+            .populate([
+                { path: 'stage', select: 'name' },
+                { path: 'stageCategory', select: 'name' }
+            ]);
 
         if (!user) {
             return next(new AppError("User not found", 404));
@@ -293,6 +311,7 @@ const getUserDetails = async (req, res, next) => {
                     fatherPhoneNumber: user.fatherPhoneNumber,
                     governorate: user.governorate,
                     stage: user.stage,
+                    stageCategory: user.stageCategory,
                     age: user.age,
                     role: user.role,
                     code: user.code,
@@ -544,8 +563,11 @@ const updateUser = async (req, res, next) => {
 
         await user.save();
 
-        // Populate stage information before sending response
-        await user.populate('stage', 'name');
+        // Populate stage and stage category information before sending response
+        await user.populate([
+            { path: 'stage', select: 'name' },
+            { path: 'stageCategory', select: 'name' }
+        ]);
 
         res.status(200).json({
             success: true,
@@ -561,6 +583,7 @@ const updateUser = async (req, res, next) => {
                     fatherPhoneNumber: user.fatherPhoneNumber,
                     governorate: user.governorate,
                     stage: user.stage,
+                    stageCategory: user.stageCategory,
                     age: user.age,
                     role: user.role,
                     code: user.code,
@@ -699,6 +722,7 @@ const resetAllRechargeCodes = async (req, res, next) => {
 export {
     getAllUsers,
     createUser,
+   
     getUserDetails,
     toggleUserStatus,
     deleteUser,
